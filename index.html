@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ka">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>შენი ტალღა ოქროს ტბაზე — Poti Waterski & Wakeboard Club</title>
+  <meta name="description" content="Book waterski and wakeboard hours on Golden Lake, Maltakva, Poti. See free hours, the lake weather, and book in a minute.">
+  <meta property="og:title" content="Poti Waterski & Wakeboard — Book your hour">
+  <meta property="og:description" content="Waterski & wakeboard on Golden Lake, Maltakva, Poti. See free hours and book online.">
+  <meta property="og:image" content="https://images.unsplash.com/photo-1528569449293-fdc35b48952d?w=1200&q=75&auto=format&fit=crop">
+  <meta name="theme-color" content="#06202e">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2306202e'/%3E%3Cpath d='M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3' fill='none' stroke='%23f59e0b' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="top">
+  <a class="brand" href="index.html" aria-label="Poti Waterski">
+    <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M14 17l12-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <span>POTI <b>WATERSKI</b></span>
+  </a>
+  <nav class="top-nav" aria-label="Sections">
+    <a href="#bookingForm" data-i18n="navBook"></a>
+    <a href="#passesSec" data-i18n="navPasses" id="navPasses"></a>
+    <a href="events.html" data-i18n="navEvents"></a>
+    <a href="riders.html" data-i18n="navRiders"></a>
+    <a href="#story" data-i18n="navStory"></a>
+  </nav>
+  <div class="top-right">
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="ka">ქარ</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="ru">RU</button>
+    </div>
+    <div class="account" id="account"></div>
+  </div>
+</header>
+
+<main class="layout">
+  <aside class="visual">
+    <img src="https://images.unsplash.com/photo-1528569449293-fdc35b48952d?w=1600&q=75&auto=format&fit=crop" alt="" fetchpriority="high">
+    <div class="visual-text">
+      <a class="champ" href="#story"><span aria-hidden="true">🏆</span> <span data-i18n="champ"></span></a>
+      <p class="eyebrow" data-i18n="place"></p>
+      <h1><span data-i18n="h1a"></span><br><em data-i18n="h1b"></em></h1>
+      <ul class="chips">
+        <li data-i18n="chip1"></li><li data-i18n="chip2"></li><li data-i18n="chip3"></li>
+      </ul>
+      <div class="wx-now" id="wxNow" hidden></div>
+    </div>
+  </aside>
+
+  <section class="booking" aria-label="Booking">
+    <form id="bookingForm" novalidate>
+      <section class="offers" id="offers" hidden>
+        <h2 data-i18n="offersTitle"></h2>
+        <div class="offer-row" id="offerRow"></div>
+      </section>
+      <fieldset class="step">
+        <legend><i>1</i> <span data-i18n="s1"></span></legend>
+        <div class="rides" id="rides"></div>
+      </fieldset>
+
+      <fieldset class="step">
+        <legend><i>2</i> <span data-i18n="s2"></span></legend>
+        <div class="cal">
+          <div class="cal-head">
+            <button type="button" class="cal-nav" id="calPrev" aria-label="‹">‹</button>
+            <h3 id="calTitle" aria-live="polite"></h3>
+            <button type="button" class="cal-nav" id="calNext" aria-label="›">›</button>
+          </div>
+          <div class="cal-wd" id="calWd"></div>
+          <div class="cal-grid" id="calGrid" role="grid"></div>
+          <p class="cal-note" id="calNote" hidden></p>
+          <ul class="cal-legend">
+            <li><i class="lg free"></i><span data-i18n="free"></span></li>
+            <li><i class="lg few"></i><span data-i18n="few"></span></li>
+            <li><i class="lg full"></i><span data-i18n="full"></span></li>
+            <li><i class="lg closed"></i><span data-i18n="closed"></span></li>
+          </ul>
+        </div>
+      </fieldset>
+
+      <fieldset class="step">
+        <legend><i>3</i> <span data-i18n="s3"></span> <small class="day-sub" id="daySub"></small></legend>
+        <div class="dur-row"><span data-i18n="durLabel"></span><div class="dur" id="dur" role="radiogroup"></div></div>
+        <div class="day-wx" id="dayWx" hidden></div>
+        <div class="slots" id="slots" role="radiogroup"></div>
+      </fieldset>
+
+      <fieldset class="step">
+        <legend><i>4</i> <span data-i18n="s4"></span></legend>
+        <div class="riders">
+          <div class="stepper">
+            <button type="button" data-d="-1" aria-label="−">−</button>
+            <output id="riderCount" aria-live="polite">1</output>
+            <button type="button" data-d="1" aria-label="+">+</button>
+          </div>
+          <select name="level" id="level" data-i18n-aria="levelLabel"></select>
+        </div>
+        <div class="coach-pick" id="coachPick" hidden>
+          <h4 data-i18n="coachTitle"></h4>
+          <div class="coaches" id="coaches" role="radiogroup"></div>
+        </div>
+      </fieldset>
+
+      <fieldset class="step">
+        <legend><i>5</i> <span data-i18n="s5"></span></legend>
+        <div class="row">
+          <label><span data-i18n="name"></span><input name="name" required autocomplete="name" maxlength="80" data-i18n-ph="namePh"></label>
+          <label><span data-i18n="phone"></span><input name="phone" type="tel" required autocomplete="tel" inputmode="tel" maxlength="30" placeholder="+995 5XX XX XX XX"></label>
+        </div>
+        <label><span><span data-i18n="notes"></span> <span class="opt" data-i18n="optional"></span></span><textarea name="notes" rows="2" maxlength="500" data-i18n-ph="notesPh"></textarea></label>
+      </fieldset>
+
+      <div class="pass-use" id="passUse" hidden>
+        <label class="check"><input type="checkbox" id="usePass"> <span data-i18n="usePass"></span></label>
+        <select id="passSel" aria-label="Pass"></select>
+      </div>
+      <div class="summary" aria-live="polite">
+        <div><p id="sumRide"></p><p id="sumWhen" class="muted"></p><span class="sum-offer" id="sumOffer" hidden></span></div>
+        <div class="sum-price"><span data-i18n="total"></span><b id="sumTotal"></b></div>
+      </div>
+      <label class="check agree"><input type="checkbox" id="agree"> <span><span data-i18n="agree1"></span> <a href="terms.html" target="_blank" data-i18n="agreeLink"></a></span></label>
+      <p class="form-error" id="formError" role="alert"></p>
+      <button class="btn" type="submit" id="submitBtn"></button>
+      <p class="fine" data-i18n="fine"></p>
+    </form>
+
+    <div class="done" id="done" hidden tabindex="-1">
+      <div class="tick" aria-hidden="true">✓</div>
+      <h2 data-i18n="doneTitle"></h2>
+      <p id="doneText"></p>
+      <div class="pay-box" id="payBox" hidden>
+        <p class="pay-amount" id="payAmount"></p>
+        <button class="btn" type="button" id="payBtn" data-i18n="payOnline"></button>
+        <p class="fine" id="payNote"></p>
+      </div>
+      <a class="btn btn-wa" id="doneWa" hidden target="_blank" rel="noopener" data-i18n="doneWa"></a>
+      <button class="btn-link" type="button" id="again" data-i18n="again"></button>
+    </div>
+  </section>
+</main>
+
+<section class="mine" id="mine" hidden>
+  <div class="mine-inner">
+    <h2 data-i18n="myBookings"></h2>
+    <div id="mineList"></div>
+  </div>
+</section>
+
+<section class="passes-sec" id="passesSec" hidden>
+  <div class="mine-inner">
+    <h2 data-i18n="passesTitle"></h2>
+    <p class="muted sec-sub" data-i18n="passesSub"></p>
+    <div class="plans" id="plans"></div>
+  </div>
+</section>
+
+<section class="reviews-sec" id="reviews">
+  <div class="mine-inner">
+    <h2 data-i18n="reviewsTitle"></h2>
+    <div class="rv-wrap" id="rvWrap"><p class="muted" data-i18n="loading"></p></div>
+  </div>
+</section>
+
+<section class="story" id="story">
+  <div class="story-inner">
+    <div class="story-text">
+      <p class="eyebrow" data-i18n="storyEy"></p>
+      <h2 data-i18n="storyTitle"></h2>
+      <p data-i18n="storyP1"></p>
+      <p data-i18n="storyP2"></p>
+      <a class="btn story-btn" href="#bookingForm" data-i18n="storyCta"></a>
+    </div>
+    <ul class="story-stats">
+      <li><b>1991</b><span data-i18n="st1"></span></li>
+      <li><b>2026</b><span data-i18n="st2"></span></li>
+      <li><b data-i18n="st3n"></b><span data-i18n="st3"></span></li>
+    </ul>
+  </div>
+</section>
+
+<section class="weather" id="weather">
+  <div class="weather-inner">
+    <h2 data-i18n="wxTitle"></h2>
+    <div class="wx-days" id="wxDays"><p class="muted" data-i18n="loading"></p></div>
+    <p class="fine left" data-i18n="rideNote"></p>
+  </div>
+</section>
+
+<section class="info" id="visit">
+  <div class="info-card">
+    <h3 data-i18n="where"></h3>
+    <p data-i18n="address"></p>
+    <iframe title="Golden Lake, Maltakva, Poti" loading="lazy"
+      src="https://www.openstreetmap.org/export/embed.html?bbox=41.672%2C42.098%2C41.708%2C42.120&layer=mapnik&marker=42.10874%2C41.68986"></iframe>
+    <a href="https://www.google.com/maps/search/?api=1&query=42.10874,41.68986" target="_blank" rel="noopener" data-i18n="openMaps"></a>
+  </div>
+  <div class="info-card">
+    <h3 data-i18n="howTitle"></h3>
+    <ul>
+      <li><b data-i18n="hw1"></b><span data-i18n="hw1v"></span></li>
+      <li><b data-i18n="hw2"></b><span data-i18n="hw2v"></span></li>
+      <li><b data-i18n="hw3"></b><span data-i18n="hw3v"></span></li>
+      <li><b data-i18n="hw4"></b><span data-i18n="hw4v"></span></li>
+      <li><b data-i18n="hw5"></b><span data-i18n="hw5v"></span></li>
+    </ul>
+    <p class="fine left" data-i18n="howNote"></p>
+    <a class="btn-small primary dir" href="https://www.google.com/maps/dir/?api=1&destination=42.10874,41.68986" target="_blank" rel="noopener" data-i18n="dirBtn"></a>
+  </div>
+  <div class="info-card know-card">
+    <h3 data-i18n="know"></h3>
+    <ul>
+      <li><b data-i18n="k1"></b><span data-i18n="k1v"></span></li>
+      <li><b data-i18n="k2"></b><span data-i18n="k2v"></span></li>
+      <li><b data-i18n="k3"></b><span data-i18n="k3v"></span></li>
+    </ul>
+  </div>
+  <div class="info-card">
+    <h3 data-i18n="contact"></h3>
+    <ul id="contactList"></ul>
+  </div>
+</section>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="index.html" aria-label="Poti Waterski">
+        <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M14 17l12-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+        <span>POTI <b>WATERSKI</b></span>
+      </a>
+      <p data-i18n="footTag"></p>
+      <p class="foot-champ">🏆 <span data-i18n="champ"></span></p>
+    </div>
+    <nav class="foot-col" aria-label="Footer">
+      <h4 data-i18n="footNav"></h4>
+      <a href="#bookingForm" data-i18n="navBook"></a>
+      <a href="#passesSec" data-i18n="navPasses"></a>
+      <a href="#reviews" data-i18n="navReviews"></a>
+      <a href="events.html" data-i18n="navEvents"></a>
+      <a href="riders.html" data-i18n="navRiders"></a>
+      <a href="#story" data-i18n="navStory"></a>
+      <a href="#visit" data-i18n="navVisit"></a>
+    </nav>
+    <div class="foot-col">
+      <h4 data-i18n="footContact"></h4>
+      <div id="footContact"></div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p>© <span id="yr"></span> Poti Waterski & Wakeboard Club · Golden Lake, Maltakva, Poti</p>
+    <p class="foot-links"><a href="terms.html" data-i18n="termsLink"></a> · <a href="terms.html#privacy" data-i18n="privacyLink"></a></p>
+    <p class="credits">Photo: KaLisa Veer (Unsplash) · Weather: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></p>
+  </div>
+</footer>
+
+<a class="fab" id="fab" target="_blank" rel="noopener" hidden>
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg>
+  <span id="fabTxt"></span>
+</a>
+
+<!-- sign in / sign up -->
+<dialog class="modal" id="authModal" aria-labelledby="authTitle">
+  <form method="dialog" class="modal-x"><button aria-label="Close" data-i18n-aria="close">×</button></form>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="in" data-i18n="signIn"></button>
+    <button type="button" role="tab" data-tab="up" data-i18n="signUp"></button>
+  </div>
+  <p class="modal-intro" id="authIntro" data-i18n="authIntro"></p>
+  <form id="authForm" novalidate>
+    <h2 class="sr" id="authTitle"></h2>
+    <div class="up-only">
+      <label><span data-i18n="username"></span><input name="username" autocomplete="username" maxlength="20" pattern="[a-z0-9_]{3,20}" autocapitalize="none" spellcheck="false"><small class="hint" data-i18n="usernameHint"></small></label>
+      <label><span data-i18n="fullName"></span><input name="full_name" autocomplete="name" maxlength="80"></label>
+      <label><span data-i18n="phone"></span><input name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="+995 5XX XX XX XX"></label>
+    </div>
+    <label><span data-i18n="email"></span><input name="email" type="email" autocomplete="email" required></label>
+    <label><span data-i18n="password"></span><input name="password" type="password" minlength="8" required><small class="hint up-only" data-i18n="pwHint"></small></label>
+    <p class="form-error" id="authError" role="alert"></p>
+    <p class="form-ok" id="authOk" role="status"></p>
+    <button class="btn" type="submit" id="authBtn"></button>
+    <p class="switch"><span id="switchQ"></span> <button type="button" class="btn-link inline" id="switchBtn"></button></p>
+  </form>
+</dialog>
+
+<dialog class="modal" id="reviewModal" aria-labelledby="rvTitle">
+  <form method="dialog" class="modal-x"><button aria-label="Close" data-i18n-aria="close">×</button></form>
+  <h2 id="rvTitle" data-i18n="reviewTitle"></h2>
+  <p class="muted" id="rvFor"></p>
+  <form id="reviewForm" novalidate>
+    <div class="star-pick" role="radiogroup" aria-labelledby="rvTitle">
+      <input type="radio" name="rating" id="st5" value="5"><label for="st5" title="5">★</label>
+      <input type="radio" name="rating" id="st4" value="4"><label for="st4" title="4">★</label>
+      <input type="radio" name="rating" id="st3" value="3"><label for="st3" title="3">★</label>
+      <input type="radio" name="rating" id="st2" value="2"><label for="st2" title="2">★</label>
+      <input type="radio" name="rating" id="st1" value="1"><label for="st1" title="1">★</label>
+    </div>
+    <textarea name="text" rows="4" maxlength="800" data-i18n-ph="reviewPh"></textarea>
+    <p class="form-error" id="rvError" role="alert"></p>
+    <button class="btn" type="submit" data-i18n="send"></button>
+  </form>
+</dialog>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="config.js"></script>
+<script src="demo.js" defer></script>
+<script src="i18n.js"></script>
+<script src="community-i18n.js"></script>
+<script src="lib.js"></script>
+<script src="auth-ui.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

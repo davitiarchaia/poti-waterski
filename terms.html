@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ka">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>წესები და პირობები — Poti Waterski</title>
+  <!-- TEMPLATE: the club must review this text (ideally with a lawyer) before going live. Legal details come from config.js. -->
+  <meta name="theme-color" content="#06202e">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2306202e'/%3E%3Cpath d='M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3' fill='none' stroke='%23f59e0b' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .legal{max-width:820px;margin:0 auto;padding:clamp(24px,5vw,56px) clamp(16px,4vw,32px)}
+    .legal h1{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:.4rem}
+    .legal .upd{color:var(--muted);margin-bottom:2rem}
+    .legal h2{font-size:1.25rem;margin:2rem 0 .6rem;scroll-margin-top:80px}
+    .legal p,.legal li{line-height:1.7;color:#24313f}
+    .legal ul{padding-left:1.2rem;display:grid;gap:.3rem}
+    .legal .box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:1rem 1.2rem}
+    .legal .box dl{display:grid;grid-template-columns:auto 1fr;gap:.3rem 1rem}
+    .legal .box dt{color:var(--muted)}
+    .legal .back{display:inline-block;margin-bottom:1.4rem;color:var(--deep);font-weight:700;text-decoration:none}
+  </style>
+</head>
+<body>
+<header class="top">
+  <a class="brand" href="index.html" aria-label="Poti Waterski">
+    <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M14 17l12-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <span>POTI <b>WATERSKI</b></span>
+  </a>
+  <div class="top-right">
+    <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="ka">ქარ</button><button type="button" data-lang="en">EN</button></div>
+  </div>
+</header>
+<main class="legal" id="legal"></main>
+<footer class="foot"><p>© <span id="yr"></span> Poti Waterski & Wakeboard Club · Golden Lake, Maltakva, Poti</p></footer>
+
+<script src="config.js"></script>
+<script src="demo.js" defer></script>
+<script>
+(() => {
+  const C = window.CONFIG, v = x => x ? esc(x) : '—';
+  function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+  const h = C.cancelHours || 24;
+  const T = {
+    ka: `<a class="back" href="index.html">← ჯავშნის გვერდი</a>
+      <h1>წესები და პირობები</h1><p class="upd">ბოლო განახლება: 2026</p>
+      <div class="box"><dl>
+        <dt>მომსახურების გამწევი</dt><dd>${v(C.legalName)}</dd>
+        <dt>საიდენტიფიკაციო კოდი</dt><dd>${v(C.legalId)}</dd>
+        <dt>მისამართი</dt><dd>ოქროს ტბა, მალთაყვა, ფოთი, საქართველო</dd>
+        <dt>ელ-ფოსტა</dt><dd>${v(C.email)}</dd>
+        <dt>ტელეფონი</dt><dd>${v(C.phone)}</dd>
+      </dl></div>
+      <h2>1. ჯავშანი</h2>
+      <p>საიტზე გაგზავნილი ჯავშანი არის მოთხოვნა. ის ძალაშია მას შემდეგ, რაც კლუბი დაადასტურებს — სტატუსი ჩანს „ჩემს ჯავშნებში“ და დადასტურება მოგივათ ელ-ფოსტით ან ტელეფონით. ერთი ჯავშანი ნიშნავს ერთ საათს ნავთან და, საჭიროების შემთხვევაში, მწვრთნელთან.</p>
+      <h2>2. ფასი და გადახდა</h2>
+      <ul>
+        <li>ფასები მითითებულია საიტზე ლარში (₾), ერთ საათზე, და შეიძლება შეიცვალოს. მოქმედებს ფასი, რომელიც ჯავშნის მომენტში ჩანდა.</li>
+        <li>გადახდა შესაძლებელია ადგილზე (ნაღდი ან ბარათი) ან ონლაინ, საქართველოს ბანკის დაცულ გვერდზე. ბარათის მონაცემებს კლუბი არ ინახავს და ვერ ხედავს.</li>
+        <li>აბონემენტი აქტიურდება გადახდის შემდეგ და მოქმედებს ტარიფში მითითებული ვადით და საათების რაოდენობით.</li>
+      </ul>
+      <h2>3. გაუქმება და თანხის დაბრუნება</h2>
+      <ul>
+        <li>ჯავშნის უფასო გაუქმება შეგიძლიათ სრიალამდე ${h} საათით ადრე — „ჩემი ჯავშნებიდან“ ან კლუბთან დაკავშირებით.</li>
+        <li>თუ კლუბი ჯავშანს ვერ დაადასტურებს, ან გააუქმებს ამინდის, უსაფრთხოების ან ტექნიკური მიზეზით, შემოგთავაზებთ სხვა დროს ან დაგიბრუნებთ გადახდილ თანხას სრულად.</li>
+        <li>ონლაინ გადახდილი თანხა ბრუნდება იმავე ბარათზე, ბანკის წესებისა და ვადების მიხედვით.</li>
+        <li>გამოუყენებელი აბონემენტის თანხის დაბრუნება განიხილება ინდივიდუალურად.</li>
+      </ul>
+      <h2>4. უსაფრთხოება</h2>
+      <ul>
+        <li>სრიალის დროს სამაშველო ჟილეტი სავალდებულოა; მიჰყევით მწვრთნელისა და ნავის მძღოლის მითითებებს.</li>
+        <li>არასრულწლოვანი მონაწილეობს მშობლის ან კანონიერი წარმომადგენლის თანხმობითა და თანდასწრებით.</li>
+        <li>გთხოვთ, წინასწარ შეგვატყობინოთ ჯანმრთელობის შეზღუდვების შესახებ. კლუბს შეუძლია უარი თქვას მომსახურებაზე, თუ ეს უსაფრთხოებას საფრთხეს უქმნის.</li>
+      </ul>
+      <h2 id="privacy">5. კონფიდენციალურობა</h2>
+      <ul>
+        <li><b>რას ვინახავთ:</b> სახელს, მომხმარებლის სახელს, ელ-ფოსტას, ტელეფონს, ჯავშნებს, აბონემენტებს და შეფასებებს. პაროლი ინახება დაშიფრული სახით და კლუბი მას ვერ ხედავს.</li>
+        <li><b>რისთვის:</b> ჯავშნის მართვისთვის, თქვენთან დასაკავშირებლად და მომსახურების გასაუმჯობესებლად. მონაცემებს არ ვყიდით და არ ვაძლევთ მესამე პირებს მარკეტინგისთვის.</li>
+        <li><b>სად:</b> მონაცემები ინახება Supabase-ის სერვერებზე ევროკავშირში (ფრანკფურტი). ონლაინ გადახდას ამუშავებს საქართველოს ბანკი, შეტყობინებებს აგზავნის Gmail.</li>
+        <li><b>შეფასებები:</b> თქვენი შეფასება საიტზე ჩანს თქვენი სახელით (მხოლოდ სახელი, გვარის გარეშე).</li>
+        <li><b>ბრაუზერი:</b> საიტი ინახავს მხოლოდ შესვლის სესიას და ენის არჩევანს თქვენს ბრაუზერში; სარეკლამო ქუქიებს არ ვიყენებთ.</li>
+        <li><b>თქვენი უფლებები:</b> შეგიძლიათ მოითხოვოთ თქვენი მონაცემების ნახვა, შესწორება ან წაშლა — მოგვწერეთ: ${v(C.email)}.</li>
+      </ul>`,
+    en: `<a class="back" href="index.html">← Booking page</a>
+      <h1>Terms & conditions</h1><p class="upd">Last updated: 2026</p>
+      <div class="box"><dl>
+        <dt>Service provider</dt><dd>${v(C.legalName)}</dd>
+        <dt>Company ID</dt><dd>${v(C.legalId)}</dd>
+        <dt>Address</dt><dd>Golden Lake, Maltakva, Poti, Georgia</dd>
+        <dt>Email</dt><dd>${v(C.email)}</dd>
+        <dt>Phone</dt><dd>${v(C.phone)}</dd>
+      </dl></div>
+      <h2>1. Bookings</h2>
+      <p>A booking sent on the site is a request. It becomes valid once the club confirms it — you'll see the status in "My bookings" and get a confirmation by email or phone. One booking is one hour with a boat and, if needed, a coach.</p>
+      <h2>2. Prices & payment</h2>
+      <ul>
+        <li>Prices are shown on the site in GEL (₾) per hour and may change. The price shown at the time of booking applies.</li>
+        <li>You can pay at the club (cash or card) or online on Bank of Georgia's secure page. The club never stores or sees your card details.</li>
+        <li>A pass is activated after payment and is valid for the period and number of hours stated in its tariff.</li>
+      </ul>
+      <h2>3. Cancellation & refunds</h2>
+      <ul>
+        <li>You can cancel free of charge up to ${h} hours before your ride — in "My bookings" or by contacting the club.</li>
+        <li>If the club can't confirm a booking, or cancels it for weather, safety or technical reasons, we'll offer another time or refund you in full.</li>
+        <li>Online payments are refunded to the same card according to the bank's rules and timelines.</li>
+        <li>Refunds for unused passes are handled case by case.</li>
+      </ul>
+      <h2>4. Safety</h2>
+      <ul>
+        <li>A life vest is mandatory while riding; follow the coach's and driver's instructions.</li>
+        <li>Minors take part with the consent and presence of a parent or legal guardian.</li>
+        <li>Please tell us about any health limitations in advance. The club may refuse service if safety is at risk.</li>
+      </ul>
+      <h2 id="privacy">5. Privacy</h2>
+      <ul>
+        <li><b>What we store:</b> name, username, email, phone, bookings, passes and reviews. Passwords are stored encrypted; the club can't see them.</li>
+        <li><b>Why:</b> to manage bookings, contact you and improve our service. We don't sell your data or share it for marketing.</li>
+        <li><b>Where:</b> data is stored on Supabase servers in the EU (Frankfurt). Online payments are processed by Bank of Georgia; emails are sent via Gmail.</li>
+        <li><b>Reviews:</b> your review is shown on the site with your first name only.</li>
+        <li><b>Browser:</b> the site only keeps your sign-in session and language choice in your browser; no advertising cookies.</li>
+        <li><b>Your rights:</b> you can ask to see, correct or delete your data — write to ${v(C.email)}.</li>
+      </ul>`,
+  };
+  let lang = 'ka';
+  try { const s = JSON.parse(localStorage.getItem('lang')); if (s === 'en' || s === 'ru') lang = 'en'; } catch {}
+  function apply(l) {
+    lang = l; document.documentElement.lang = l;
+    document.title = l === 'ka' ? 'წესები და პირობები — Poti Waterski' : 'Terms & conditions — Poti Waterski';
+    document.getElementById('legal').innerHTML = T[l];
+    document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === l));
+    try { localStorage.setItem('lang', JSON.stringify(l)); } catch {}
+    if (location.hash) { const el = document.querySelector(location.hash); if (el) el.scrollIntoView(); }
+  }
+  document.querySelector('.lang').addEventListener('click', e => { const l = e.target.dataset.lang; if (l) apply(l); });
+  document.getElementById('yr').textContent = new Date().getFullYear();
+  apply(lang);
+})();
+</script>
+</body>
+</html>

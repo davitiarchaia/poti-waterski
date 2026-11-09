@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ka">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Owner — Poti Waterski</title>
+  <meta name="theme-color" content="#06202e">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2306202e'/%3E%3Cpath d='M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3' fill='none' stroke='%23f59e0b' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="community.css">
+</head>
+<body class="owner">
+
+<header class="top">
+  <a class="brand" href="index.html" aria-label="Poti Waterski">
+    <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M14 17l12-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+    <span>POTI <b>WATERSKI</b></span>
+  </a>
+  <nav class="top-nav" aria-label="Sections"><a href="index.html" data-i18n="oBack"></a></nav>
+  <div class="top-right">
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="ka">ქარ</button><button type="button" data-lang="en">EN</button>
+    </div>
+    <div class="account" id="account"></div>
+  </div>
+</header>
+
+<div class="o-gate" id="gate" hidden>
+  <h1 data-i18n="oTitle"></h1>
+  <p id="gateMsg"></p>
+  <button class="btn" type="button" id="gateBtn" data-i18n="signIn"></button>
+  <p><a class="btn-link" href="index.html" data-i18n="oBack"></a></p>
+</div>
+
+<main class="owner-main" id="dash" hidden>
+  <div class="o-head">
+    <div><h1 data-i18n="oTitle"></h1><p id="updated"></p></div>
+    <div class="o-actions">
+      <button class="btn-small primary" type="button" id="addBooking" data-i18n="addBooking"></button>
+      <button class="btn-small" type="button" id="refresh" data-i18n="refresh"></button>
+      <button class="btn-small" type="button" id="csv" data-i18n="csv"></button>
+    </div>
+  </div>
+
+  <nav class="o-tabs" role="tablist" aria-label="Sections">
+    <button type="button" role="tab" data-view="inbox" id="tab-inbox"><span data-i18n="tabInbox"></span><span class="count" id="cntInbox"></span></button>
+    <button type="button" role="tab" data-view="dash" data-i18n="tabStats"></button>
+    <button type="button" role="tab" data-view="all" data-i18n="tabAll"></button>
+    <button type="button" role="tab" data-view="schedule" data-i18n="tabSchedule"></button>
+    <button type="button" role="tab" data-view="passes"><span data-i18n="tabPasses"></span><span class="count" id="cntPasses"></span></button>
+    <button type="button" role="tab" data-view="offers" data-i18n="tabOffers"></button>
+    <button type="button" role="tab" data-view="prices" data-i18n="tabPrices"></button>
+    <button type="button" role="tab" data-view="fleet" data-i18n="tabFleet"></button>
+    <button type="button" role="tab" data-view="reviews" data-i18n="tabReviews"></button>
+    <button type="button" role="tab" data-view="events"><span data-i18n="tabEvents"></span><span class="count" id="cntEvents"></span></button>
+    <button type="button" role="tab" data-view="riders" data-i18n="tabRiders"></button>
+  </nav>
+  <p class="form-error" id="tblError" role="alert"></p>
+
+  <!-- INCOMING -->
+  <section class="view" data-view="inbox" role="tabpanel">
+    <p class="muted view-hint" data-i18n="inboxHint"></p>
+    <div class="inbox" id="inbox"></div>
+    <h2 class="sub-h" id="recentH" data-i18n="recent" hidden></h2>
+    <ul class="recent" id="recent"></ul>
+  </section>
+
+  <!-- DASHBOARD -->
+  <section class="view" data-view="dash" role="tabpanel" hidden>
+    <div class="kpis" id="kpis" aria-label="Key numbers"></div>
+    <div class="panels">
+      <div class="panel"><h2 data-i18n="cRevenue"></h2><div class="chart" id="revChart"></div></div>
+      <div class="panel"><h2 data-i18n="cOutcome"></h2><div class="outcome" id="outcome"></div></div>
+    </div>
+    <div class="panels">
+      <div class="panel"><h2 data-i18n="cPerDay"></h2><div class="chart" id="perDay"></div></div>
+      <div class="panel"><h2 data-i18n="cByRide"></h2><div class="hbars" id="byRide"></div></div>
+    </div>
+    <div class="panels">
+      <div class="panel"><h2 data-i18n="cHeat"></h2><div class="heat" id="heat"></div></div>
+      <div class="panel"><h2 data-i18n="cCoaches"></h2><div class="hbars" id="byCoach"></div>
+        <h2 class="mt" data-i18n="cOffers"></h2><div class="hbars" id="byOffer"></div></div>
+    </div>
+    <div class="panel"><h2 data-i18n="wxTitle"></h2><div class="o-wx" id="oWx"><p class="muted" data-i18n="loading"></p></div></div>
+  </section>
+
+  <!-- OFFERS -->
+  <section class="view" data-view="offers" role="tabpanel" hidden>
+    <div class="offers-layout">
+      <form class="panel offer-form" id="offerForm" novalidate>
+        <h2 id="offerFormTitle" data-i18n="oNew"></h2>
+        <label><span data-i18n="fTitle"></span><input name="title" maxlength="80" required data-i18n-ph="fTitlePh"></label>
+        <label><span data-i18n="fDesc"></span><textarea name="description" rows="3" maxlength="400" data-i18n-ph="fDescPh"></textarea></label>
+        <div class="row">
+          <label><span data-i18n="fDisc"></span><input name="discount_percent" type="number" min="1" max="90" inputmode="numeric" placeholder="20"></label>
+          <label><span data-i18n="fRide"></span><select name="ride" id="offerRide"></select></label>
+        </div>
+        <div class="row">
+          <label><span data-i18n="fFrom"></span><input name="valid_from" type="date"></label>
+          <label><span data-i18n="fTo"></span><input name="valid_to" type="date"></label>
+        </div>
+        <label class="check"><input type="checkbox" name="active" checked> <span data-i18n="fActive"></span></label>
+        <p class="form-error" id="offerError" role="alert"></p>
+        <div class="form-actions">
+          <button class="btn" type="submit" data-i18n="save"></button>
+          <button class="btn-link" type="button" id="offerCancel" data-i18n="cancelEdit" hidden></button>
+        </div>
+      </form>
+      <div class="offer-list" id="offerList"></div>
+    </div>
+  </section>
+
+  <!-- SCHEDULE: closed days / hours -->
+  <section class="view" data-view="schedule" role="tabpanel" hidden>
+    <div class="offers-layout">
+      <form class="panel offer-form" id="closeForm" novalidate>
+        <h2 data-i18n="scTitle"></h2>
+        <p class="muted view-hint" data-i18n="scHint"></p>
+        <label><span data-i18n="scDate"></span><input name="date" type="date" required></label>
+        <label><span data-i18n="scWhat"></span><select name="time" id="closeTime"></select></label>
+        <label><span data-i18n="scReason"></span><input name="reason" maxlength="120" data-i18n-ph="scReasonPh"></label>
+        <div class="quick" id="closeQuick"></div>
+        <p class="form-error" id="closeError" role="alert"></p>
+        <button class="btn" type="submit" data-i18n="scClose"></button>
+      </form>
+      <div>
+        <h2 class="sub-h first" data-i18n="scList"></h2>
+        <div class="ps-list" id="closeList"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PASSES -->
+  <section class="view" data-view="passes" role="tabpanel" hidden>
+    <h2 class="sub-h first" data-i18n="psRequests"></h2>
+    <div class="ps-list" id="psPending"></div>
+    <h2 class="sub-h" data-i18n="psActive"></h2>
+    <div class="ps-list" id="psActive"></div>
+    <h2 class="sub-h" data-i18n="psDone"></h2>
+    <div class="ps-list" id="psDone"></div>
+  </section>
+
+  <!-- PRICES & PASS PLANS -->
+  <section class="view" data-view="prices" role="tabpanel" hidden>
+    <div class="panel">
+      <h2 data-i18n="prTitle"></h2>
+      <p class="muted view-hint" data-i18n="prHint"></p>
+      <div class="price-rows" id="priceRows"></div>
+      <p class="form-error" id="priceError" role="alert"></p>
+      <button class="btn-small primary big" type="button" id="savePrices" data-i18n="save"></button>
+      <form class="svc-new" id="svcForm" novalidate>
+        <h3 data-i18n="svNew"></h3>
+        <div class="svc-grid">
+          <label><span data-i18n="svNameKa"></span><input name="name_ka" maxlength="60" required data-i18n-ph="svNamePh"></label>
+          <label><span data-i18n="svPrice"></span><input name="price" type="number" min="0" step="0.5" inputmode="decimal" placeholder="—"></label>
+          <label><span>Name (EN)</span><input name="name_en" maxlength="60"></label>
+          <label><span>Название (RU)</span><input name="name_ru" maxlength="60"></label>
+          <label class="wide"><span data-i18n="svInfoKa"></span><input name="info_ka" maxlength="140" data-i18n-ph="svInfoPh"></label>
+          <label><span data-i18n="svTagKa"></span><input name="tag_ka" maxlength="30" data-i18n-ph="svTagPh"></label>
+        </div>
+        <p class="form-error" id="svcError" role="alert"></p>
+        <button class="btn-small primary big" type="submit" data-i18n="svAdd"></button>
+      </form>
+    </div>
+    <div class="offers-layout mt">
+      <form class="panel offer-form" id="planForm" novalidate>
+        <h2 id="planFormTitle" data-i18n="plNew"></h2>
+        <label><span data-i18n="plName"></span><input name="name" maxlength="80" required data-i18n-ph="plNamePh"></label>
+        <div class="row">
+          <label><span data-i18n="plHours"></span><input name="hours" type="number" min="1" max="200" inputmode="numeric" placeholder="10"></label>
+          <label><span data-i18n="plPrice"></span><input name="price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="600"></label>
+        </div>
+        <div class="row">
+          <label><span data-i18n="plDays"></span><input name="valid_days" type="number" min="1" max="730" inputmode="numeric" placeholder="90"></label>
+          <label><span data-i18n="fRide"></span><select name="ride" id="planRide"></select></label>
+        </div>
+        <label><span data-i18n="fDesc"></span><textarea name="description" rows="2" maxlength="400"></textarea></label>
+        <label class="check"><input type="checkbox" name="active" checked> <span data-i18n="fActive"></span></label>
+        <p class="form-error" id="planError" role="alert"></p>
+        <div class="form-actions"><button class="btn" type="submit" data-i18n="save"></button><button class="btn-link" type="button" id="planCancel" data-i18n="cancelEdit" hidden></button></div>
+      </form>
+      <div class="offer-list" id="planList"></div>
+    </div>
+  </section>
+
+  <!-- BOATS & COACHES -->
+  <section class="view" data-view="fleet" role="tabpanel" hidden>
+    <div class="panels even">
+      <div class="panel">
+        <h2 data-i18n="flBoats"></h2>
+        <p class="muted view-hint" data-i18n="flBoatsHint"></p>
+        <ul class="boat-list" id="boatList"></ul>
+        <form class="inline-add" id="boatForm"><input name="name" maxlength="60" data-i18n-ph="flBoatPh" required><button class="btn-small primary" type="submit" data-i18n="add"></button></form>
+      </div>
+      <form class="panel offer-form static" id="coachForm" novalidate>
+        <h2 id="coachFormTitle" data-i18n="coNew"></h2>
+        <label><span data-i18n="coName"></span><input name="name" maxlength="60" required></label>
+        <label><span data-i18n="coBio"></span><input name="bio" maxlength="300" data-i18n-ph="coBioPh"></label>
+        <label><span data-i18n="coPhoto"></span><input name="photo_url" type="url" maxlength="500" placeholder="https://…"></label>
+        <fieldset class="ride-checks"><legend class="plain" data-i18n="coRides"></legend><div id="coachRides"></div></fieldset>
+        <label class="check"><input type="checkbox" name="active" checked> <span data-i18n="fActive"></span></label>
+        <p class="form-error" id="coachError" role="alert"></p>
+        <div class="form-actions"><button class="btn" type="submit" data-i18n="save"></button><button class="btn-link" type="button" id="coachCancel" data-i18n="cancelEdit" hidden></button></div>
+      </form>
+    </div>
+    <div class="offer-list mt" id="coachList"></div>
+  </section>
+
+  <!-- REVIEWS -->
+  <section class="view" data-view="reviews" role="tabpanel" hidden>
+    <div class="rv-admin-head" id="rvHead"></div>
+    <div class="rv-admin" id="rvAdmin"></div>
+  </section>
+
+  <!-- EVENTS & TOURNAMENTS -->
+  <section class="view" data-view="events" role="tabpanel" hidden>
+    <div class="ev-admin">
+      <form class="panel offer-form" id="evForm" novalidate>
+        <h2 id="evFormTitle" data-i18n="evNew"></h2>
+        <label><span data-i18n="evTitle"></span><input name="title" maxlength="120" required data-i18n-ph="evTitlePh"></label>
+        <div class="row">
+          <label><span data-i18n="evKind"></span><select name="kind" id="evKind"></select></label>
+          <label><span data-i18n="evStatus"></span><select name="status" id="evStatus"></select></label>
+        </div>
+        <div class="row">
+          <label><span data-i18n="evStart"></span><input name="start_date" type="date" required></label>
+          <label><span data-i18n="evEnd"></span><input name="end_date" type="date"></label>
+        </div>
+        <div class="row">
+          <label><span data-i18n="evTime"></span><input name="start_time" type="time" step="900"></label>
+          <label><span data-i18n="evPrice"></span><input name="price" type="number" min="0" step="0.01" inputmode="decimal" placeholder="0"></label>
+        </div>
+        <div class="row">
+          <label><span data-i18n="evCap"></span><input name="capacity" type="number" min="1" max="1000" inputmode="numeric"></label>
+          <label><span data-i18n="evLevel"></span><select name="level" id="evLevel"></select></label>
+        </div>
+        <label><span data-i18n="evDisc"></span><select name="discipline" id="evDisc"></select></label>
+        <label><span data-i18n="evDesc"></span><textarea name="description" rows="4" maxlength="2000"></textarea></label>
+        <p class="form-error" id="evError" role="alert"></p>
+        <div class="form-actions"><button class="btn" type="submit" data-i18n="save"></button><button class="btn-link" type="button" id="evCancel" data-i18n="cancelEdit" hidden></button></div>
+      </form>
+      <div id="evPane"></div>
+    </div>
+  </section>
+
+  <!-- RIDER LEVELS -->
+  <section class="view" data-view="riders" role="tabpanel" hidden>
+    <p class="muted view-hint" data-i18n="rvHint"></p>
+    <div class="ra-tools"><input type="search" id="raSearch" data-i18n-ph="rvSearch" autocomplete="off"></div>
+    <div class="rider-admin" id="raList"></div>
+  </section>
+
+  <!-- ALL BOOKINGS -->
+  <section class="view" data-view="all" role="tabpanel" hidden>
+    <div class="panel">
+      <div class="filters">
+        <div class="seg" id="fStatus">
+          <button type="button" data-v="new" data-i18n="fNew"></button>
+          <button type="button" data-v="confirmed" data-i18n="fConfirmed"></button>
+          <button type="button" data-v="rejected" data-i18n="fRejected"></button>
+          <button type="button" data-v="cancelled" data-i18n="fCancelled"></button>
+          <button type="button" data-v="all" data-i18n="fAll"></button>
+        </div>
+        <div class="seg" id="fDate">
+          <button type="button" data-v="upcoming" data-i18n="fUpcoming"></button>
+          <button type="button" data-v="past" data-i18n="fPast"></button>
+          <button type="button" data-v="any" data-i18n="fAnyDate"></button>
+        </div>
+        <input type="search" id="q" data-i18n-ph="search" aria-label="Search">
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th data-i18n="thWhen"></th><th data-i18n="thRide"></th><th data-i18n="thWho"></th><th data-i18n="thRiders"></th>
+            <th data-i18n="thLevel"></th><th data-i18n="thPay"></th><th data-i18n="thNotes"></th><th data-i18n="thStatus"></th><th></th>
+          </tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<dialog class="modal wide" id="bookModal" aria-labelledby="bkTitle">
+  <form method="dialog" class="modal-x"><button aria-label="Close">×</button></form>
+  <h2 id="bkTitle" data-i18n="addBooking"></h2>
+  <p class="muted" data-i18n="bkHint"></p>
+  <form id="bookForm" class="stack" novalidate>
+    <div class="row">
+      <label><span data-i18n="thRide"></span><select name="ride" id="bkRide"></select></label>
+      <label><span data-i18n="coachTitle"></span><select name="coach_id" id="bkCoach"></select></label>
+    </div>
+    <div class="row">
+      <label><span data-i18n="scDate"></span><input name="date" type="date" required></label>
+      <label><span data-i18n="s3"></span><select name="time" id="bkTime"></select></label>
+    </div>
+    <label><span data-i18n="durLabel"></span><select name="dur" id="bkDur"></select></label>
+    <div class="row">
+      <label><span data-i18n="name"></span><input name="name" maxlength="80" required></label>
+      <label><span data-i18n="phone"></span><input name="phone" type="tel" maxlength="30" required placeholder="+995 5XX XX XX XX"></label>
+    </div>
+    <div class="row">
+      <label><span data-i18n="thRiders"></span><input name="riders" type="number" min="1" max="12" value="1"></label>
+      <label><span data-i18n="levelLabel"></span><select name="level" id="bkLevel"></select></label>
+    </div>
+    <label><span data-i18n="notes"></span><input name="notes" maxlength="500"></label>
+    <div class="row">
+      <label class="check"><input type="checkbox" name="confirmed" checked> <span data-i18n="bkConfirmed"></span></label>
+      <label class="check"><input type="checkbox" name="paid"> <span data-i18n="bkPaid"></span></label>
+    </div>
+    <p class="form-error" id="bkError" role="alert"></p>
+    <button class="btn" type="submit" data-i18n="save"></button>
+  </form>
+</dialog>
+
+<dialog class="modal" id="authModal" aria-labelledby="authTitle">
+  <form method="dialog" class="modal-x"><button aria-label="Close" data-i18n-aria="close">×</button></form>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="in" data-i18n="signIn"></button>
+    <button type="button" role="tab" data-tab="up" data-i18n="signUp"></button>
+  </div>
+  <p class="modal-intro" id="authIntro" data-i18n="oSignInPrompt"></p>
+  <form id="authForm" novalidate>
+    <h2 class="sr" id="authTitle"></h2>
+    <div class="up-only">
+      <label><span data-i18n="username"></span><input name="username" autocomplete="username" maxlength="20" autocapitalize="none" spellcheck="false"><small class="hint" data-i18n="usernameHint"></small></label>
+      <label><span data-i18n="fullName"></span><input name="full_name" autocomplete="name" maxlength="80"></label>
+      <label><span data-i18n="phone"></span><input name="phone" type="tel" autocomplete="tel" maxlength="30"></label>
+    </div>
+    <label><span data-i18n="email"></span><input name="email" type="email" autocomplete="email" required></label>
+    <label><span data-i18n="password"></span><input name="password" type="password" minlength="8" required></label>
+    <p class="form-error" id="authError" role="alert"></p>
+    <p class="form-ok" id="authOk" role="status"></p>
+    <button class="btn" type="submit" id="authBtn"></button>
+    <p class="switch"><span id="switchQ"></span> <button type="button" class="btn-link inline" id="switchBtn"></button></p>
+  </form>
+</dialog>
+
+<script src="config.js"></script>
+<script src="demo.js" defer></script>
+<script src="i18n.js"></script>
+<script src="community-i18n.js"></script>
+<script src="lib.js"></script>
+<script src="auth-ui.js"></script>
+<script src="owner.js"></script>
+<script src="community.js"></script>
+<script src="owner-community.js"></script>
+</body>
+</html>
