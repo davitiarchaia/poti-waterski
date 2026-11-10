@@ -11,8 +11,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261110">
-  <link rel="stylesheet" href="community.css?v=20261110">
+  <link rel="stylesheet" href="styles.css?v=20261110b">
+  <link rel="stylesheet" href="community.css?v=20261110b">
 </head>
 <body class="owner">
 
@@ -172,6 +172,26 @@
         </div>
         <p class="form-error" id="svcError" role="alert"></p>
         <button class="btn-small primary big" type="submit" data-i18n="svAdd"></button>
+      </form>
+    </div>
+    <div class="panel mt" id="gearPanel">
+      <h2>🏄 <span data-i18n="gearTitle"></span></h2>
+      <p class="muted view-hint" data-i18n="gearHint"></p>
+      <div class="gear-list" id="gearList"></div>
+      <p class="form-error" id="gearError" role="alert"></p>
+      <button class="btn-small primary big" type="button" id="saveGear" data-i18n="save" hidden></button>
+      <form class="svc-new" id="gearForm" novalidate>
+        <h3 data-i18n="gearNew"></h3>
+        <div class="svc-grid">
+          <label><span data-i18n="svNameKa"></span><input name="name_ka" maxlength="80" required data-i18n-ph="gearNamePh"></label>
+          <label><span data-i18n="gearPrice"></span><input name="price" type="number" min="0" max="10000" step="0.5" inputmode="decimal" placeholder="0"></label>
+          <label><span data-i18n="gearFor"></span><select name="ride"></select></label>
+          <label><span data-i18n="svInfoKa"></span><input name="info_ka" maxlength="160" data-i18n-ph="gearInfoPh"></label>
+          <label><span>Name (EN)</span><input name="name_en" maxlength="80"></label>
+          <label><span>Название (RU)</span><input name="name_ru" maxlength="80"></label>
+        </div>
+        <p class="form-error" id="gearFormError" role="alert"></p>
+        <button class="btn-small primary big" type="submit" data-i18n="gearAdd"></button>
       </form>
     </div>
     <div class="offers-layout mt">
@@ -368,15 +388,16 @@
   </form>
 </dialog>
 
-<script src="config.js?v=20261110"></script>
-<script src="demo.js?v=20261110" defer></script>
-<script src="i18n.js?v=20261110"></script>
-<script src="community-i18n.js?v=20261110"></script>
-<script src="lib.js?v=20261110"></script>
-<script src="auth-ui.js?v=20261110"></script>
-<script src="owner.js?v=20261110"></script>
-<script src="community.js?v=20261110"></script>
-<script src="owner-community.js?v=20261110"></script>
-<script src="owner-staff.js?v=20261110"></script>
+<script src="config.js?v=20261110b"></script>
+<script src="demo.js?v=20261110b" defer></script>
+<script src="i18n.js?v=20261110b"></script>
+<script src="community-i18n.js?v=20261110b"></script>
+<script src="lib.js?v=20261110b"></script>
+<script src="auth-ui.js?v=20261110b"></script>
+<script src="owner.js?v=20261110b"></script>
+<script src="community.js?v=20261110b"></script>
+<script src="owner-community.js?v=20261110b"></script>
+<script src="owner-staff.js?v=20261110b"></script>
+<script src="owner-gear.js?v=20261110b"></script>
 </body>
 </html>

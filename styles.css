@@ -870,3 +870,24 @@ html{scroll-behavior:smooth}
 .visual .visual-text .hero-logo{position:static;inset:auto;object-fit:contain;opacity:1;display:block;width:clamp(120px,14vw,190px);height:auto;margin:0 0 .8rem;filter:drop-shadow(0 6px 18px rgba(0,0,0,.35))}
 .owner-pill .nb,.staff-pill .nb{margin-left:.35rem}
 @media (max-width:560px){.brand .logo{height:40px}.visual .visual-text .hero-logo{width:96px}}
+/* equipment catalogue on the booking page */
+.eq-items{list-style:none;margin:.8rem 0 0;padding:0;display:grid;gap:.5rem}
+.eq-item{display:flex;align-items:center;justify-content:space-between;gap:.8rem;padding:.6rem .8rem;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.eq-item.on{border-color:var(--deep);background:#eef6f8}
+.eq-name{display:flex;flex-direction:column;min-width:0}
+.eq-name small{color:var(--muted);font-size:.82rem}
+.eq-price{font-size:.85rem;font-weight:600;color:var(--deep)}
+.eq-item .stepper button:disabled{opacity:.35;cursor:default}
+.eq-total{margin:.6rem 0 0;font-size:.92rem}
+.eq-hint{margin:.6rem 0 0;font-size:.88rem;color:#b45309}
+/* owner: equipment editor */
+.gear-list{display:grid;gap:.6rem;margin:.6rem 0}
+.gear-row{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1.3fr) 8.5rem auto;gap:.5rem;align-items:start;padding:.7rem;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+.gear-row.off{opacity:.6}
+.gear-row .gr-names,.gear-row .gr-info{display:grid;gap:.35rem}
+.gear-row input,.gear-row select{width:100%;min-width:0}
+.gear-row .gr-act{display:flex;flex-direction:column;gap:.35rem;align-items:stretch}
+.gear-row label.tog{display:flex;align-items:center;gap:.35rem;font-size:.85rem;white-space:nowrap}
+@media (max-width:720px){.gear-row{grid-template-columns:1fr 1fr}.gear-row .gr-names,.gear-row .gr-info{grid-column:1/-1}}
+.gear-link{display:inline-flex;align-items:center;gap:.3rem;font-size:.88rem;font-weight:600;color:var(--deep);text-decoration:none}
+.gear-link:hover{text-decoration:underline}

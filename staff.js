@@ -1,6 +1,6 @@
 /* Staff page — a coach or driver sees only their own bookings (the database enforces this) and their notifications. */
 (() => {
-const { auth, db, i18n, fmt, todayIso, iso, esc, pad, waLink, phoneWa } = window.PW;
+const { auth, db, equipText, i18n, fmt, todayIso, iso, esc, pad, waLink, phoneWa } = window.PW;
 const ui = window.PW.ui;
 const $ = s => document.querySelector(s);
 const t = k => i18n.t(k);
@@ -50,7 +50,7 @@ async function load() {
   const col = state.kind === 'coach' ? 'coach_id' : 'driver_id', from = iso(new Date(Date.now() - 30 * 864e5));
   try {
     const [rows, notes] = await Promise.all([
-      db(`bookings?select=id,ride,date,time,riders,rider_groups,level,name,phone,notes,status,lake_id,coach_id,driver_id,equip_sets,group_id&${col}=eq.${state.me.id}&date=gte.${from}&status=neq.cancelled&order=date.asc,time.asc&limit=5000`),
+      db(`bookings?select=id,ride,date,time,riders,rider_groups,level,name,phone,notes,status,lake_id,coach_id,driver_id,equip_sets,equip_items,group_id&${col}=eq.${state.me.id}&date=gte.${from}&status=neq.cancelled&order=date.asc,time.asc&limit=5000`),
       db(`notifications?select=*&user_id=eq.${auth.session.user.id}&order=created_at.desc&limit=60`),
     ]);
     const before = new Set(state.notes.map(n => n.id));
@@ -85,7 +85,7 @@ function render() {
       return `<article class="st-bk st-${b.status}">
         <div class="st-time"><b>${esc(b.time)}</b><span>${esc(b.end)}</span><small>${esc(durText(b.dur))}</small></div>
         <div class="st-info"><b>${esc(rideName(b.ride))}</b>${b.lake_id ? ` <span class="lake-chip">${esc(lakeName(b.lake_id))}</span>` : ''}
-          <span>${esc(t('rider')(b.riders))}${b.rider_groups ? ' — ' + esc(groupsText(b.rider_groups)) : ''}${b.equip_sets ? ' · 🏄 ' + esc(t('eqN')(b.equip_sets)) : ''}</span>
+          <span>${esc(t('rider')(b.riders))}${b.rider_groups ? ' — ' + esc(groupsText(b.rider_groups)) : ''}${equipText(b) ? ' · 🏄 ' + esc(equipText(b)) : ''}</span>
           <span class="muted">${esc(b.name)} · <a href="tel:${esc(String(b.phone).replace(/\s/g, ''))}">${esc(b.phone)}</a>${wa ? ` · <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}${state.kind === 'driver' && coach ? ' · 🎓 ' + esc(coach.name) : ''}</span>
           ${b.notes ? `<span class="st-notes">“${esc(b.notes)}”</span>` : ''}</div>
         <span class="badge ${b.status === 'new' ? 'new' : 'confirmed'}">${esc(t(b.status === 'new' ? 'st_new' : 'st_confirmed'))}</span>

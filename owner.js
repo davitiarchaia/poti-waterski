@@ -1,6 +1,6 @@
 /* Owner page — data is only readable/changeable by accounts with role = owner (enforced by the database). */
 (() => {
-const { auth, db, fn, i18n, fmt, iso, fromIso, todayIso, hours, inSeason, weather, wxInfo, rideScore, esc, waLink, pad, statusKey, phoneWa } = window.PW;
+const { auth, db, fn, equipText, i18n, fmt, iso, fromIso, todayIso, hours, inSeason, weather, wxInfo, rideScore, esc, waLink, pad, statusKey, phoneWa } = window.PW;
 const ui = window.PW.ui;
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const t = k => i18n.t(k);
@@ -149,7 +149,7 @@ function renderInbox() {
       <div class="ib-body">
         <div class="ib-who"><b>${esc(b.name)}</b>${p ? ` <span class="muted">@${esc(p.username)}</span>` : ''}
           <span><a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a>${wa ? ` · <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}${b.email ? ` · <a href="mailto:${esc(b.email)}">${esc(b.email)}</a>` : ''}</span></div>
-        <div class="ib-meta"><span>${esc(t('rider')(b.riders))}</span><span>${esc(b.rider_groups ? groupsText(b.rider_groups) : levelName(b.level))}</span>${b.equip_sets ? `<span>🏄 ${esc(t('eqN')(b.equip_sets))}</span>` : ''}${driverById(b.driver_id) ? `<span>🚤 ${esc(driverById(b.driver_id).name)}</span>` : ''}
+        <div class="ib-meta"><span>${esc(t('rider')(b.riders))}</span><span>${esc(b.rider_groups ? groupsText(b.rider_groups) : levelName(b.level))}</span>${equipText(b) ? `<span>🏄 ${esc(equipText(b))}</span>` : ''}${driverById(b.driver_id) ? `<span>🚤 ${esc(driverById(b.driver_id).name)}</span>` : ''}
           ${created ? `<span class="muted">${esc(t('received'))}: ${esc(fmt(iso(created), 'short'))} ${pad(created.getHours())}:${pad(created.getMinutes())}</span>` : ''}</div>
         <div class="ib-assign">${boatSelect(b)}${coachSelect(b)}</div>
         ${b.notes ? `<p class="ib-notes">“${esc(b.notes)}”</p>` : ''}
@@ -359,7 +359,7 @@ function renderPrices() {
         <label class="check"><input type="checkbox" data-sv="${r.ride}" data-k="active" ${r.active !== false ? 'checked' : ''}> <span>${esc(t('fActive'))}</span></label>
       </div>
       <label class="svc-info"><span>${esc(t('svInfo'))} (ქარ)</span>${inp(r, 'info_ka', 140, t('svInfoPh'))}</label>
-      <label class="money-in svc-eq"><span>🏄 ${esc(t('svEquip'))}</span><input type="number" min="0" step="0.5" inputmode="decimal" data-sv="${r.ride}" data-k="equip_price" value="${r.equip_price ?? ''}" placeholder="${esc(t('svEquipPh'))}"><small>₾ ${esc(t('perHour'))}</small></label>
+      <a class="svc-eq gear-link" href="#gearPanel">🏄 <span data-gearcount="${r.ride}"></span></a>
       <details class="svc-more"><summary>${esc(t('svMore'))}</summary>
         <div class="svc-grid">
           <label><span>${esc(t('svName'))} (EN)</span>${inp(r, 'name_en', 60)}</label><label><span>${esc(t('svName'))} (RU)</span>${inp(r, 'name_ru', 60)}</label>
@@ -372,9 +372,9 @@ function renderPrices() {
       </details>
     </div>`).join('');
 }
-const NUM_KEYS = ['price', 'equip_price'];
+const NUM_KEYS = ['price'];
 const svVal = (id, k) => { const el = $(`[data-sv="${id}"][data-k="${k}"]`); if (!el) return undefined; if (k === 'active') return el.checked; if (NUM_KEYS.includes(k)) return el.value === '' ? null : Math.max(0, +el.value); return el.value.trim() || null; };
-const SV_KEYS = ['name_ka', 'name_en', 'name_ru', 'info_ka', 'info_en', 'info_ru', 'tag_ka', 'tag_en', 'tag_ru', 'price', 'equip_price', 'active'];
+const SV_KEYS = ['name_ka', 'name_en', 'name_ru', 'info_ka', 'info_en', 'info_ru', 'tag_ka', 'tag_en', 'tag_ru', 'price', 'active'];
 $('#savePrices').addEventListener('click', async e => {
   const btn = e.target; btn.disabled = true; $('#priceError').textContent = '';
   try {
@@ -640,7 +640,7 @@ function renderTable() {
       <td class="when"><b>${esc(fmt(b.date, 'long'))}</b><span>${esc(b.time)}–${esc(b.end)} · ${esc(durText(b.dur))}</span>${state.lakes.length > 1 && b.lake_id ? `<span>🌊 ${esc(lakeName(lakeById(b.lake_id)))}</span>` : ''}${bt && state.boats.length > 1 ? `<span>🚤 ${esc(bt.name)}</span>` : ''}</td>
       <td>${esc(rideName(b.ride))}${c ? `<span class="sub">${esc(c.name)}</span>` : ''}${o ? `<span class="offer-chip sm">${esc(o.title)}</span>` : ''}</td>
       <td class="who"><b>${esc(b.name)}</b><span><a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a>${wa ? ` · <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</span>${b.email ? `<span><a href="mailto:${esc(b.email)}">${esc(b.email)}</a></span>` : ''}${p ? `<span>@${esc(p.username)}</span>` : ''}</td>
-      <td>${b.riders}${b.equip_sets ? `<span class="sub">🏄 ${b.equip_sets}</span>` : ''}</td><td>${esc(b.rider_groups ? groupsText(b.rider_groups) : levelName(b.level))}</td><td>${payTag(b)}</td>
+      <td>${b.riders}${equipText(b) ? `<span class="sub">🏄 ${esc(equipText(b))}</span>` : ''}</td><td>${esc(b.rider_groups ? groupsText(b.rider_groups) : levelName(b.level))}</td><td>${payTag(b)}</td>
       <td class="notes">${esc(b.notes || '')}${b.owner_note ? `<span class="o-note">↳ ${esc(b.owner_note)}</span>` : ''}</td>
       <td><span class="badge ${k}">${esc(t('st_' + k))}</span></td>
       <td class="act">${acts.join('')}</td></tr>`;
@@ -762,7 +762,7 @@ $('#csv').addEventListener('click', () => {
     : c === 'boat' ? (boatById(b.boat_id) || {}).name : c === 'offer' ? (offerById(b.offer_id) || {}).title : c === 'status' ? t('st_' + statusKey(b)) : c === 'paid' ? (b.paid ? 'yes' : 'no') : b[c];
   const cols2 = [...cols.slice(0, 2), 'end', 'duration_min', 'lake', 'driver', ...cols.slice(2), 'email', 'rider_groups', 'equipment_sets', 'payment_status'];
   const val2 = (b, c) => c === 'end' ? b.end : c === 'duration_min' ? b.dur * 15 : c === 'lake' ? lakeName(lakeById(b.lake_id)) : c === 'driver' ? (driverById(b.driver_id) || {}).name
-    : c === 'rider_groups' ? groupsText(b.rider_groups) : c === 'equipment_sets' ? b.equip_sets : val(b, c);
+    : c === 'rider_groups' ? groupsText(b.rider_groups) : c === 'equipment_sets' ? equipText(b) : val(b, c);
   const lines = [cols2.join(',')].concat(merge(state.bookings).map(b => cols2.map(c => q(val2(b, c))).join(',')));
   const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `bookings-${todayIso()}.csv`; a.click();

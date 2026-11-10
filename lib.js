@@ -194,6 +194,14 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 const waLink = (num, text) => num ? `https://wa.me/${String(num).replace(/\D/g, '')}${text ? '?text=' + encodeURIComponent(text) : ''}` : '';
 
 /* services (activities) come from the database; this keeps window.RIDES and the texts in sync */
+/* rented equipment: catalogue item names in the current language, and the items saved on a booking */
+const equipName = e => !e ? '' : (i18n.lang === 'en' && (e.name_en)) || (i18n.lang === 'ru' && (e.name_ru)) || e.name_ka || e.name || '';
+const equipInfo = e => !e ? '' : (i18n.lang === 'en' && e.info_en) || (i18n.lang === 'ru' && e.info_ru) || e.info_ka || '';
+function equipText(b) {
+  const it = b && b.equip_items;
+  if (Array.isArray(it) && it.length) return it.map(x => `${x.n}× ${equipName(x)}`).join(', ');
+  return b && b.equip_sets ? i18n.t('eqN')(b.equip_sets) : '';
+}
 function applyServices(rows) {
   if (!rows || !rows.length) return;
   const list = [...rows].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100) || String(a.created_at || '').localeCompare(String(b.created_at || '')));
@@ -208,5 +216,5 @@ function applyServices(rows) {
     window.RIDES.push({ id: r.ride, tag: !!(r.tag_ka || r.tag_en || r.tag_ru) });
   }
 }
-window.PW = { applyServices, token, auth, db, rpc, fn, myProfile, store, iso, fromIso, todayIso, hours, inSeason, openSlots, pad, i18n, fmt, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, statusKey, phoneWa };
+window.PW = { applyServices, equipName, equipInfo, equipText, token, auth, db, rpc, fn, myProfile, store, iso, fromIso, todayIso, hours, inSeason, openSlots, pad, i18n, fmt, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, statusKey, phoneWa };
 })();
