@@ -364,6 +364,7 @@ $('#passSel').addEventListener('change', e => { state.pass = e.target.value; upd
 
 /* ---------- summary ---------- */
 const rideName = id => (t('rides')[id] || [id])[0];
+window.bookingState = state;   // read by wizard.js (phone step-by-step form)
 const whenText = (day = state.day, time = state.time, n = state.dur) => !day ? t('noWhen') : `${fmt(day, 'long')} · ${time ? `${time}–${addQ(time, n)} (${durText(n)})` : t('pickTime')}`;
 const equipCost = () => Math.round(equipHourly() / 4 * 100) / 100 * state.dur;   // same rounding as the database (per 15 minutes)
 function currentPrice() {
