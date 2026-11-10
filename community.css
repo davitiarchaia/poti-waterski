@@ -190,3 +190,30 @@
   .rider-admin .ra-row>*:nth-child(n+3){grid-column:2}
 }
 .add-person{display:grid;grid-template-columns:1.4fr 1fr 1fr auto;gap:.5rem}.add-person input,.add-person select{padding:.55rem .8rem;border-width:1px}@media (max-width:560px){.add-person{grid-template-columns:1fr 1fr}}
+
+/* ---------- staff page ---------- */
+.staff-hero{background:radial-gradient(800px 360px at 90% -10%,rgba(14,165,164,.4),transparent 60%),linear-gradient(160deg,#06202e,#0b3a4f)}
+.bell{position:relative;background:#fff;color:var(--navy)}
+.nb{display:inline-grid;place-items:center;min-width:1.4em;height:1.4em;padding:0 .35em;border-radius:999px;background:#dc2626;color:#fff;font-size:.75rem;font-weight:800;margin-left:.3rem}
+.staff-pill{position:relative}
+.st-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem}
+.st-kpis .kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.2rem}
+.st-kpis .kpi small{color:var(--muted);font-weight:600}
+.st-kpis .kpi b{font-family:Archivo,Inter,sans-serif;font-weight:900;font-size:1.7rem;color:var(--navy)}
+.st-days{display:grid;gap:1.1rem}
+.st-day h3{font-size:1.05rem;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.st-bk{display:grid;grid-template-columns:5.5rem 1fr auto;gap:1rem;align-items:center;background:#fff;border:1px solid var(--line);border-left:5px solid var(--lake);border-radius:14px;padding:.8rem 1rem;margin-bottom:.5rem}
+.st-bk.st-new{border-left-color:var(--orange)}
+.st-time{display:flex;flex-direction:column;line-height:1.15}
+.st-time b{font-family:Archivo,Inter,sans-serif;font-size:1.3rem}
+.st-time span{color:var(--muted);font-weight:700}
+.st-time small{color:var(--deep);font-weight:700;font-size:.75rem;margin-top:.2rem}
+.st-info{display:flex;flex-direction:column;gap:.2rem;font-size:.92rem}
+.st-info b{font-size:1rem}
+.st-notes{font-style:italic;color:#3b4a58}
+.nt-list{display:grid;gap:.5rem;max-height:60vh;overflow:auto;margin:.6rem 0 1rem}
+.nt{display:grid;grid-template-columns:auto 1fr;gap:.7rem;padding:.7rem .8rem;border-radius:12px;background:var(--bg)}
+.nt.unread{background:#eef6f8;box-shadow:inset 3px 0 0 var(--deep)}
+.nt div{display:flex;flex-direction:column;gap:.15rem;font-size:.9rem}
+.nt-ic{font-size:1.3rem}
+@media (max-width:700px){.st-kpis{grid-template-columns:1fr 1fr}.st-bk{grid-template-columns:4.4rem 1fr}.st-bk .badge{grid-column:2;justify-self:start}}

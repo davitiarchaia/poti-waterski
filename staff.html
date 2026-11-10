@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="ka">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>თანამშრომლის გვერდი — Poti Lake Club</title>
+  <meta name="description" content="Rider profiles, levels and champions of Golden Lake, Poti.">
+  <meta name="theme-color" content="#06202e">
+  <link rel="icon" type="image/png" href="img/favicon-64.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="community.css">
+</head>
+<body class="cm-page">
+
+<header class="top">
+  <a class="brand" href="index.html" aria-label="Poti Lake Club">
+    <img class="logo" src="img/logo-light-360.png" alt="" width="52" height="47"><span>POTI <b>LAKE CLUB</b></span>
+  </a>
+  <nav class="top-nav" aria-label="Sections">
+    <a href="index.html#bookingForm" data-i18n="navBook"></a>
+    <a href="index.html#passesSec" data-i18n="navPasses"></a>
+    <a href="events.html" data-i18n="navEvents"></a>
+    <a href="riders.html" data-i18n="navRiders" ></a>
+  </nav>
+  <div class="top-right">
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="ka">ქარ</button><button type="button" data-lang="en">EN</button><button type="button" data-lang="ru">RU</button>
+    </div>
+    <div class="account" id="account"></div>
+  </div>
+</header>
+
+<main class="cm staff">
+  <section class="cm-hero staff-hero">
+    <div class="cm-hero-in">
+      <div>
+        <p class="eyebrow" id="stRole">🗓 Poti Lake Club</p>
+        <h1 id="stHello" data-i18n="staffTitle"></h1>
+        <p class="cm-lead" data-i18n="staffSub"></p>
+      </div>
+      <button type="button" class="btn cm-hero-btn bell" id="bellBtn" aria-haspopup="dialog"><span aria-hidden="true">🔔</span> <span data-i18n="notifTitle"></span> <b class="nb" id="bellCount" hidden></b></button>
+    </div>
+  </section>
+
+  <section class="cm-sec" id="stGate" hidden>
+    <div class="cm-empty"><p id="stGateMsg"></p><button type="button" class="btn" id="stSignIn" data-i18n="signIn" hidden></button></div>
+  </section>
+
+  <div id="stBody" hidden>
+    <section class="cm-sec">
+      <div class="st-kpis" id="stKpis"></div>
+    </section>
+    <section class="cm-sec">
+      <div class="cm-tools"><div class="chips" id="stRange" role="group"></div></div>
+      <div class="st-days" id="stDays" aria-live="polite"></div>
+    </section>
+  </div>
+</main>
+
+<dialog class="modal" id="notifModal" aria-labelledby="ntTitle">
+  <form method="dialog" class="modal-x"><button aria-label="Close" data-i18n-aria="close">×</button></form>
+  <h2 id="ntTitle" data-i18n="notifTitle"></h2>
+  <div class="nt-list" id="ntList"></div>
+  <button type="button" class="btn-small" id="ntAllRead" data-i18n="notifAllRead"></button>
+</dialog>
+
+<footer class="foot">
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="brand" href="index.html" aria-label="Poti Lake Club">
+        <img class="logo" src="img/logo-light-360.png" alt="" width="52" height="47"><span>POTI <b>LAKE CLUB</b></span>
+      </a>
+      <p data-i18n="footTag"></p>
+      <p class="foot-champ">🏆 <span data-i18n="champ"></span></p>
+    </div>
+    <nav class="foot-col" aria-label="Footer">
+      <h4 data-i18n="footNav"></h4>
+      <a href="index.html#bookingForm" data-i18n="navBook"></a>
+      <a href="index.html#passesSec" data-i18n="navPasses"></a>
+      <a href="index.html#reviews" data-i18n="navReviews"></a>
+      <a href="index.html#visit" data-i18n="navVisit"></a>
+    </nav>
+    <div class="foot-col">
+      <h4 data-i18n="footContact"></h4>
+      <div id="footContact"><span>Golden Lake · Maltakva · Poti</span></div>
+    </div>
+  </div>
+  <div class="foot-bottom">
+    <p>© <span id="yr"></span> Poti Lake Club · Golden Lake, Maltakva, Poti</p>
+    <p class="foot-links"><a href="terms.html" data-i18n="termsLink"></a> · <a href="terms.html#privacy" data-i18n="privacyLink"></a></p>
+    <p class="credits">Photo: KaLisa Veer (Unsplash) · Weather: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></p>
+  </div>
+</footer>
+
+<dialog class="modal" id="authModal" aria-labelledby="authTitle">
+  <form method="dialog" class="modal-x"><button aria-label="Close" data-i18n-aria="close">×</button></form>
+  <div class="tabs" role="tablist">
+    <button type="button" role="tab" data-tab="in" data-i18n="signIn"></button>
+    <button type="button" role="tab" data-tab="up" data-i18n="signUp"></button>
+  </div>
+  <p class="modal-intro" id="authIntro" data-i18n="authIntro"></p>
+  <form id="authForm" novalidate>
+    <h2 class="sr" id="authTitle"></h2>
+    <div class="up-only">
+      <label><span data-i18n="username"></span><input name="username" autocomplete="username" maxlength="20" pattern="[a-z0-9_]{3,20}" autocapitalize="none" spellcheck="false"><small class="hint" data-i18n="usernameHint"></small></label>
+      <label><span data-i18n="fullName"></span><input name="full_name" autocomplete="name" maxlength="80"></label>
+      <label><span data-i18n="phone"></span><input name="phone" type="tel" autocomplete="tel" maxlength="30" placeholder="+995 5XX XX XX XX"></label>
+    </div>
+    <label><span data-i18n="email"></span><input name="email" type="email" autocomplete="email" required></label>
+    <label><span data-i18n="password"></span><input name="password" type="password" minlength="8" required><small class="hint up-only" data-i18n="pwHint"></small></label>
+    <p class="form-error" id="authError" role="alert"></p>
+    <p class="form-ok" id="authOk" role="status"></p>
+    <button class="btn" type="submit" id="authBtn"></button>
+    <p class="switch"><span id="switchQ"></span> <button type="button" class="btn-link inline" id="switchBtn"></button></p>
+  </form>
+</dialog>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="config.js"></script>
+<script src="demo.js" defer></script>
+<script src="i18n.js"></script>
+<script src="community-i18n.js"></script>
+<script src="lib.js"></script>
+<script src="auth-ui.js"></script>
+<script src="community.js"></script>
+<script src="staff.js"></script>
+</body>
+</html>

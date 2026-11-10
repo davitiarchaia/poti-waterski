@@ -4,9 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex, nofollow">
-  <title>Owner — Poti Waterski</title>
+  <title>Owner — Poti Lake Club</title>
   <meta name="theme-color" content="#06202e">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2306202e'/%3E%3Cpath d='M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3' fill='none' stroke='%23f59e0b' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="img/favicon-64.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -16,9 +17,8 @@
 <body class="owner">
 
 <header class="top">
-  <a class="brand" href="index.html" aria-label="Poti Waterski">
-    <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M14 17l12-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-    <span>POTI <b>WATERSKI</b></span>
+  <a class="brand" href="index.html" aria-label="Poti Lake Club">
+    <img class="logo" src="img/logo-light-360.png" alt="" width="52" height="47"><span>POTI <b>LAKE CLUB</b></span>
   </a>
   <nav class="top-nav" aria-label="Sections"><a href="index.html" data-i18n="oBack"></a></nav>
   <div class="top-right">
@@ -55,6 +55,7 @@
     <button type="button" role="tab" data-view="offers" data-i18n="tabOffers"></button>
     <button type="button" role="tab" data-view="prices" data-i18n="tabPrices"></button>
     <button type="button" role="tab" data-view="fleet" data-i18n="tabFleet"></button>
+    <button type="button" role="tab" data-view="lakes" data-i18n="tabLakes"></button>
     <button type="button" role="tab" data-view="reviews" data-i18n="tabReviews"></button>
     <button type="button" role="tab" data-view="events"><span data-i18n="tabEvents"></span><span class="count" id="cntEvents"></span></button>
     <button type="button" role="tab" data-view="riders" data-i18n="tabRiders"></button>
@@ -84,6 +85,13 @@
       <div class="panel"><h2 data-i18n="cHeat"></h2><div class="heat" id="heat"></div></div>
       <div class="panel"><h2 data-i18n="cCoaches"></h2><div class="hbars" id="byCoach"></div>
         <h2 class="mt" data-i18n="cOffers"></h2><div class="hbars" id="byOffer"></div></div>
+    </div>
+    <div class="panels">
+      <div class="panel"><h2 data-i18n="cLakes"></h2><div class="hbars" id="byLake"></div></div>
+      <div class="panel"><h2 data-i18n="payTitle"></h2>
+        <div class="pay-head"><div class="seg" id="payMonth" role="group"></div></div>
+        <p class="muted view-hint" data-i18n="payHint"></p>
+        <div id="payroll"></div></div>
     </div>
     <div class="panel"><h2 data-i18n="wxTitle"></h2><div class="o-wx" id="oWx"><p class="muted" data-i18n="loading"></p></div></div>
   </section>
@@ -208,6 +216,24 @@
       </form>
     </div>
     <div class="offer-list mt" id="coachList"></div>
+    <div class="panel mt">
+      <h2 data-i18n="drTitle"></h2>
+      <p class="muted view-hint" data-i18n="drHint"></p>
+      <div class="drv-list" id="driverList"></div>
+      <form class="inline-add" id="driverForm"><input name="name" maxlength="60" data-i18n-ph="drNamePh" required><input name="phone" type="tel" maxlength="30" placeholder="+995…"><button class="btn-small primary" type="submit" data-i18n="add"></button></form>
+    </div>
+    <div class="panel mt">
+      <h2 data-i18n="stTitle"></h2>
+      <p class="muted view-hint" data-i18n="stHint"></p>
+      <div class="staff-list" id="staffList"></div>
+    </div>
+  </section>
+
+  <!-- LAKES & PHOTOS -->
+  <section class="view" data-view="lakes" role="tabpanel" hidden>
+    <p class="muted view-hint" data-i18n="lkHint"></p>
+    <div class="lake-admin" id="lakeAdmin"></div>
+    <form class="panel inline-add mt" id="lakeForm"><input name="name_ka" maxlength="60" data-i18n-ph="lkNamePh" required><button class="btn-small primary" type="submit" data-i18n="lkAdd"></button></form>
   </section>
 
   <!-- REVIEWS -->
@@ -292,8 +318,9 @@
   <form id="bookForm" class="stack" novalidate>
     <div class="row">
       <label><span data-i18n="thRide"></span><select name="ride" id="bkRide"></select></label>
-      <label><span data-i18n="coachTitle"></span><select name="coach_id" id="bkCoach"></select></label>
+      <label><span data-i18n="lakeLabel"></span><select name="lake_id" id="bkLake"></select></label>
     </div>
+    <label><span data-i18n="coachTitle"></span><select name="coach_id" id="bkCoach"></select></label>
     <div class="row">
       <label><span data-i18n="scDate"></span><input name="date" type="date" required></label>
       <label><span data-i18n="s3"></span><select name="time" id="bkTime"></select></label>
@@ -303,6 +330,7 @@
       <label><span data-i18n="name"></span><input name="name" maxlength="80" required></label>
       <label><span data-i18n="phone"></span><input name="phone" type="tel" maxlength="30" required placeholder="+995 5XX XX XX XX"></label>
     </div>
+    <label><span data-i18n="emailOpt"></span><input name="email" type="email" maxlength="120" placeholder="name@example.com"></label>
     <div class="row">
       <label><span data-i18n="thRiders"></span><input name="riders" type="number" min="1" max="12" value="1"></label>
       <label><span data-i18n="levelLabel"></span><select name="level" id="bkLevel"></select></label>
@@ -349,5 +377,6 @@
 <script src="owner.js"></script>
 <script src="community.js"></script>
 <script src="owner-community.js"></script>
+<script src="owner-staff.js"></script>
 </body>
 </html>

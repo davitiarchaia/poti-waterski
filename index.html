@@ -3,13 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>შენი ტალღა ოქროს ტბაზე — Poti Waterski & Wakeboard Club</title>
+  <title>შენი ტალღა ოქროს ტბაზე — Poti Lake Club</title>
   <meta name="description" content="Book waterski and wakeboard hours on Golden Lake, Maltakva, Poti. See free hours, the lake weather, and book in a minute.">
-  <meta property="og:title" content="Poti Waterski & Wakeboard — Book your hour">
+  <meta property="og:title" content="Poti Lake Club — Book your time on Golden Lake">
   <meta property="og:description" content="Waterski & wakeboard on Golden Lake, Maltakva, Poti. See free hours and book online.">
   <meta property="og:image" content="https://images.unsplash.com/photo-1528569449293-fdc35b48952d?w=1200&q=75&auto=format&fit=crop">
   <meta name="theme-color" content="#06202e">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2306202e'/%3E%3Cpath d='M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3' fill='none' stroke='%23f59e0b' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="img/favicon-64.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -18,16 +19,14 @@
 <body>
 
 <header class="top">
-  <a class="brand" href="index.html" aria-label="Poti Waterski">
-    <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M14 17l12-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-    <span>POTI <b>WATERSKI</b></span>
+  <a class="brand" href="index.html" aria-label="Poti Lake Club">
+    <img class="logo" src="img/logo-light-360.png" alt="" width="52" height="47"><span>POTI <b>LAKE CLUB</b></span>
   </a>
   <nav class="top-nav" aria-label="Sections">
     <a href="#bookingForm" data-i18n="navBook"></a>
     <a href="#passesSec" data-i18n="navPasses" id="navPasses"></a>
     <a href="events.html" data-i18n="navEvents"></a>
     <a href="riders.html" data-i18n="navRiders"></a>
-    <a href="#story" data-i18n="navStory"></a>
   </nav>
   <div class="top-right">
     <div class="lang" role="group" aria-label="Language">
@@ -41,7 +40,8 @@
   <aside class="visual">
     <img src="https://images.unsplash.com/photo-1528569449293-fdc35b48952d?w=1600&q=75&auto=format&fit=crop" alt="" fetchpriority="high">
     <div class="visual-text">
-      <a class="champ" href="#story"><span aria-hidden="true">🏆</span> <span data-i18n="champ"></span></a>
+      <img class="hero-logo" src="img/logo-light.png" alt="Poti Lake Club" width="716" height="647">
+      <span class="champ"><span aria-hidden="true">🏆</span> <span data-i18n="champ"></span></span>
       <p class="eyebrow" data-i18n="place"></p>
       <h1><span data-i18n="h1a"></span><br><em data-i18n="h1b"></em></h1>
       <ul class="chips">
@@ -57,13 +57,19 @@
         <h2 data-i18n="offersTitle"></h2>
         <div class="offer-row" id="offerRow"></div>
       </section>
-      <fieldset class="step">
-        <legend><i>1</i> <span data-i18n="s1"></span></legend>
-        <div class="rides" id="rides"></div>
+      <fieldset class="step" id="lakeStep" hidden>
+        <legend><i>1</i> <span data-i18n="sLake"></span></legend>
+        <div class="lakes" id="lakes" role="radiogroup"></div>
       </fieldset>
 
       <fieldset class="step">
-        <legend><i>2</i> <span data-i18n="s2"></span></legend>
+        <legend><i>2</i> <span data-i18n="s1"></span></legend>
+        <div class="rides" id="rides"></div>
+        <div class="equip" id="equipBox" hidden></div>
+      </fieldset>
+
+      <fieldset class="step">
+        <legend><i>3</i> <span data-i18n="s2"></span></legend>
         <div class="cal">
           <div class="cal-head">
             <button type="button" class="cal-nav" id="calPrev" aria-label="‹">‹</button>
@@ -83,22 +89,16 @@
       </fieldset>
 
       <fieldset class="step">
-        <legend><i>3</i> <span data-i18n="s3"></span> <small class="day-sub" id="daySub"></small></legend>
-        <div class="dur-row"><span data-i18n="durLabel"></span><div class="dur" id="dur" role="radiogroup"></div></div>
+        <legend><i>4</i> <span data-i18n="s3q"></span> <small class="day-sub" id="daySub"></small></legend>
+        <div class="dur-row"><span data-i18n="durLabel"></span><div class="dur2" id="dur"></div></div>
         <div class="day-wx" id="dayWx" hidden></div>
         <div class="slots" id="slots" role="radiogroup"></div>
       </fieldset>
 
       <fieldset class="step">
-        <legend><i>4</i> <span data-i18n="s4"></span></legend>
-        <div class="riders">
-          <div class="stepper">
-            <button type="button" data-d="-1" aria-label="−">−</button>
-            <output id="riderCount" aria-live="polite">1</output>
-            <button type="button" data-d="1" aria-label="+">+</button>
-          </div>
-          <select name="level" id="level" data-i18n-aria="levelLabel"></select>
-        </div>
+        <legend><i>5</i> <span data-i18n="s4"></span></legend>
+        <div class="rgroups" id="rgroups"></div>
+        <div class="rg-foot"><button type="button" class="btn-small add-r" id="addRider" data-i18n="addRiders"></button><b id="rTotal" aria-live="polite"></b></div>
         <div class="coach-pick" id="coachPick" hidden>
           <h4 data-i18n="coachTitle"></h4>
           <div class="coaches" id="coaches" role="radiogroup"></div>
@@ -106,11 +106,12 @@
       </fieldset>
 
       <fieldset class="step">
-        <legend><i>5</i> <span data-i18n="s5"></span></legend>
+        <legend><i>6</i> <span data-i18n="s5"></span></legend>
         <div class="row">
           <label><span data-i18n="name"></span><input name="name" required autocomplete="name" maxlength="80" data-i18n-ph="namePh"></label>
           <label><span data-i18n="phone"></span><input name="phone" type="tel" required autocomplete="tel" inputmode="tel" maxlength="30" placeholder="+995 5XX XX XX XX"></label>
         </div>
+        <label><span data-i18n="emailReq"></span><input name="email" type="email" required autocomplete="email" maxlength="120" placeholder="name@example.com"></label>
         <label><span><span data-i18n="notes"></span> <span class="opt" data-i18n="optional"></span></span><textarea name="notes" rows="2" maxlength="500" data-i18n-ph="notesPh"></textarea></label>
       </fieldset>
 
@@ -122,6 +123,7 @@
         <div><p id="sumRide"></p><p id="sumWhen" class="muted"></p><span class="sum-offer" id="sumOffer" hidden></span></div>
         <div class="sum-price"><span data-i18n="total"></span><b id="sumTotal"></b></div>
       </div>
+      <p class="hold-note" id="holdNote" hidden data-i18n="holdNote"></p>
       <label class="check agree"><input type="checkbox" id="agree"> <span><span data-i18n="agree1"></span> <a href="terms.html" target="_blank" data-i18n="agreeLink"></a></span></label>
       <p class="form-error" id="formError" role="alert"></p>
       <button class="btn" type="submit" id="submitBtn"></button>
@@ -165,22 +167,7 @@
   </div>
 </section>
 
-<section class="story" id="story">
-  <div class="story-inner">
-    <div class="story-text">
-      <p class="eyebrow" data-i18n="storyEy"></p>
-      <h2 data-i18n="storyTitle"></h2>
-      <p data-i18n="storyP1"></p>
-      <p data-i18n="storyP2"></p>
-      <a class="btn story-btn" href="#bookingForm" data-i18n="storyCta"></a>
-    </div>
-    <ul class="story-stats">
-      <li><b>1991</b><span data-i18n="st1"></span></li>
-      <li><b>2026</b><span data-i18n="st2"></span></li>
-      <li><b data-i18n="st3n"></b><span data-i18n="st3"></span></li>
-    </ul>
-  </div>
-</section>
+
 
 <section class="weather" id="weather">
   <div class="weather-inner">
@@ -227,9 +214,8 @@
 <footer class="foot">
   <div class="foot-inner">
     <div class="foot-brand">
-      <a class="brand" href="index.html" aria-label="Poti Waterski">
-        <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M14 17l12-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-        <span>POTI <b>WATERSKI</b></span>
+      <a class="brand" href="index.html" aria-label="Poti Lake Club">
+        <img class="logo" src="img/logo-light-360.png" alt="" width="52" height="47"><span>POTI <b>LAKE CLUB</b></span>
       </a>
       <p data-i18n="footTag"></p>
       <p class="foot-champ">🏆 <span data-i18n="champ"></span></p>
@@ -241,7 +227,6 @@
       <a href="#reviews" data-i18n="navReviews"></a>
       <a href="events.html" data-i18n="navEvents"></a>
       <a href="riders.html" data-i18n="navRiders"></a>
-      <a href="#story" data-i18n="navStory"></a>
       <a href="#visit" data-i18n="navVisit"></a>
     </nav>
     <div class="foot-col">
@@ -250,7 +235,7 @@
     </div>
   </div>
   <div class="foot-bottom">
-    <p>© <span id="yr"></span> Poti Waterski & Wakeboard Club · Golden Lake, Maltakva, Poti</p>
+    <p>© <span id="yr"></span> Poti Lake Club · Golden Lake, Maltakva, Poti</p>
     <p class="foot-links"><a href="terms.html" data-i18n="termsLink"></a> · <a href="terms.html#privacy" data-i18n="privacyLink"></a></p>
     <p class="credits">Photo: KaLisa Veer (Unsplash) · Weather: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></p>
   </div>
@@ -283,6 +268,17 @@
     <button class="btn" type="submit" id="authBtn"></button>
     <p class="switch"><span id="switchQ"></span> <button type="button" class="btn-link inline" id="switchBtn"></button></p>
   </form>
+</dialog>
+
+<dialog class="modal gal-modal" id="galModal" aria-label="Photos">
+  <form method="dialog" class="modal-x"><button aria-label="Close" data-i18n-aria="close">×</button></form>
+  <figure class="gal-fig">
+    <button type="button" class="gal-nav prev" id="galPrev" aria-label="‹">‹</button>
+    <img id="galImg" alt="">
+    <button type="button" class="gal-nav next" id="galNext" aria-label="›">›</button>
+    <figcaption id="galCap"></figcaption>
+  </figure>
+  <div class="gal-thumbs" id="galThumbs"></div>
 </dialog>
 
 <dialog class="modal" id="reviewModal" aria-labelledby="rvTitle">

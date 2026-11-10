@@ -208,5 +208,5 @@ function applyServices(rows) {
     window.RIDES.push({ id: r.ride, tag: !!(r.tag_ka || r.tag_en || r.tag_ru) });
   }
 }
-window.PW = { applyServices, auth, db, rpc, fn, myProfile, store, iso, fromIso, todayIso, hours, inSeason, openSlots, pad, i18n, fmt, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, statusKey, phoneWa };
+window.PW = { applyServices, token, auth, db, rpc, fn, myProfile, store, iso, fromIso, todayIso, hours, inSeason, openSlots, pad, i18n, fmt, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, statusKey, phoneWa };
 })();

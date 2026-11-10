@@ -19,6 +19,21 @@ forgot.type = 'button'; forgot.className = 'btn-link inline forgot';
 pwRow.after(forgot);
 forgot.addEventListener('click', () => setMode('reset'));
 
+/* sign in with Google / Facebook / X (providers are switched on in Supabase → Authentication → Providers) */
+const SOCIAL = [['google', 'withGoogle', '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.4h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.7Z"/><path fill="#34A853" d="M12 24c3.2 0 6-1.1 7.9-2.9l-3.9-3a7.2 7.2 0 0 1-10.8-3.8h-4v3.1A12 12 0 0 0 12 24Z"/><path fill="#FBBC05" d="M5.2 14.3a7.2 7.2 0 0 1 0-4.6V6.6h-4a12 12 0 0 0 0 10.8l4-3.1Z"/><path fill="#EA4335" d="M12 4.8c1.8 0 3.3.6 4.6 1.8l3.4-3.4A12 12 0 0 0 1.2 6.6l4 3.1A7.2 7.2 0 0 1 12 4.8Z"/></svg>'],
+  ['facebook', 'withFacebook', '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#1877F2" d="M24 12a12 12 0 1 0-13.9 11.9v-8.4h-3V12h3V9.4c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.9V12h3.4l-.5 3.5h-2.9v8.4A12 12 0 0 0 24 12Z"/></svg>'],
+  ['x', 'withX', '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2Zm-1.2 18h1.9L7.1 4H5.1l11.9 16Z"/></svg>']];
+const social = document.createElement('div');
+social.className = 'social';
+social.innerHTML = `<p class="social-or"><span></span></p><div class="social-btns">${SOCIAL.map(([p, k, ic]) => `<button type="button" class="soc soc-${p}" data-prov="${p}">${ic}<span data-k="${k}"></span></button>`).join('')}</div>`;
+form.querySelector('#authBtn').after(social);
+social.addEventListener('click', e => {
+  const b = e.target.closest('[data-prov]'); if (!b) return;
+  try { sessionStorage.setItem('pw_oauth', b.dataset.prov); } catch {}
+  const back = location.href.split('#')[0];
+  location.href = `${window.SUPABASE.url}/auth/v1/authorize?provider=${encodeURIComponent(b.dataset.prov)}&redirect_to=${encodeURIComponent(back)}`;
+});
+
 function setMode(m) {
   mode = m;
   modal.dataset.mode = m;
@@ -35,6 +50,9 @@ function setMode(m) {
   const head = modal.querySelector('.mode-head') || (() => { const h = document.createElement('h2'); h.className = 'mode-head'; modal.querySelector('.tabs').after(h); return h; })();
   head.hidden = m === 'in' || m === 'up'; head.textContent = t(titles[m]);
   document.getElementById('authError').textContent = '';
+  social.hidden = m === 'reset' || m === 'newpw';
+  social.querySelector('.social-or span').textContent = t('orWith');
+  social.querySelectorAll('[data-k]').forEach(x => x.textContent = t(x.dataset.k));
 }
 modal.querySelectorAll('[role=tab]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.tab)));
 document.getElementById('switchBtn').addEventListener('click', () => setMode(mode === 'in' ? 'up' : 'in'));
@@ -149,7 +167,8 @@ function renderAccount() {
     return;
   }
   const name = p ? p.username : (auth.session.user.email || '').split('@')[0];
-  box.innerHTML = `${p && p.role === 'owner' && opts.ownerLink !== false ? `<a class="owner-pill" href="owner.html">⚙ <span>${esc(t('ownerPage'))}</span></a>` : ''}
+  const staff = p && (p.role === 'coach' || p.role === 'driver') && opts.staffLink !== false;
+  box.innerHTML = `${p && p.role === 'owner' && opts.ownerLink !== false ? `<a class="owner-pill" href="owner.html">⚙ <span>${esc(t('ownerPage'))}</span></a>` : ''}${staff ? `<a class="owner-pill staff-pill" href="staff.html">🗓 <span>${esc(t('staffPage'))}</span><b class="nb" id="staffBadge" hidden></b></a>` : ''}
     <button type="button" class="acc-btn on" id="accMenuBtn" aria-haspopup="menu" aria-expanded="${menuOpen}">
       <span class="avatar" aria-hidden="true">${esc(name.slice(0, 1).toUpperCase())}</span><span class="acc-name">${esc(name)}</span>
     </button>
@@ -158,6 +177,7 @@ function renderAccount() {
       ${t('myEvents') ? `<a role="menuitem" href="events.html#mine">${esc(t('myEvents'))}</a><a role="menuitem" href="riders.html#me">${esc(t('myRider'))}</a>` : ''}
       <button type="button" role="menuitem" id="accProfile">${esc(t('profile'))}</button>
       ${p && p.role === 'owner' && opts.ownerLink !== false ? `<a role="menuitem" href="owner.html">${esc(t('ownerPage'))}</a>` : ''}
+      ${staff ? `<a role="menuitem" href="staff.html">${esc(t('staffPage'))}</a>` : ''}
       <button type="button" role="menuitem" id="accOut">${esc(t('signOut'))}</button>
     </div>`;
   box.querySelector('#accMenuBtn').onclick = () => { menuOpen = !menuOpen; renderAccount(); };
@@ -170,14 +190,16 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape' && menuOpen) 
 
 function linkMessage(link) {
   if (link === 'recovery') open('newpw', null, false);
-  else if (link === 'error') toast(t('linkExpired'), 'bad');
+  let oauth = null; try { oauth = sessionStorage.getItem('pw_oauth'); sessionStorage.removeItem('pw_oauth'); } catch {}
+  if (link === 'error') toast(oauth ? t('socialNotReady') : t('linkExpired'), 'bad');
+  else if (link && oauth) toast(t('signedInOk'), 'ok');
   else if (link) toast(t('emailConfirmed'), 'ok');
 }
 async function init(o = {}) {
   opts = o;
   const link = await auth.consumeUrl().catch(() => 'error');   // arrived from an email link?
   if (auth.session) state.profile = await myProfile().catch(e => { if (e.status === 401) auth.signOut(); return null; });
-  renderAccount(); linkMessage(link);
+  renderAccount(); linkMessage(link); staffBadge();
   return state.profile;
 }
 window.addEventListener('hashchange', async () => {           // link opened while the page was already open
@@ -186,5 +208,13 @@ window.addEventListener('hashchange', async () => {           // link opened whi
   if (auth.session) state.profile = await myProfile().catch(() => null);
   renderAccount(); linkMessage(link); opts.onSignIn && link !== 'error' && opts.onSignIn(state.profile);
 });
+async function staffBadge() {
+  const p = state.profile; if (!p || (p.role !== 'coach' && p.role !== 'driver') || !auth.session) return;
+  try {
+    const r = await db(`notifications?select=id&user_id=eq.${auth.session.user.id}&read_at=is.null&limit=99`);
+    const el = document.getElementById('staffBadge'); if (el) { el.hidden = !r.length; el.textContent = r.length; }
+  } catch {}
+}
+setInterval(staffBadge, 60000);
 window.PW.ui = { open, close, init, renderAccount, state, toast, refresh() { setMode(mode); renderAccount(); } };
 })();

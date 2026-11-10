@@ -158,11 +158,11 @@ function fromHash() {
 window.addEventListener('hashchange', fromHash);
 
 function applyLang(l) {
-  i18n.set(l); document.title = `${t('eTitle')} — Poti Waterski`; i18n.apply(); render(); renderMine(); ui.refresh();
+  i18n.set(l); document.title = `${t('eTitle')} — Poti Lake Club`; i18n.apply(); render(); renderMine(); ui.refresh();
 }
 $('.lang').addEventListener('click', e => { const l = e.target.dataset.lang; if (l) applyLang(l); });
 
 const yr = $('#yr'); if (yr) yr.textContent = new Date().getFullYear();
-i18n.set(i18n.lang); i18n.apply(); document.title = `${t('eTitle')} — Poti Waterski`; render();
+i18n.set(i18n.lang); i18n.apply(); document.title = `${t('eTitle')} — Poti Lake Club`; render();
 ui.init({ onSignIn: () => loadMine(), onSignOut: () => loadMine() }).then(async () => { await load(); await loadMine(); fromHash(); });
 })();

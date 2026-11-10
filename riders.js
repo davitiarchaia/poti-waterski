@@ -136,13 +136,13 @@ $('#rSearch').addEventListener('input', e => { state.q = e.target.value; render(
 window.addEventListener('hashchange', openFromHash);
 
 function applyLang(l) {
-  i18n.set(l); document.title = `${t('navRiders')} — Poti Waterski`; i18n.apply(); render(); ui.refresh(); loadMe();
+  i18n.set(l); document.title = `${t('navRiders')} — Poti Lake Club`; i18n.apply(); render(); ui.refresh(); loadMe();
   if ($('#riderModal').open) { const m = location.hash.match(/^#u=(.+)$/); if (m) openRider(decodeURIComponent(m[1])); }
 }
 $('.lang').addEventListener('click', e => { const l = e.target.dataset.lang; if (l) applyLang(l); });
 
 const yr = $('#yr'); if (yr) yr.textContent = new Date().getFullYear();
-i18n.set(i18n.lang); i18n.apply(); document.title = `${t('navRiders')} — Poti Waterski`; render();
+i18n.set(i18n.lang); i18n.apply(); document.title = `${t('navRiders')} — Poti Lake Club`; render();
 ui.init({ onSignIn: () => loadMe(), onSignOut: () => loadMe() }).then(loadMe);
 load();
 })();

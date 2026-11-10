@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>წესები და პირობები — Poti Waterski</title>
+  <title>წესები და პირობები — Poti Lake Club</title>
   <!-- TEMPLATE: the club must review this text (ideally with a lawyer) before going live. Legal details come from config.js. -->
   <meta name="theme-color" content="#06202e">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2306202e'/%3E%3Cpath d='M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3' fill='none' stroke='%23f59e0b' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" type="image/png" href="img/favicon-64.png">
+  <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
@@ -26,16 +27,15 @@
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="index.html" aria-label="Poti Waterski">
-    <svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="19" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6 24c4-4 8-4 12 0s8 4 12 0 6-3 6-3" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><path d="M14 17l12-6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-    <span>POTI <b>WATERSKI</b></span>
+  <a class="brand" href="index.html" aria-label="Poti Lake Club">
+    <img class="logo" src="img/logo-light-360.png" alt="" width="52" height="47"><span>POTI <b>LAKE CLUB</b></span>
   </a>
   <div class="top-right">
     <div class="lang" role="group" aria-label="Language"><button type="button" data-lang="ka">ქარ</button><button type="button" data-lang="en">EN</button></div>
   </div>
 </header>
 <main class="legal" id="legal"></main>
-<footer class="foot"><p>© <span id="yr"></span> Poti Waterski & Wakeboard Club · Golden Lake, Maltakva, Poti</p></footer>
+<footer class="foot"><p>© <span id="yr"></span> Poti Lake Club · Golden Lake, Maltakva, Poti</p></footer>
 
 <script src="config.js"></script>
 <script src="demo.js" defer></script>
@@ -128,7 +128,7 @@
   try { const s = JSON.parse(localStorage.getItem('lang')); if (s === 'en' || s === 'ru') lang = 'en'; } catch {}
   function apply(l) {
     lang = l; document.documentElement.lang = l;
-    document.title = l === 'ka' ? 'წესები და პირობები — Poti Waterski' : 'Terms & conditions — Poti Waterski';
+    document.title = l === 'ka' ? 'წესები და პირობები — Poti Lake Club' : 'Terms & conditions — Poti Lake Club';
     document.getElementById('legal').innerHTML = T[l];
     document.querySelectorAll('.lang button').forEach(b => b.setAttribute('aria-pressed', b.dataset.lang === l));
     try { localStorage.setItem('lang', JSON.stringify(l)); } catch {}
