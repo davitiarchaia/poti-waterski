@@ -19,11 +19,6 @@ const firstOfMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
 const thisMonth = firstOfMonth(new Date());
 const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() + C.monthsAhead, 1);
 const startMonth = () => new Date(thisMonth);      // the calendar opens on today's month; earlier months can't be opened
-function seasonStart() {                            // first month of the (next) season, for the off-season shortcut
-  const d = new Date(thisMonth);
-  for (let i = 0; i <= C.monthsAhead; i++) { if (C.seasonMonths.includes(d.getMonth())) return new Date(d); d.setMonth(d.getMonth() + 1); }
-  return null;
-}
 function hasLaterDayThisMonth() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate() > n.getDate(); }
 
 /* ---------- club data: prices, boats, coaches, offers, pass plans, reviews ---------- */
@@ -36,6 +31,7 @@ async function loadClub() {
     get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc'),
     get('equipment?select=*&active=eq.true&order=sort.asc,created_at.asc'),
   ]);
+  state.periods = await get(`closed_periods?select=date_from,reopen_on,reason&reopen_on=gt.${todayIso()}&order=date_from.asc`);
   state.lakes = lakes; state.photos = photos; state.allBoats = boats; state.gear = gear;
   for (const id of Object.keys(state.eqSel)) if (!gear.some(g => g.id === id)) delete state.eqSel[id];
   window.PW.applyServices(pr);
@@ -169,7 +165,9 @@ $('#offerRow').addEventListener('click', e => {
 /* ---------- calendar ---------- */
 // time is booked in 15-minute steps: one database row per 15 minutes
 const slotUsed = (d, q) => ((state.load[d] || {})[q] || { used: 0 }).used;
-const dayClosed = d => state.closed && state.closed[d] && '*' in state.closed[d];
+const periodOf = d => (state.periods || []).find(p => d >= p.date_from && d < p.reopen_on);   // club closed from … until it reopens (set by the owner)
+const dayClosed = d => !!periodOf(d) || !!(state.closed && state.closed[d] && '*' in state.closed[d]);
+const dayReason = d => { const p = periodOf(d); return p ? (p.reason || '') : ((state.closed && state.closed[d] && state.closed[d]['*']) || ''); };
 const hourOf = q => q.slice(0, 2) + ':00';
 const hourClosed = (d, q) => dayClosed(d) || !!(state.closed && state.closed[d] && hourOf(q) in state.closed[d]);
 const slotFull = (d, q) => hourClosed(d, q) || slotUsed(d, q) >= state.boats;
@@ -221,12 +219,15 @@ function renderCalendar() {
       ${st.s === 'free' || st.s === 'few' ? `<span class="cd-bar" aria-hidden="true"><i style="width:${st.pct}%"></i></span>` : '<i class="dot" aria-hidden="true"></i>'}</button>`;
   }
   $('#calGrid').innerHTML = html;
-  const off = !C.seasonMonths.includes(m.getMonth()), ss = off && seasonStart(), note = $('#calNote');
-  note.hidden = !off && state.boats > 0;
-  note.innerHTML = state.boats < 1 ? esc(t('noCapacity')) : off ? `${esc(t('offSeason'))}${ss ? ` <button type="button" class="btn-link inline" id="calJump">${esc(t('toSeason')(fmt(ss, 'month')))}</button>` : ''}` : '';
+  // the whole rest of this month falls into a closed period → say when the club opens again
+  const from = iso(m) < todayIso() ? todayIso() : iso(m), last = iso(new Date(m.getFullYear(), m.getMonth(), days));
+  const pf = periodOf(from), pl = periodOf(last), per = pf && pl && pf === pl ? pf : null, note = $('#calNote');
+  const reopen = per ? fromIso(per.reopen_on) : null, canJump = reopen && firstOfMonth(reopen) <= lastMonth;
+  note.hidden = !per && state.boats > 0;
+  note.innerHTML = state.boats < 1 ? esc(t('noCapacity')) : per ? `${esc(t('clubClosedTill')(fmt(per.reopen_on, 'long')))}${per.reason ? ' ' + esc(per.reason) + '.' : ''}${canJump ? ` <button type="button" class="btn-link inline" id="calJump" data-m="${per.reopen_on}">${esc(t('toSeason')(fmt(firstOfMonth(reopen), 'month')))}</button>` : ''}` : '';
 }
 $('#calPrev').addEventListener('click', () => { if (state.month <= thisMonth) return; state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); loadMonth(); });
-$('#calNote').addEventListener('click', e => { if (e.target.id === 'calJump') { state.month = seasonStart(); loadMonth(); } });
+$('#calNote').addEventListener('click', e => { if (e.target.id === 'calJump') { state.month = firstOfMonth(fromIso(e.target.dataset.m)); loadMonth(); } });
 $('#calNext').addEventListener('click', () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); loadMonth(); });
 $('#calGrid').addEventListener('click', e => {
   const b = e.target.closest('.cd'); if (!b || b.disabled) return;
@@ -250,7 +251,7 @@ function renderSlots() {
   } else { dw.hidden = false; dw.innerHTML = `<span class="muted">${esc(t('wxFar'))}</span>`; }
   const open = quarters(state.day);
   if (state.time && !startOk(state.day, state.time, state.dur, open)) state.time = null;
-  if (!open.length || open.every(q => slotFull(state.day, q))) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (state.closed[state.day]['*'] ? ' — ' + state.closed[state.day]['*'] : '') : t('noSlots'))}</p>`; return; }
+  if (!open.length || open.every(q => slotFull(state.day, q))) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>`; return; }
   const sel = state.time ? rangeOf(state.time) : [];
   const hoursOpen = [...new Set(open.map(hourOf))];
   box.innerHTML = hoursOpen.map(h => {
@@ -674,7 +675,6 @@ function renderContact() {
   if (C.whatsapp) rows.push(`<li><b>${esc(t('cWa'))}</b><a href="${esc(waLink(C.whatsapp))}" target="_blank" rel="noopener">${esc(t('cWaLink'))}</a></li>`);
   if (C.instagram) rows.push(`<li><b>${esc(t('cIg'))}</b><a href="https://instagram.com/${esc(C.instagram)}" target="_blank" rel="noopener">@${esc(C.instagram)}</a></li>`);
   rows.push(`<li><b>${esc(t('cHours'))}</b><span>${pad(C.openHour)}:00 – ${pad(C.closeHour + 1)}:00</span></li>`);
-  rows.push(`<li><b>${esc(t('cSeason'))}</b><span>${esc(t('cSeasonV'))}</span></li>`);
   if (!C.phone && !C.whatsapp) rows.unshift(`<li class="only">${esc(t('cOnly'))}</li>`);
   $('#contactList').innerHTML = rows.join('');
   // footer contacts
@@ -683,7 +683,7 @@ function renderContact() {
   if (C.whatsapp) fc.push(`<a href="${esc(waLink(C.whatsapp))}" target="_blank" rel="noopener">💬 WhatsApp</a>`);
   if (C.instagram) fc.push(`<a href="https://instagram.com/${esc(C.instagram)}" target="_blank" rel="noopener">📷 @${esc(C.instagram)}</a>`);
   if (C.email) fc.push(`<a href="mailto:${esc(C.email)}">✉️ ${esc(C.email)}</a>`);
-  fc.push(`<span>🕘 ${pad(C.openHour)}:00 – ${pad(C.closeHour + 1)}:00 · ${esc(t('cSeasonV'))}</span>`);
+  fc.push(`<span>🕘 ${pad(C.openHour)}:00 – ${pad(C.closeHour + 1)}:00</span>`);
   $('#footContact').innerHTML = fc.join('');
   // floating WhatsApp / call button
   const fab = $('#fab');

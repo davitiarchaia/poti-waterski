@@ -73,7 +73,8 @@ $('.o-tabs').addEventListener('click', e => { const b = e.target.closest('[data-
 /* ---------- data ---------- */
 async function load() {
   try {
-    const [b, p, o, pr, bo, co, pl, ps, rv, cl, lk, ph, dr] = await Promise.all([
+    const [b, p, o, pr, bo, co, pl, ps, rv, cl, lk, ph, dr, pe] = await Promise.all([
+      
       db('bookings?select=*&order=date.asc,time.asc&limit=20000'),
       db('profiles?select=id,username,full_name,phone,role'),
       db('offers?select=*&order=sort.asc,created_at.desc'),
@@ -85,10 +86,11 @@ async function load() {
       db('reviews?select=*&order=created_at.desc&limit=1000'),
       db(`closures?select=*&date=gte.${iso(addDays(new Date(), -30))}&order=date.asc,time.asc.nullsfirst`),
       db('lakes?select=*&order=sort.asc,created_at.asc'), db('lake_photos?select=*&order=sort.asc,created_at.asc'), db('drivers?select=*&order=sort.asc,created_at.asc'),
+      db('closed_periods?select=*&order=date_from.asc').catch(() => []),
     ]);
     b.sort((x, y) => (x.date + x.time).localeCompare(y.date + y.time));
     window.PW.applyServices(pr);
-    Object.assign(state, { bookings: b, offers: o, prices: pr, boats: bo, coaches: co, plans: pl, passes: ps, reviews: rv, closures: cl, lakes: lk, photos: ph, drivers: dr,
+    Object.assign(state, { bookings: b, offers: o, prices: pr, boats: bo, coaches: co, plans: pl, passes: ps, reviews: rv, closures: cl, lakes: lk, photos: ph, drivers: dr, periods: pe,
       profiles: Object.fromEntries(p.map(x => [x.id, x])) });
     $('#updated').textContent = `${t('updated')} ${new Date().toLocaleTimeString(i18n.lang === 'ka' ? 'ka-GE' : 'en-GB', { hour: '2-digit', minute: '2-digit' })}`;
     $('#tblError').textContent = '';
@@ -694,6 +696,7 @@ function renderSchedule() {
   const sel = $('#closeTime'), v = sel.value;
   sel.innerHTML = `<option value="">${esc(t('scWholeDay'))}</option>` + hours().map(h => `<option value="${h}">${h}–${addQ(h, 4)}</option>`).join(''); sel.value = v;
   $('#closeQuick').innerHTML = ['scQRest', 'scQWeather', 'scQEvent', 'scQRepair', 'scQPrivate'].map(k => `<button type="button" class="chip" data-creason="${k}">${esc(t(k))}</button>`).join('');
+  renderPeriods();
   const today = todayIso(), list = state.closures.filter(c => c.date >= today);
   $('#closeList').innerHTML = list.length ? list.map(c => {
     const clash = uniq(state.bookings.filter(b => b.date === c.date && b.status !== 'cancelled' && (!c.time || hourOf(b.time) === c.time)));
@@ -702,6 +705,34 @@ function renderSchedule() {
       <div class="ps-acts"><button type="button" class="btn-small" data-copen="${c.id}">${esc(t('scOpen'))}</button></div></article>`;
   }).join('') : `<p class="inbox-empty">${esc(t('scNone'))}</p>`;
 }
+/* club closed from a date until the owner's chosen reopening date (winter break, repairs …) */
+function renderPeriods() {
+  const today = todayIso(), list = (state.periods || []).filter(p => p.reopen_on > today);
+  $('#periodList').innerHTML = list.length ? list.map(p => {
+    const clash = uniq(state.bookings.filter(b => b.status !== 'cancelled' && b.date >= p.date_from && b.date < p.reopen_on && b.date >= today));
+    return `<article class="ps-card${p.date_from <= today ? ' now' : ''}"><div class="ps-main"><b>🔒 ${esc(fmt(p.date_from, 'long'))} → ${esc(t('peOpens'))} ${esc(fmt(p.reopen_on, 'long'))}</b>
+      <small class="muted">${p.date_from <= today ? esc(t('peNow')) + ' · ' : ''}${esc(t('peDays')(Math.round((fromIso(p.reopen_on) - fromIso(p.date_from)) / 864e5)))}${p.reason ? ' · ' + esc(p.reason) : ''}</small>
+      ${clash ? `<small class="warn-txt">⚠ ${esc(t('scClash')(clash))}</small>` : ''}</div>
+      <div class="ps-acts"><button type="button" class="btn-small" data-pdel="${p.id}">${esc(t('peOpenNow'))}</button></div></article>`;
+  }).join('') : `<p class="inbox-empty">${esc(t('peNone'))}</p>`;
+}
+$('#periodForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, err = $('#periodError'); err.textContent = '';
+  if (!f.date_from.value || !f.reopen_on.value) return err.textContent = t('peErrDates');
+  if (f.reopen_on.value <= f.date_from.value) return err.textContent = t('peErrOrder');
+  const btn = f.querySelector('[type=submit]'); btn.disabled = true;
+  try { await db('closed_periods', { method: 'POST', body: { date_from: f.date_from.value, reopen_on: f.reopen_on.value, reason: f.reason.value.trim() || null }, prefer: 'return=minimal' }); f.reset(); }
+  catch { err.textContent = t('errNet'); }
+  btn.disabled = false; load();
+});
+$('#periodList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-pdel]'); if (!b) return;
+  if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('delQ'); b.classList.add('danger'); return; }
+  b.disabled = true;
+  try { await db(`closed_periods?id=eq.${b.dataset.pdel}`, { method: 'DELETE', prefer: 'return=minimal' }); } catch { $('#tblError').textContent = t('errNet'); }
+  load();
+});
 $('#closeQuick').addEventListener('click', e => { const b = e.target.closest('[data-creason]'); if (b) cform2.reason.value = t(b.dataset.creason); });
 cform2.addEventListener('submit', async e => {
   e.preventDefault();
@@ -727,7 +758,7 @@ $('#closeList').addEventListener('click', async e => {
 /* ---------- add a booking by hand (phone / walk-in) ---------- */
 const bm = $('#bookModal'), bf = $('#bookForm');
 function freeQuarters(date, lake) {
-  const closedDay = state.closures.some(c => c.date === date && !c.time);
+  const closedDay = state.closures.some(c => c.date === date && !c.time) || (state.periods || []).some(p => date >= p.date_from && date < p.reopen_on);
   const cap = state.lakes.filter(l => l.active).length;
   return hours().flatMap(h => ['00', '15', '30', '45'].map(m => h.slice(0, 3) + m)).map(q => {
     const at = state.bookings.filter(b => b.date === date && b.time === q && b.status !== 'cancelled');

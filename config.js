@@ -5,7 +5,7 @@ window.CONFIG = {
   instagram: '',      // e.g. 'potiwaterski'
   openHour: 9,        // first bookable hour
   closeHour: 19,      // last bookable hour (a 19:00 slot ends at 20:00)
-  seasonMonths: [4, 5, 6, 7, 8, 9], // 0 = January … this is May–October
+  seasonMonths: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], // all year — the owner closes and reopens the club on the owner page (Days off)
   monthsAhead: 12,    // how far ahead people can book
   lat: 42.10874, lon: 41.68986,     // Golden Lake, Maltakva, Poti
   timezone: 'Asia/Tbilisi',

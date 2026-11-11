@@ -12,6 +12,6 @@
   bar.textContent = txt[lang] || txt.ka;
   document.body.prepend(bar);
   const st = document.createElement('style');
-  st.textContent = '.demo-bar{background:repeating-linear-gradient(135deg,#f59e0b 0 14px,#f8b23a 14px 28px);color:#06202e;font:700 .8rem/1.3 Inter,"Noto Sans Georgian",system-ui,sans-serif;text-align:center;padding:.4rem 1rem;position:relative;z-index:60}';
+  st.textContent = '.demo-bar{background:repeating-linear-gradient(135deg,#abb9bf 0 14px,#b9c6cb 14px 28px);color:#06202e;font:700 .8rem/1.3 Inter,"Noto Sans Georgian",system-ui,sans-serif;text-align:center;padding:.4rem 1rem;position:relative;z-index:60}';
   document.head.appendChild(st);
 })();
