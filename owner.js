@@ -436,10 +436,17 @@ $('#svcForm').addEventListener('submit', async e => {
   const body = { ride: 's' + Date.now().toString(36), name_ka: name, name_en: f.name_en.value.trim() || null, name_ru: f.name_ru.value.trim() || null,
     info_ka: f.info_ka.value.trim() || null, tag_ka: f.tag_ka.value.trim() || null, price: f.price.value === '' ? null : Math.max(0, +f.price.value),
     active: true, sort: Math.max(0, ...state.prices.map(r => r.sort || 0)) + 1 };
+  const gear = [...document.querySelectorAll('#svcGearRows .sg-row')].map((r, i) => ({ ride: body.ride, name_ka: r.querySelector('[name=gn]').value.trim(), price: Math.min(10000, Math.max(0, +r.querySelector('[name=gp]').value || 0)), per_rider: true, active: true, sort: i + 1 })).filter(g => g.name_ka);
   const btn = f.querySelector('[type=submit]'); btn.disabled = true;
-  try { await db('ride_prices', { method: 'POST', body, prefer: 'return=minimal' }); f.reset(); toastOk(t('svAdded')); await load(); }
+  try { await db('ride_prices', { method: 'POST', body, prefer: 'return=minimal' }); if (gear.length) await db('equipment', { method: 'POST', body: gear, prefer: 'return=minimal' }); f.reset(); $('#svcGearRows').innerHTML = ''; toastOk(t('svAdded')); await load(); }
   catch { err.textContent = t('errNet'); }
   btn.disabled = false;
+});
+$('#svcGearAdd').addEventListener('click', () => {
+  const r = document.createElement('div'); r.className = 'sg-row';
+  r.innerHTML = `<input name="gn" maxlength="80" placeholder="${esc(t('sgName'))}" aria-label="${esc(t('sgName'))}"><input name="gp" type="number" min="0" max="10000" step="0.5" inputmode="decimal" placeholder="${esc(t('sgPrice'))}" aria-label="${esc(t('sgPrice'))}"><button type="button" class="btn-small" aria-label="remove">✕</button>`;
+  r.querySelector('button').onclick = () => r.remove();
+  $('#svcGearRows').append(r); r.querySelector('input').focus();
 });
 const toastOk = m => ui.toast(m, 'ok');
 const pform = $('#planForm');

@@ -1038,3 +1038,12 @@ html[lang=ka] .visual h1,html[lang=ru] .visual h1{font-size:clamp(2.3rem,4.5vw,4
 @media (max-width:560px){.chips li{font-size:.74rem}}
 .period-layout{margin-bottom:1.6rem;padding-bottom:1.6rem;border-bottom:1px solid var(--line)}
 .ps-card.now{border-color:var(--deep);background:var(--tint)}
+
+.svc-gear{margin:.5rem 0 .8rem;padding:.55rem .7rem;border:1px dashed var(--line);border-radius:12px}
+.sg-head{display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-size:.85rem}
+.sg-row{display:grid;grid-template-columns:1fr 7.5rem auto;gap:.4rem;margin-top:.4rem}
+.sg-row input{padding:.4rem .6rem;border-width:1px;border-radius:10px;min-width:0}
+.svc-new .sg-row{gap:.35rem;margin-top:.3rem}
+.svc-new .sg-row input{padding:.3rem .55rem;font-size:.88rem;height:2rem}
+.svc-new .sg-row .btn-small{padding:.2rem .55rem;height:2rem}
+.svc-new .svc-gear{padding:.4rem .6rem}

@@ -5,6 +5,7 @@ const add = {
     // owner v2
     tabLakes: 'ტბები', cLakes: 'ტბების მიხედვით', hoursShort: n => `${n} სთ`, lakeLabel: 'ტბა', emailOpt: 'ელფოსტა (არასავალდ.)',
     gearTitle: 'ქირავდება აღჭურვილობა', gearHint: 'დაამატე ყველა ნივთი, რასაც აქირავებ (დაფა, ჟილეტი, ჰიდროკოსტიუმი, ჩაფხუტი…), და მიუწერე ფასი 1 საათზე. კლიენტი „ვიქირავებ“-ს არჩევისას ნახავს ამ სიას და აირჩევს რა და რამდენი სჭირდება. ფასი 0 = უფასო.',
+    sgTitle: '🏄 აღჭურვილობა (ქირით)', sgAdd: '+ ნივთი', sgName: 'დასახელება', sgPrice: '₾ / საათი',
     gearFor: 'რომელ სერვისზე', gearNew: 'ახალი ნივთი', gearAdd: '+ დამატება', gearPrice: 'ფასი ₾ / 1 სთ', gearNamePh: 'მაგ. ვეიკბორდის დაფა', gearInfoPh: 'მაგ. ზომები S–XL',
     gearMore: 'ინგლისური / რუსული', gearEmpty: 'ჯერ არცერთი ნივთი არ არის. დაამატე ქვემოთ — მანამდე კლიენტი აღჭურვილობის ქირაობას ვერ ნახავს.', gearErrName: 'ჩაწერე ნივთის სახელი.', gearAdded: 'ნივთი დაემატა',
     gearCount: n => n ? `ქირავდება ${n} ნივთი — შეცვლა ↓` : 'აღჭურვილობა არ ქირავდება — დამატება ↓',
@@ -92,6 +93,7 @@ const add = {
   },
   en: {
     tabLakes: 'Lakes', cLakes: 'By lake', hoursShort: n => `${n} h`, lakeLabel: 'Lake', emailOpt: 'Email (optional)',
+    sgTitle: '🏄 Rental equipment', sgAdd: '+ Item', sgName: 'Name', sgPrice: '₾ / hour',
     gearTitle: 'Rental equipment', gearHint: 'Add every item you rent out (board, vest, wetsuit, helmet…) with its price per hour. When a customer picks “Rent it” they see this list and choose what and how many. Price 0 = free.',
     gearFor: 'For service', gearNew: 'New item', gearAdd: '+ Add', gearPrice: 'Price ₾ / 1 h', gearNamePh: 'e.g. Wakeboard', gearInfoPh: 'e.g. sizes S–XL',
     gearMore: 'English / Russian', gearEmpty: 'No items yet. Add one below — until then customers won’t see equipment rental.', gearErrName: 'Enter the item name.', gearAdded: 'Item added',
