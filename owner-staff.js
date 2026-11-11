@@ -22,25 +22,10 @@ function renderLakes(st) {
     return `<article class="panel lk-card${l.active ? '' : ' off'}">
       <div class="lk-head">
         <div class="svc-order"><button type="button" class="btn-small" data-lkmove="${l.id}" data-dir="-1" ${i ? '' : 'disabled'}>↑</button><button type="button" class="btn-small" data-lkmove="${l.id}" data-dir="1" ${i < st.lakes.length - 1 ? '' : 'disabled'}>↓</button></div>
-        <label class="lk-name"><span>${esc(t('svName'))} (ქარ)</span>${inp('name_ka', 60)}</label>
-        <label><span>🚤 ${esc(t('lkDriver'))}</span><select data-lk="${l.id}" data-k="driver_id"><option value="">—</option>${st.drivers.map(d => `<option value="${d.id}" ${d.id === l.driver_id ? 'selected' : ''}>${esc(d.name)}</option>`).join('')}</select></label>
+        <label class="lk-name"><span>${esc(t('svName'))}</span>${inp('name_ka', 60)}</label>
         <label class="check"><input type="checkbox" data-lk="${l.id}" data-k="active" ${l.active ? 'checked' : ''}> <span>${esc(t('fActive'))}</span></label>
+        <button type="button" class="btn-small primary" data-lksave="${l.id}">${esc(t('save'))}</button>
       </div>
-      <label><span>${esc(t('svInfo'))} (ქარ)</span>${inp('info_ka', 300, t('lkInfoPh'))}</label>
-      <details class="svc-more"><summary>${esc(t('lkMore'))}</summary>
-        <div class="svc-grid">
-          <label><span>${esc(t('svName'))} (EN)</span>${inp('name_en', 60)}</label><label><span>${esc(t('svName'))} (RU)</span>${inp('name_ru', 60)}</label>
-          <label><span>${esc(t('svInfo'))} (EN)</span>${inp('info_en', 300)}</label><label><span>${esc(t('svInfo'))} (RU)</span>${inp('info_ru', 300)}</label>
-        </div>
-      </details>
-      <div class="lk-photos">
-        ${ph.map((p, k) => `<figure class="lk-ph"><img src="${esc(photoUrl(p.path))}" alt="" loading="lazy">
-          <input class="mini" data-phcap="${p.id}" maxlength="120" value="${esc(p.caption || '')}" placeholder="${esc(t('lkCaption'))}">
-          <div class="lk-ph-acts">${k ? `<button type="button" class="btn-small" data-phfirst="${p.id}" title="${esc(t('lkCover'))}">★</button>` : `<span class="lk-cover">★ ${esc(t('lkCover'))}</span>`}
-            <button type="button" class="btn-small" data-phdel="${p.id}">${esc(t('del'))}</button></div></figure>`).join('')}
-        <label class="lk-upload"><input type="file" accept="image/jpeg,image/png,image/webp" multiple data-upload="${l.id}" hidden><span>＋<br>${esc(t('lkUpload'))}</span></label>
-      </div>
-      <div class="form-actions"><button type="button" class="btn-small primary big" data-lksave="${l.id}">${esc(t('save'))}</button></div>
     </article>`;
   }).join('') || `<p class="inbox-empty">${esc(t('noData'))}</p>`;
 }
@@ -49,7 +34,7 @@ document.addEventListener('click', async e => {
   const sv = e.target.closest('[data-lksave]'), mv = e.target.closest('[data-lkmove]'), del = e.target.closest('[data-phdel]'), first = e.target.closest('[data-phfirst]');
   if (sv) {
     const id = sv.dataset.lksave, body = {};
-    ['name_ka', 'name_en', 'name_ru', 'info_ka', 'info_en', 'info_ru', 'driver_id', 'active'].forEach(k => { const v = lakeVal(id, k); if (v !== undefined) body[k] = v; });
+    ['name_ka', 'active'].forEach(k => { const v = lakeVal(id, k); if (v !== undefined) body[k] = v; });
     if (!body.name_ka) return err(t('svErrName'));
     sv.disabled = true;
     try {

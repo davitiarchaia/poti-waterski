@@ -1057,3 +1057,4 @@ html[lang=ka] .visual h1,html[lang=ru] .visual h1{font-size:clamp(2.3rem,4.5vw,4
 .svc-row .sg-row{gap:.35rem;margin-top:.3rem}
 .svc-row .sg-row input:not([type=checkbox]){padding:.3rem .55rem;font-size:.88rem;height:2rem}
 .svc-row .sg-row .btn-small{padding:.2rem .55rem;height:2rem}
+.lk-head{grid-template-columns:auto 1fr auto auto}

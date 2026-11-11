@@ -47,8 +47,8 @@ function gate(msg, btn) { $('#stBody').hidden = true; $('#stGate').hidden = fals
 $('#stSignIn').addEventListener('click', () => ui.open('in', () => start()));
 
 async function load() {
-  // a coach sees their own bookings; a driver sees the ones on their lake plus those that still have no lake
-  const mine = state.kind === 'coach' ? `coach_id=eq.${state.me.id}` : `or=(driver_id.eq.${state.me.id},lake_id.is.null)`, from = iso(new Date(Date.now() - 30 * 864e5));
+  // a coach sees their own bookings; every driver sees all live bookings (any driver may use either lake)
+  const mine = state.kind === 'coach' ? `coach_id=eq.${state.me.id}` : `status=neq.cancelled`, from = iso(new Date(Date.now() - 30 * 864e5));
   try {
     const [rows, notes] = await Promise.all([
       db(`bookings?select=id,ride,date,time,riders,rider_groups,level,name,phone,notes,status,lake_id,coach_id,driver_id,equip_sets,equip_items,group_id&${mine}&date=gte.${from}&status=neq.cancelled&order=date.asc,time.asc&limit=5000`),

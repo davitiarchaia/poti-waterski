@@ -28,7 +28,7 @@ async function loadClub() {
     get('ride_prices?select=*'), get('boats?select=id,lake_id&active=eq.true'),
     get('coaches?select=id,name,bio,photo_url,rides&active=eq.true&order=sort.asc,created_at.asc'),
     get('offers?select=*&order=sort.asc,created_at.desc'), get('pass_plans?select=*&active=eq.true&order=sort.asc,price.asc'),
-    get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc'),
+    get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), Promise.resolve([]),
     get('equipment?select=*&active=eq.true&order=sort.asc,created_at.asc'),
   ]);
   state.periods = await get(`closed_periods?select=date_from,reopen_on,reason&reopen_on=gt.${todayIso()}&order=date_from.asc`);
@@ -51,6 +51,7 @@ const photoUrl = path => `${window.SUPABASE.url}/storage/v1/object/public/lake-p
 const lakeName = l => l ? (l['name_' + i18n.lang] || l.name_ka) : '';
 const lakeInfo = l => l ? (l['info_' + i18n.lang] || l.info_ka || '') : '';
 function renderLakes() {
+  $('#lakesSec').hidden = true; return;   // lakes are internal (staff statistics) — customers never see them
   const sec = $('#lakesSec'), withPh = state.lakes.filter(l => state.photos.some(p => p.lake_id === l.id) || lakeInfo(l));
   sec.hidden = !withPh.length;
   $('#lakes').innerHTML = withPh.map(l => {
@@ -432,7 +433,7 @@ function showDone() {
   const b = state.last, rn = rideName(b.ride);
   $('#doneText').textContent = t('doneText')(rn, lastWhen(b), t('rider')(b.riders));
   const lk = state.lakes.find(l => l.id === b.lake_id);
-  const msg = `${t('waMsg')}\n${lk ? lakeName(lk) + ' · ' : ''}${rn} · ${t('rider')(b.riders)} (${groupsText(b.rider_groups)})${equipText(b) ? ' · ' + equipText(b) : ''}\n${lastWhen(b)}\n${b.name}, ${b.phone}${b.notes ? '\n' + b.notes : ''}`;
+  const msg = `${t('waMsg')}\n${rn} · ${t('rider')(b.riders)} (${groupsText(b.rider_groups)})${equipText(b) ? ' · ' + equipText(b) : ''}\n${lastWhen(b)}\n${b.name}, ${b.phone}${b.notes ? '\n' + b.notes : ''}`;
   const wa = $('#doneWa'); wa.hidden = !C.whatsapp; wa.href = waLink(C.whatsapp, msg);
   const box = $('#payBox'), price = b.price != null ? +b.price : null;
   box.hidden = !(price > 0) || b.paid;
@@ -543,7 +544,7 @@ function renderMine() {
     }
     if (b.date <= today && b.status === 'confirmed') acts.push(b.ids.some(i => state.myReviews.has(i)) ? `<span class="pay-tag ok">★ ${esc(t('reviewed'))}</span>` : `<button type="button" class="btn-small star" data-review="${b.id}">★ ${esc(t('writeReview'))}</button>`);
     return `<li class="mb">
-      <div><b>${esc(rideName(b.ride))}${b.lake_id && state.lakes.some(l => l.id === b.lake_id) ? ` <small class="lake-tag">${esc(lakeName(state.lakes.find(l => l.id === b.lake_id)))}</small>` : ''}</b><span>${esc(whenText(b.date, b.time, b.dur))} · ${esc(t('rider')(b.riders))}${coach ? ' · ' + esc(coach.name) : ''}${equipText(b) ? ' · 🏄 ' + esc(equipText(b)) : ''}</span>
+      <div><b>${esc(rideName(b.ride))}</b><span>${esc(whenText(b.date, b.time, b.dur))} · ${esc(t('rider')(b.riders))}${coach ? ' · ' + esc(coach.name) : ''}${equipText(b) ? ' · 🏄 ' + esc(equipText(b)) : ''}</span>
         ${pay}${b.owner_note ? `<span class="reply">${esc(t('ownerSays'))} ${esc(b.owner_note)}</span>` : ''}</div>
       <span class="badge ${k}">${esc(t('st_' + k))}</span>
       <div class="mb-acts">${acts.join('')}</div>
