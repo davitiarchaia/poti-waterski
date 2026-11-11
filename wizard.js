@@ -30,6 +30,7 @@ const sum = () => { const el = document.querySelector('#sumTotal'); $('#wizSum')
 // what must be chosen before leaving a step
 function blocker() {
   const f = steps()[i]; if (!f) return '';
+  if (f.querySelector('#rides') && !S().picked) return t('errRide');
   if (f.querySelector('#calGrid') && !S().day) return t('errDay');
   if (f.querySelector('#slots') && !S().time) return t('errTime');
   return '';

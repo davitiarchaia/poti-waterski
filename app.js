@@ -7,7 +7,7 @@ const t = k => i18n.t(k);
 i18n.init(window.DICT, ['ka', 'en', 'ru']);
 
 const state = {
-  ride: RIDES[0], month: null, day: null, time: null, dur: 4, riders: 1, load: {}, wx: null, mine: [], myPasses: [], myReviews: new Set(),
+  ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 4, riders: 1, load: {}, wx: null, mine: [], myPasses: [], myReviews: new Set(),
   busyMonth: false, offers: [], offer: null, prices: {}, boats: 1, allBoats: [], coaches: [], coach: null, plans: [], pass: null, reviews: [],
   lakes: [], photos: [], lake: null, groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
 };
@@ -89,12 +89,12 @@ function renderRides() {
   $('#rides').innerHTML = list.map(r => {
     const [name, info, tag] = t('rides')[r.id] || [r.id, ''], p = priceOf(r.id);
     const price = p != null ? `₾${money(p)} ${t('perHour')}` : t('onRequest');
-    return `<label class="ride"><input type="radio" name="ride" value="${r.id}" ${state.ride.id === r.id ? 'checked' : ''}>
+    return `<label class="ride"><input type="radio" name="ride" value="${r.id}" ${state.picked && state.ride.id === r.id ? 'checked' : ''}>
       ${r.tag && tag ? `<span class="tag">${esc(tag)}</span>` : ''}<b>${esc(name)}</b><small>${esc(info)}</small><span class="price">${esc(price)}</span></label>`;
   }).join('');
 }
 $('#rides').addEventListener('change', e => {
-  state.ride = RIDES.find(r => r.id === e.target.value);
+  state.ride = RIDES.find(r => r.id === e.target.value); state.picked = true;
   if (state.offer && state.offer.ride && state.offer.ride !== state.ride.id) state.offer = null;
   if (state.coach && !coachFits(state.coaches.find(c => c.id === state.coach))) state.coach = null;
   renderEquip(); renderOffers(); renderCoaches(); renderPassUse(); update();
@@ -108,7 +108,7 @@ const equipSets = () => equipItems().reduce((a, x) => a + x.n, 0);
 const equipHourly = () => equipItems().reduce((a, x) => a + +state.gear.find(g => g.id === x.id).price * x.n, 0);
 const priceTag = p => +p > 0 ? `₾${money(+p)} / ${t('perH')}` : t('eqFree');
 function renderEquip() {
-  const list = gearFor(state.ride.id), box = $('#equipBox');
+  const list = state.picked ? gearFor(state.ride.id) : [], box = $('#equipBox');
   box.hidden = !list.length;
   if (!list.length) return;
   for (const g of list) if (state.eqSel[g.id] > state.riders) state.eqSel[g.id] = state.riders;
@@ -157,7 +157,7 @@ $('#offerRow').addEventListener('click', e => {
   if (state.offer && state.offer.id === o.id) state.offer = null;
   else {
     state.offer = o; state.pass = null;
-    if (o.ride && o.ride !== state.ride.id) { state.ride = RIDES.find(r => r.id === o.ride) || state.ride; renderRides(); renderCoaches(); }
+    if (o.ride && (!state.picked || o.ride !== state.ride.id)) { state.ride = RIDES.find(r => r.id === o.ride) || state.ride; state.picked = true; renderRides(); renderEquip(); renderCoaches(); }
     if (o.valid_from && o.valid_from > iso(state.month) && !state.day) { const d = fromIso(o.valid_from); state.month = new Date(d.getFullYear(), d.getMonth(), 1); loadMonth(); }
   }
   renderOffers(); renderPassUse(); update();
@@ -370,7 +370,7 @@ function currentPrice() {
 function update() {
   const coach = state.coaches.find(c => c.id === state.coach);
   const lk = state.lakes.find(l => l.id === state.lake), sets = equipSets();
-  $('#sumRide').textContent = `${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
+  $('#sumRide').textContent = !state.picked ? '—' : `${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
   $('#sumWhen').textContent = whenText();
   const o = state.offer, pct = o && o.discount_percent, p = currentPrice();
   $('#sumTotal').textContent = state.pass ? (p ? `${t('byPass')} + ₾${money(p)}` : t('byPass')) : p == null ? (pct ? t('offerOff')(pct) : t('onRequest')) : '₾' + money(p);
@@ -391,6 +391,7 @@ function prefill(p) {
 form.addEventListener('submit', e => { e.preventDefault(); submit(); });
 async function submit() {
   const err = $('#formError');
+  if (!state.picked) { document.querySelector('#rides').scrollIntoView({ block: 'center', behavior: 'smooth' }); return err.textContent = t('errRide'); }
   if (!state.day) return err.textContent = t('errDay');
   if (!state.time) return err.textContent = t('errTime');
   if (state.offer && !offerOk(state.offer, state.day)) return err.textContent = t('errOfferDate');
