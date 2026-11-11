@@ -47,8 +47,6 @@ $('#wizBack').addEventListener('click', () => go(-1));
 $('#wizNext').addEventListener('click', () => go(1));
 form.addEventListener('click', e => {
   if (!on) return;
-  // picking a day leads straight to the times
-  if (e.target.closest('#calGrid [data-iso]')) setTimeout(() => { if (S().day && steps()[i] && steps()[i].querySelector('#calGrid')) go(1); }, 60);
   setTimeout(() => { sum(); if ($('#wizErr').textContent && !blocker()) $('#wizErr').textContent = ''; }, 80);
 });
 form.addEventListener('change', () => on && setTimeout(sum, 80));

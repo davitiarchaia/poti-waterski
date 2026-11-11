@@ -1059,21 +1059,30 @@ html[lang=ka] .visual h1,html[lang=ru] .visual h1{font-size:clamp(2.3rem,4.5vw,4
 .svc-row .sg-row .btn-small{padding:.2rem .55rem;height:2rem}
 .lk-head{grid-template-columns:auto 1fr auto auto}
 
-/* calendar: no photo — brand-colour wave surface, a little smaller */
+/* calendar: no photo — brand-colour wave surface */
 .cal{background:
   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='28' viewBox='0 0 120 28'%3E%3Cpath d='M0 14 Q15 4 30 14 T60 14 T90 14 T120 14' fill='none' stroke='%237db5ad' stroke-opacity='.28' stroke-width='1.4'/%3E%3C/svg%3E") 0 0/120px 28px repeat,
   radial-gradient(120% 90% at 100% 0%,rgba(125,181,173,.28),transparent 55%),
   radial-gradient(100% 80% at 0% 100%,rgba(171,185,191,.32),transparent 60%),
   linear-gradient(180deg,#f4f9f8,#e9f1f0);
-  border:1px solid #cfdcdc;max-width:420px;margin-inline:auto;padding:.85rem}
-.cal .cal-head h3{background:#fff;font-size:1.02rem;box-shadow:0 1px 4px rgba(28,51,56,.1)}
-.cal .cal-wd span{background:transparent;color:var(--deep);font-size:.66rem}
-.cal .cal-legend{background:rgba(255,255,255,.75);font-size:.74rem;gap:.7rem}
-.cal .cal-nav{width:34px;height:34px;background:#fff;box-shadow:0 1px 4px rgba(28,51,56,.12)}
-.cal .cd{min-height:38px;border-radius:10px;box-shadow:0 1px 3px rgba(28,51,56,.08);-webkit-backdrop-filter:none;backdrop-filter:none;background:#fff}
-.cal .cd b{font-size:.95rem}
-.cal-grid,.cal-wd{gap:.28rem}
+  border:1px solid #cfdcdc}
+.cal .cal-head h3{background:#fff;box-shadow:0 1px 4px rgba(28,51,56,.1)}
+.cal .cal-wd span{background:transparent;color:var(--deep)}
+.cal .cal-legend{background:rgba(255,255,255,.75)}
+.cal .cal-nav{background:#fff;box-shadow:0 1px 4px rgba(28,51,56,.12)}
+.cal .cd{box-shadow:0 1px 3px rgba(28,51,56,.08);-webkit-backdrop-filter:none;backdrop-filter:none;background:#fff}
 .cal .cd.free{background:#e3f1ee}.cal .cd.few{background:#e4eaec}.cal .cd.full{background:#f6e7e4}
 .cal .cd.closed{background:rgba(255,255,255,.55)}.cal .cd.past{background:transparent;box-shadow:none}
 .cal .cd.dayoff{background:repeating-linear-gradient(135deg,rgba(171,185,191,.35) 0 6px,rgba(171,185,191,.15) 6px 12px)}
 .cal .cd[aria-pressed=true]{background:var(--navy)}
+/* the smaller calendar is for phones; desktop keeps the original size */
+@media (max-width:720px){
+.cal{padding:.85rem}
+.cal .cal-head h3{font-size:1.02rem}
+.cal .cal-wd span{font-size:.66rem}
+.cal .cal-legend{font-size:.74rem;gap:.7rem}
+.cal .cal-nav{width:34px;height:34px}
+.cal .cd{min-height:38px;border-radius:10px}
+.cal .cd b{font-size:.95rem}
+.cal-grid,.cal-wd{gap:.28rem}
+}

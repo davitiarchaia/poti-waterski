@@ -235,7 +235,6 @@ $('#calGrid').addEventListener('click', e => {
   state.day = b.dataset.iso; state.time = null;
   $$('#calGrid .cd').forEach(x => x.setAttribute('aria-pressed', x === b));
   renderSlots(); renderCoaches(); renderPassUse(); update();
-  if (matchMedia('(max-width: 900px)').matches) $('#slots').scrollIntoView({ behavior: 'smooth', block: 'center' });
 });
 
 /* ---------- hours ---------- */
