@@ -45,7 +45,7 @@ const CAP = () => HOURS * activeBoats();
 const notify = (event, id) => fn('notify', { event, id }).catch(() => {});
 
 /* unsaved typing pauses the 1-minute auto refresh (it redraws the lists and would wipe the fields); any save/manual load() clears it */
-document.addEventListener('input', e => { if (e.target.closest && e.target.closest('form, #priceRows, #fleet, #lakes, textarea')) state.dirty = true; });
+document.addEventListener('input', e => { if (e.target.closest && e.target.closest('form, #priceRows, [data-view=fleet], textarea')) state.dirty = true; });
 /* ---------- gate ---------- */
 async function start() {
   const p = await ui.init({ ownerLink: false, onSignIn: () => start(), onSignOut: () => start() });
@@ -62,8 +62,9 @@ function gate(msg, showBtn) { $('#dash').hidden = true; $('#gate').hidden = fals
 $('#gateBtn').addEventListener('click', () => ui.open('in', () => start()));
 
 /* ---------- sections ---------- */
-const VIEWS = ['inbox', 'dash', 'all', 'schedule', 'passes', 'offers', 'prices', 'fleet', 'lakes', 'reviews', 'events', 'riders'];
+const VIEWS = ['inbox', 'dash', 'all', 'schedule', 'passes', 'offers', 'prices', 'fleet', 'reviews', 'events', 'riders'];
 function show(v) {
+  if (v === 'lakes') v = 'fleet';
   if (!VIEWS.includes(v)) v = 'inbox';
   state.view = v;
   $$('.o-tabs [role=tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.view === v));
