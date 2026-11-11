@@ -66,7 +66,7 @@ function osNotify(n) {
   try { if ('Notification' in window && Notification.permission === 'granted') new Notification(noteTitle(n), { body: noteBody(n), tag: n.id }); } catch {}
 }
 const noteTitle = n => t('nt_' + n.kind);
-const noteBody = n => { const d = n.data || {}; return `${d.date ? fmt(d.date, 'long') : ''} · ${d.from || ''}–${d.to || ''} · ${rideName(d.ride)}${d.lake ? ' · ' + d.lake : ''}${d.name ? ' · ' + d.name : ''}`; };
+const noteBody = n => { const d = n.data || {}; return `${n.kind === 'remind' && d.need_lake ? '🌊 ' + t('remindPick') + ' · ' : ''}${d.date ? fmt(d.date, 'long') : ''} · ${d.from || ''}–${d.to || ''} · ${rideName(d.ride)}${d.lake ? ' · ' + d.lake : ''}${d.name ? ' · ' + d.name : ''}`; };
 
 function render() {
   const today = todayIso(), all = merge(state.rows), up = all.filter(b => b.date >= today);
@@ -100,7 +100,7 @@ function render() {
 }
 function renderNotes() {
   $('#ntList').innerHTML = state.notes.length ? state.notes.map(n => `<div class="nt nt-${n.kind}${n.read_at ? '' : ' unread'}">
-      <span class="nt-ic" aria-hidden="true">${{ new: '🆕', confirmed: '✅', cancelled: '✖️', assigned: '🎓' }[n.kind] || '🔔'}</span>
+      <span class="nt-ic" aria-hidden="true">${{ new: '🆕', confirmed: '✅', cancelled: '✖️', assigned: '🎓', remind: '⏰' }[n.kind] || '🔔'}</span>
       <div><b>${esc(noteTitle(n))}</b><span>${esc(noteBody(n))}</span><small class="muted">${esc(fmt(new Date(n.created_at), 'short') + ' ' + new Date(n.created_at).toTimeString().slice(0, 5))}</small></div>
     </div>`).join('') : `<p class="muted">${esc(t('notifNone'))}</p>`;
   $('#ntAllRead').hidden = !state.notes.some(n => !n.read_at);
