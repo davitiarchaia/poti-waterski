@@ -8,13 +8,13 @@
   <meta property="og:title" content="Poti Lake Club — Book your time on Golden Lake">
   <meta property="og:description" content="Waterski & wakeboard on Golden Lake, Maltakva, Poti. See free hours and book online.">
   <meta property="og:image" content="https://images.unsplash.com/photo-1528569449293-fdc35b48952d?w=1200&q=75&auto=format&fit=crop">
-  <meta name="theme-color" content="#06202e">
+  <meta name="theme-color" content="#1c3338">
   <link rel="icon" type="image/png" href="img/favicon-64.png">
   <link rel="apple-touch-icon" href="img/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;800;900&family=Inter:wght@400;500;600;700&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261110c">
+  <link rel="stylesheet" href="styles.css?v=20261111a">
 </head>
 <body>
 
@@ -41,12 +41,16 @@
     <img src="https://images.unsplash.com/photo-1528569449293-fdc35b48952d?w=1600&q=75&auto=format&fit=crop" alt="" fetchpriority="high">
     <div class="visual-text">
       <img class="hero-logo" src="img/logo-light.png" alt="Poti Lake Club" width="716" height="647">
-      <span class="champ"><span aria-hidden="true">🏆</span> <span data-i18n="champ"></span></span>
+      <span class="champ" data-i18n="heroPill"></span>
       <p class="eyebrow" data-i18n="place"></p>
       <h1><span data-i18n="h1a"></span><br><em data-i18n="h1b"></em></h1>
+      <p class="hero-lead" data-i18n="heroLead"></p>
       <ul class="chips">
-        <li data-i18n="chip1"></li><li data-i18n="chip2"></li><li data-i18n="chip3"></li>
+        <li><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 3 8l9 5 9-5-9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></svg><span data-i18n="chip1"></span></li>
+        <li><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-i18n="chip2"></span></li>
+        <li><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 21v-6M12 21V9M19 21V3"/></svg><span data-i18n="chip3"></span></li>
       </ul>
+      <a class="hero-cta" href="#bookingForm"><span data-i18n="heroCta"></span><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
       <div class="wx-now" id="wxNow" hidden></div>
     </div>
   </aside>
@@ -57,19 +61,14 @@
         <h2 data-i18n="offersTitle"></h2>
         <div class="offer-row" id="offerRow"></div>
       </section>
-      <fieldset class="step" id="lakeStep" hidden>
-        <legend><i>1</i> <span data-i18n="sLake"></span></legend>
-        <div class="lakes" id="lakes" role="radiogroup"></div>
-      </fieldset>
-
       <fieldset class="step">
-        <legend><i>2</i> <span data-i18n="s1"></span></legend>
+        <legend><i>1</i> <span data-i18n="s1"></span></legend>
         <div class="rides" id="rides"></div>
         <div class="equip" id="equipBox" hidden></div>
       </fieldset>
 
       <fieldset class="step">
-        <legend><i>3</i> <span data-i18n="s2"></span></legend>
+        <legend><i>2</i> <span data-i18n="s2"></span></legend>
         <div class="cal">
           <div class="cal-head">
             <button type="button" class="cal-nav" id="calPrev" aria-label="‹">‹</button>
@@ -89,14 +88,14 @@
       </fieldset>
 
       <fieldset class="step">
-        <legend><i>4</i> <span data-i18n="s3q"></span> <small class="day-sub" id="daySub"></small></legend>
+        <legend><i>3</i> <span data-i18n="s3q"></span> <small class="day-sub" id="daySub"></small></legend>
         <div class="dur-row"><span data-i18n="durLabel"></span><div class="dur2" id="dur"></div></div>
         <div class="day-wx" id="dayWx" hidden></div>
         <div class="slots" id="slots" role="radiogroup"></div>
       </fieldset>
 
       <fieldset class="step">
-        <legend><i>5</i> <span data-i18n="s4"></span></legend>
+        <legend><i>4</i> <span data-i18n="s4"></span></legend>
         <div class="rgroups" id="rgroups"></div>
         <div class="rg-foot"><button type="button" class="btn-small add-r" id="addRider" data-i18n="addRiders"></button><b id="rTotal" aria-live="polite"></b></div>
         <div class="coach-pick" id="coachPick" hidden>
@@ -106,7 +105,7 @@
       </fieldset>
 
       <fieldset class="step">
-        <legend><i>6</i> <span data-i18n="s5"></span></legend>
+        <legend><i>5</i> <span data-i18n="s5"></span></legend>
         <div class="row">
           <label><span data-i18n="name"></span><input name="name" required autocomplete="name" maxlength="80" data-i18n-ph="namePh"></label>
           <label><span data-i18n="phone"></span><input name="phone" type="tel" required autocomplete="tel" inputmode="tel" maxlength="30" placeholder="+995 5XX XX XX XX"></label>
@@ -174,6 +173,14 @@
     <h2 data-i18n="wxTitle"></h2>
     <div class="wx-days" id="wxDays"><p class="muted" data-i18n="loading"></p></div>
     <p class="fine left" data-i18n="rideNote"></p>
+  </div>
+</section>
+
+<section class="lakes-sec" id="lakesSec" hidden>
+  <div class="mine-inner">
+    <h2 data-i18n="lakesTitle"></h2>
+    <p class="muted sec-sub" data-i18n="lakesSub"></p>
+    <div class="lakes" id="lakes"></div>
   </div>
 </section>
 
@@ -301,13 +308,13 @@
 </dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="config.js?v=20261110c"></script>
-<script src="demo.js?v=20261110c" defer></script>
-<script src="i18n.js?v=20261110c"></script>
-<script src="community-i18n.js?v=20261110c"></script>
-<script src="lib.js?v=20261110c"></script>
-<script src="auth-ui.js?v=20261110c"></script>
-<script src="app.js?v=20261110c"></script>
-<script src="wizard.js?v=20261110c"></script>
+<script src="config.js?v=20261111a"></script>
+<script src="demo.js?v=20261111a" defer></script>
+<script src="i18n.js?v=20261111a"></script>
+<script src="community-i18n.js?v=20261111a"></script>
+<script src="lib.js?v=20261111a"></script>
+<script src="auth-ui.js?v=20261111a"></script>
+<script src="app.js?v=20261111a"></script>
+<script src="wizard.js?v=20261111a"></script>
 </body>
 </html>

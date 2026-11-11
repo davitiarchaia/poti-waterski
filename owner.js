@@ -1,6 +1,6 @@
 /* Owner page — data is only readable/changeable by accounts with role = owner (enforced by the database). */
 (() => {
-const { auth, db, fn, equipText, i18n, fmt, iso, fromIso, todayIso, hours, inSeason, weather, wxInfo, rideScore, esc, waLink, pad, statusKey, phoneWa } = window.PW;
+const { auth, db, rpc, fn, equipText, i18n, fmt, iso, fromIso, todayIso, hours, inSeason, weather, wxInfo, rideScore, esc, waLink, pad, statusKey, phoneWa } = window.PW;
 const ui = window.PW.ui;
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const t = k => i18n.t(k);
@@ -40,7 +40,7 @@ const offerById = id => state.offers.find(o => o.id === id);
 const coachById = id => state.coaches.find(c => c.id === id);
 const boatById = id => state.boats.find(b => b.id === id);
 const money = v => '₾' + (Math.round((+v || 0) * 100) / 100).toLocaleString('ka-GE', { maximumFractionDigits: 2 });
-const activeBoats = () => Math.max(state.boats.filter(b => b.active).length, 1);
+const activeBoats = () => Math.max(state.lakes.filter(l => l.active).length, 1);   // capacity: one session per active lake at a time
 const CAP = () => HOURS * activeBoats();
 const notify = (event, id) => fn('notify', { event, id }).catch(() => {});
 
@@ -123,6 +123,8 @@ function payTag(b) {
   return `<span class="pay-tag">${money(b.price)} · ${esc(t(b.payment_status === 'voided' ? 'oVoided' : b.payment_status === 'failed' ? 'oPayFailed' : 'unpaid'))}</span>`;
 }
 const boatSelect = b => state.boats.length > 1 && !b.group_id ? `<select class="mini" data-boat="${b.id}" aria-label="${esc(t('boat'))}">${state.boats.map(x => `<option value="${x.id}" ${x.id === b.boat_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>` : '';
+// which lake a booking goes to: chosen by the coach / driver in their account, or here by the owner
+const lakeSelect = b => state.lakes.length && b.status !== 'cancelled' ? `<select class="mini lake-sel${b.lake_id ? '' : ' unset'}" data-lakesel="${b.id}" aria-label="${esc(t('lakeLabel'))}"><option value="">🌊 ${esc(t('lakeUnset'))}</option>${state.lakes.filter(l => l.active || l.id === b.lake_id).map(l => `<option value="${l.id}" ${l.id === b.lake_id ? 'selected' : ''}>🌊 ${esc(lakeName(l))}</option>`).join('')}</select>` : '';
 const coachSelect = b => state.coaches.length ? `<select class="mini" data-coachsel="${b.id}" aria-label="${esc(t('coachTitle'))}"><option value="">${esc(t('noCoach'))}</option>${state.coaches.filter(c => c.active || c.id === b.coach_id).map(c => `<option value="${c.id}" ${c.id === b.coach_id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>` : '';
 
 /* ---------- INCOMING ---------- */
@@ -143,7 +145,7 @@ function renderInbox() {
     const created = b.created_at ? new Date(b.created_at) : null;
     return `<article class="ib" data-id="${b.id}">
       <header class="ib-head">
-        <div class="ib-when"><b>${esc(fmt(b.date, 'long'))}</b><span>${esc(b.time)}–${b.end}</span><small class="dur-tag">${esc(durText(b.dur))}</small>${state.lakes.length > 1 && b.lake_id ? `<small class="lake-chip">${esc(lakeName(lakeById(b.lake_id)))}</small>` : ''}</div>
+        <div class="ib-when"><b>${esc(fmt(b.date, 'long'))}</b><span>${esc(b.time)}–${b.end}</span><small class="dur-tag">${esc(durText(b.dur))}</small></div>
         <div class="ib-ride"><b>${esc(rideName(b.ride))}</b>${o ? `<span class="offer-chip">${esc(o.title)}${o.discount_percent ? ` · −${o.discount_percent}%` : ''}</span>` : ''}${payTag(b)}</div>
       </header>
       <div class="ib-body">
@@ -151,7 +153,7 @@ function renderInbox() {
           <span><a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a>${wa ? ` · <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}${b.email ? ` · <a href="mailto:${esc(b.email)}">${esc(b.email)}</a>` : ''}</span></div>
         <div class="ib-meta"><span>${esc(t('rider')(b.riders))}</span><span>${esc(b.rider_groups ? groupsText(b.rider_groups) : levelName(b.level))}</span>${equipText(b) ? `<span>🏄 ${esc(equipText(b))}</span>` : ''}${driverById(b.driver_id) ? `<span>🚤 ${esc(driverById(b.driver_id).name)}</span>` : ''}
           ${created ? `<span class="muted">${esc(t('received'))}: ${esc(fmt(iso(created), 'short'))} ${pad(created.getHours())}:${pad(created.getMinutes())}</span>` : ''}</div>
-        <div class="ib-assign">${boatSelect(b)}${coachSelect(b)}</div>
+        <div class="ib-assign">${lakeSelect(b)}${coachSelect(b)}</div>
         ${b.notes ? `<p class="ib-notes">“${esc(b.notes)}”</p>` : ''}
         ${wxFor(b)}
       </div>
@@ -180,6 +182,13 @@ document.addEventListener('change', async e => {
   const bs = e.target.closest('[data-boat]'), cs = e.target.closest('[data-coachsel]');
   if (bs) { await patch('bookings', bs.dataset.boat, { boat_id: bs.value }, false); load(); }
   if (cs) { await patch('bookings', cs.dataset.coachsel, { coach_id: cs.value || null }); load(); }
+  const ls = e.target.closest('[data-lakesel]');
+  if (ls) {
+    ls.disabled = true;
+    try { await rpc('staff_set_lake', { p_booking: ls.dataset.lakesel, p_lake: ls.value || null }); }
+    catch (x) { const m = t(x.code === 'PW011' ? 'errLakeBusy' : 'errNet'); $('#tblError').textContent = m; if (window.PW.ui && window.PW.ui.toast) window.PW.ui.toast(m, 'err'); }
+    load();
+  }
 });
 $('#inbox').addEventListener('click', async e => {
   const q = e.target.closest('[data-quick]');
@@ -278,7 +287,8 @@ function renderBreakdowns() {
   const s0 = todayIso(), s30 = iso(addDays(new Date(), 30));
   hbars($('#byCoach'), state.coaches.map(c => [c.name, uniq(active.filter(b => b.coach_id === c.id)), t('next30')(uniq(active.filter(b => b.coach_id === c.id && b.date >= s0 && b.date <= s30)))]).sort((a, b) => b[1] - a[1]));
   hbars($('#byOffer'), state.offers.map(o => [o.title, uniq(active.filter(b => b.offer_id === o.id))]).filter(r => r[1]).sort((a, b) => b[1] - a[1]));
-  if ($('#byLake')) hbars($('#byLake'), state.lakes.map(l => [lakeName(l), uniq(active.filter(b => b.lake_id === l.id)), t('hoursShort')(active.filter(b => b.lake_id === l.id).length / 4)]));
+  if ($('#byLake')) hbars($('#byLake'), [...state.lakes.map(l => [lakeName(l), uniq(active.filter(b => b.lake_id === l.id)), t('hoursShort')(active.filter(b => b.lake_id === l.id).length / 4)]),
+    ...(active.some(b => !b.lake_id) ? [[t('lakeUnset'), uniq(active.filter(b => !b.lake_id)), t('hoursShort')(active.filter(b => !b.lake_id).length / 4)]] : [])]);
   // outcomes of decided requests (counted per booking, not per 15-minute row)
   const all = merge(state.bookings), n = all.length || 1;
   const cnt = k => all.filter(b => statusKey(b) === k).length;
@@ -348,7 +358,7 @@ $('section.view[data-view=passes]').addEventListener('click', async e => {
 
 /* ---------- PRICES & PASS PLANS ---------- */
 function renderPrices() {
-  const rows = [...state.prices].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100) || String(a.created_at || '').localeCompare(String(b.created_at || '')));
+  const rows = state.prices.filter(r => !r.archived).sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100) || String(a.created_at || '').localeCompare(String(b.created_at || '')));
   const used = id => state.bookings.filter(b => b.ride === id).length;
   const inp = (r, k, max, ph = '') => `<input data-sv="${r.ride}" data-k="${k}" maxlength="${max}" value="${esc(r[k] || (k === 'name_ka' ? rideName(r.ride) : ''))}" placeholder="${esc(ph)}">`;
   $('#priceRows').innerHTML = rows.map((r, i) => `<div class="svc-row${r.active === false ? ' off' : ''}">
@@ -378,7 +388,7 @@ const SV_KEYS = ['name_ka', 'name_en', 'name_ru', 'info_ka', 'info_en', 'info_ru
 $('#savePrices').addEventListener('click', async e => {
   const btn = e.target; btn.disabled = true; $('#priceError').textContent = '';
   try {
-    for (const r of state.prices) {
+    for (const r of state.prices.filter(r => !r.archived)) {
       const body = {};
       for (const k of SV_KEYS) { const v = svVal(r.ride, k); if (v !== undefined && v !== (NUM_KEYS.includes(k) && r[k] != null ? +r[k] : r[k] ?? null)) body[k] = v; }
       if (!Object.keys(body).length) continue;
@@ -393,7 +403,7 @@ $('#savePrices').addEventListener('click', async e => {
 $('#priceRows').addEventListener('click', async e => {
   const m = e.target.closest('[data-svmove]'), d = e.target.closest('[data-svdel]');
   if (m) {
-    const rows = [...state.prices].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100) || String(a.created_at || '').localeCompare(String(b.created_at || '')));
+    const rows = state.prices.filter(r => !r.archived).sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100) || String(a.created_at || '').localeCompare(String(b.created_at || '')));
     const i = rows.findIndex(r => r.ride === m.dataset.svmove), j = i + +m.dataset.dir;
     if (j < 0 || j >= rows.length) return;
     [rows[i], rows[j]] = [rows[j], rows[i]]; m.disabled = true;
@@ -403,8 +413,16 @@ $('#priceRows').addEventListener('click', async e => {
   if (d) {
     if (!d.dataset.sure) { d.dataset.sure = 1; d.textContent = t('delQ'); d.classList.add('danger'); return; }
     d.disabled = true;
-    try { await db(`ride_prices?ride=eq.${encodeURIComponent(d.dataset.svdel)}`, { method: 'DELETE', prefer: 'return=minimal' }); }
-    catch (x) { $('#priceError').textContent = String(x.code) === '23503' ? t('svErrUsed') : t('errNet'); }
+    const q = `ride_prices?ride=eq.${encodeURIComponent(d.dataset.svdel)}`, live = state.bookings.some(b => b.ride === d.dataset.svdel && b.status !== 'cancelled' && b.date >= todayIso());
+    try {
+      if (live) throw Object.assign(new Error('live'), { code: 'live' });
+      try { await db(q, { method: 'DELETE', prefer: 'return=minimal' }); }
+      catch (x) {      // old bookings still point to this service: keep their history, take the service out of the site and this list
+        if (String(x.code) !== '23503') throw x;
+        await db(q, { method: 'PATCH', body: { archived: true, active: false }, prefer: 'return=minimal' });
+      }
+      if (window.PW.ui && window.PW.ui.toast) window.PW.ui.toast(t('svDeleted'), 'ok');
+    } catch (x) { $('#priceError').textContent = x.code === 'live' ? t('svErrLive') : t('errNet'); }
     return load();
   }
 });
@@ -637,7 +655,7 @@ function renderTable() {
     if (b.status !== 'cancelled' && b.price > 0 && !b.paid) acts.push(`<button class="btn-small" data-act="paid" data-id="${b.id}">💵 ${esc(t('markPaid'))}</button>`);
     if (['confirmed', 'rejected'].includes(k) && b.phone) acts.push(`<a class="btn-small wa" href="${esc(replyLink(b))}" target="_blank" rel="noopener">WhatsApp</a>`);
     return `<tr class="is-${b.status}">
-      <td class="when"><b>${esc(fmt(b.date, 'long'))}</b><span>${esc(b.time)}–${esc(b.end)} · ${esc(durText(b.dur))}</span>${state.lakes.length > 1 && b.lake_id ? `<span>🌊 ${esc(lakeName(lakeById(b.lake_id)))}</span>` : ''}${bt && state.boats.length > 1 ? `<span>🚤 ${esc(bt.name)}</span>` : ''}</td>
+      <td class="when"><b>${esc(fmt(b.date, 'long'))}</b><span>${esc(b.time)}–${esc(b.end)} · ${esc(durText(b.dur))}</span>${b.status !== 'cancelled' && b.date >= todayIso() ? lakeSelect(b) : b.lake_id ? `<span>🌊 ${esc(lakeName(lakeById(b.lake_id)))}</span>` : ''}</td>
       <td>${esc(rideName(b.ride))}${c ? `<span class="sub">${esc(c.name)}</span>` : ''}${o ? `<span class="offer-chip sm">${esc(o.title)}</span>` : ''}</td>
       <td class="who"><b>${esc(b.name)}</b><span><a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a>${wa ? ` · <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</span>${b.email ? `<span><a href="mailto:${esc(b.email)}">${esc(b.email)}</a></span>` : ''}${p ? `<span>@${esc(p.username)}</span>` : ''}</td>
       <td>${b.riders}${equipText(b) ? `<span class="sub">🏄 ${esc(equipText(b))}</span>` : ''}</td><td>${esc(b.rider_groups ? groupsText(b.rider_groups) : levelName(b.level))}</td><td>${payTag(b)}</td>
@@ -675,7 +693,7 @@ const cform2 = $('#closeForm');
 function renderSchedule() {
   const sel = $('#closeTime'), v = sel.value;
   sel.innerHTML = `<option value="">${esc(t('scWholeDay'))}</option>` + hours().map(h => `<option value="${h}">${h}–${addQ(h, 4)}</option>`).join(''); sel.value = v;
-  $('#closeQuick').innerHTML = ['scQWeather', 'scQEvent', 'scQRepair', 'scQPrivate'].map(k => `<button type="button" class="chip" data-creason="${k}">${esc(t(k))}</button>`).join('');
+  $('#closeQuick').innerHTML = ['scQRest', 'scQWeather', 'scQEvent', 'scQRepair', 'scQPrivate'].map(k => `<button type="button" class="chip" data-creason="${k}">${esc(t(k))}</button>`).join('');
   const today = todayIso(), list = state.closures.filter(c => c.date >= today);
   $('#closeList').innerHTML = list.length ? list.map(c => {
     const clash = uniq(state.bookings.filter(b => b.date === c.date && b.status !== 'cancelled' && (!c.time || hourOf(b.time) === c.time)));
@@ -690,7 +708,12 @@ cform2.addEventListener('submit', async e => {
   const err = $('#closeError'); err.textContent = '';
   if (!cform2.date.value) return err.textContent = t('errDay');
   const btn = cform2.querySelector('[type=submit]'); btn.disabled = true;
-  try { await db('closures', { method: 'POST', body: { date: cform2.date.value, time: cform2.time.value || null, reason: cform2.reason.value.trim() || null }, prefer: 'return=minimal' }); cform2.reset(); }
+  const from = cform2.date.value, to = cform2.date_to.value || from, days = [];
+  for (let d = fromIso(from); iso(d) <= to && days.length < 62; d = addDays(d, 1)) days.push(iso(d));
+  if (to < from || !days.length) { btn.disabled = false; return err.textContent = t('scErrRange'); }
+  const have = new Set(state.closures.filter(c => (c.time || '') === (cform2.time.value || '')).map(c => c.date));
+  const rows = days.filter(d => !have.has(d)).map(d => ({ date: d, time: cform2.time.value || null, reason: cform2.reason.value.trim() || null }));
+  try { if (rows.length) await db('closures', { method: 'POST', body: rows, prefer: 'return=minimal' }); else throw Object.assign(new Error(), { code: '23505' }); cform2.reset(); }
   catch (x) { err.textContent = x.code === '23505' ? t('scDup') : t('errNet'); }
   btn.disabled = false; load();
 });
@@ -705,11 +728,12 @@ $('#closeList').addEventListener('click', async e => {
 const bm = $('#bookModal'), bf = $('#bookForm');
 function freeQuarters(date, lake) {
   const closedDay = state.closures.some(c => c.date === date && !c.time);
-  const boats = Math.max(state.boats.filter(b => b.active && (!lake || b.lake_id === lake)).length, 0);
+  const cap = state.lakes.filter(l => l.active).length;
   return hours().flatMap(h => ['00', '15', '30', '45'].map(m => h.slice(0, 3) + m)).map(q => {
-    const used = state.bookings.filter(b => b.date === date && b.time === q && b.status !== 'cancelled' && (!lake || b.lake_id === lake)).length;
+    const at = state.bookings.filter(b => b.date === date && b.time === q && b.status !== 'cancelled');
+    const left = Math.min(cap - at.length, lake ? 1 - at.filter(b => b.lake_id === lake).length : cap);
     const closed = closedDay || state.closures.some(c => c.date === date && c.time === hourOf(q));
-    return { q, left: boats - used, closed };
+    return { q, left, closed };
   });
 }
 function fillBookTimes() {
@@ -723,7 +747,7 @@ function fillBookTimes() {
 $('#addBooking').addEventListener('click', () => {
   bf.reset(); $('#bkError').textContent = '';
   $('#bkRide').innerHTML = window.RIDES.map(r => `<option value="${r.id}">${esc(rideName(r.id))}</option>`).join('');
-  $('#bkLake').innerHTML = state.lakes.filter(l => l.active).map(l => `<option value="${l.id}">${esc(lakeName(l))}</option>`).join('');
+  $('#bkLake').innerHTML = `<option value="">${esc(t('lakeLater'))}</option>` + state.lakes.filter(l => l.active).map(l => `<option value="${l.id}">${esc(lakeName(l))}</option>`).join('');
   $('#bkCoach').innerHTML = `<option value="">${esc(t('noCoach'))}</option>` + state.coaches.filter(c => c.active).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
   $('#bkLevel').innerHTML = t('levels').map((x, i) => `<option value="${i}">${esc(x)}</option>`).join('');
   $('#bkDur').innerHTML = [...Array(40)].map((_, i) => `<option value="${i + 1}" ${i + 1 === 4 ? 'selected' : ''}>${esc(durText(i + 1))}</option>`).join('');

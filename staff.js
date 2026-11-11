@@ -1,6 +1,6 @@
 /* Staff page — a coach or driver sees only their own bookings (the database enforces this) and their notifications. */
 (() => {
-const { auth, db, equipText, i18n, fmt, todayIso, iso, esc, pad, waLink, phoneWa } = window.PW;
+const { auth, db, rpc, equipText, i18n, fmt, todayIso, iso, esc, pad, waLink, phoneWa } = window.PW;
 const ui = window.PW.ui;
 const $ = s => document.querySelector(s);
 const t = k => i18n.t(k);
@@ -32,7 +32,7 @@ async function start() {
   const uid = auth.session.user.id;
   const [me, lakes, coaches] = await Promise.all([
     db(`${p.role === 'coach' ? 'coaches' : 'drivers'}?user_id=eq.${uid}&select=*`).catch(() => []),
-    db('lakes?select=id,name_ka,name_en,name_ru').catch(() => []),
+    db('lakes?select=id,name_ka,name_en,name_ru,active,driver_id&order=sort.asc').catch(() => []),
     db('coaches?select=id,name').catch(() => []),
   ]);
   state.me = me[0] || null; state.lakes = lakes; state.coaches = coaches;
@@ -47,10 +47,11 @@ function gate(msg, btn) { $('#stBody').hidden = true; $('#stGate').hidden = fals
 $('#stSignIn').addEventListener('click', () => ui.open('in', () => start()));
 
 async function load() {
-  const col = state.kind === 'coach' ? 'coach_id' : 'driver_id', from = iso(new Date(Date.now() - 30 * 864e5));
+  // a coach sees their own bookings; a driver sees the ones on their lake plus those that still have no lake
+  const mine = state.kind === 'coach' ? `coach_id=eq.${state.me.id}` : `or=(driver_id.eq.${state.me.id},lake_id.is.null)`, from = iso(new Date(Date.now() - 30 * 864e5));
   try {
     const [rows, notes] = await Promise.all([
-      db(`bookings?select=id,ride,date,time,riders,rider_groups,level,name,phone,notes,status,lake_id,coach_id,driver_id,equip_sets,equip_items,group_id&${col}=eq.${state.me.id}&date=gte.${from}&status=neq.cancelled&order=date.asc,time.asc&limit=5000`),
+      db(`bookings?select=id,ride,date,time,riders,rider_groups,level,name,phone,notes,status,lake_id,coach_id,driver_id,equip_sets,equip_items,group_id&${mine}&date=gte.${from}&status=neq.cancelled&order=date.asc,time.asc&limit=5000`),
       db(`notifications?select=*&user_id=eq.${auth.session.user.id}&order=created_at.desc&limit=60`),
     ]);
     const before = new Set(state.notes.map(n => n.id));
@@ -72,7 +73,8 @@ function render() {
   const wkEnd = iso(new Date(Date.now() + 7 * 864e5));
   const hrsWeek = up.filter(b => b.date <= wkEnd && b.status === 'confirmed').reduce((a, b) => a + b.dur / 4, 0);
   const pending = up.filter(b => b.status === 'new').length;
-  const todayN = up.filter(b => b.date === today).length;
+  const todayN = up.filter(b => b.date === today).length, needLake = up.filter(b => !b.lake_id).length;
+  $('#stNeed').hidden = !needLake; $('#stNeed').textContent = needLake ? t('stNeedLake')(needLake) : '';
   $('#stKpis').innerHTML = [[t('stToday'), todayN], [t('stWeekH'), hrsWeek.toLocaleString('ka-GE')], [t('stPending'), pending], [t('stTotalUp'), up.length]]
     .map(([k, v]) => `<div class="kpi"><small>${esc(k)}</small><b>${esc(String(v))}</b></div>`).join('');
   $('#stRange').innerHTML = ['today', 'week', 'all', 'past'].map(r => `<button type="button" class="chip${state.range === r ? ' on' : ''}" data-range="${r}">${esc(t('stR_' + r))}</button>`).join('');
@@ -84,10 +86,11 @@ function render() {
     ${items.map(b => { const coach = state.coaches.find(c => c.id === b.coach_id); const wa = waLink(phoneWa(b.phone));
       return `<article class="st-bk st-${b.status}">
         <div class="st-time"><b>${esc(b.time)}</b><span>${esc(b.end)}</span><small>${esc(durText(b.dur))}</small></div>
-        <div class="st-info"><b>${esc(rideName(b.ride))}</b>${b.lake_id ? ` <span class="lake-chip">${esc(lakeName(b.lake_id))}</span>` : ''}
+        <div class="st-info"><b>${esc(rideName(b.ride))}</b>${b.date < today && b.lake_id ? ` <span class="lake-chip">${esc(lakeName(b.lake_id))}</span>` : ''}
           <span>${esc(t('rider')(b.riders))}${b.rider_groups ? ' — ' + esc(groupsText(b.rider_groups)) : ''}${equipText(b) ? ' · 🏄 ' + esc(equipText(b)) : ''}</span>
           <span class="muted">${esc(b.name)} · <a href="tel:${esc(String(b.phone).replace(/\s/g, ''))}">${esc(b.phone)}</a>${wa ? ` · <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}${state.kind === 'driver' && coach ? ' · 🎓 ' + esc(coach.name) : ''}</span>
-          ${b.notes ? `<span class="st-notes">“${esc(b.notes)}”</span>` : ''}</div>
+          ${b.notes ? `<span class="st-notes">“${esc(b.notes)}”</span>` : ''}
+          ${b.date >= today ? `<label class="st-lake${b.lake_id ? '' : ' unset'}"><span>🌊 ${esc(t('lakeLabel'))}</span><select data-lakesel="${b.id}"><option value="">${esc(t('lakePick'))}</option>${state.lakes.filter(l => l.active !== false || l.id === b.lake_id).map(l => `<option value="${l.id}" ${l.id === b.lake_id ? 'selected' : ''}>${esc(lakeName(l.id))}</option>`).join('')}</select></label>` : ''}</div>
         <span class="badge ${b.status === 'new' ? 'new' : 'confirmed'}">${esc(t(b.status === 'new' ? 'st_new' : 'st_confirmed'))}</span>
       </article>`; }).join('')}</div>`).join('') : `<p class="cm-empty">${esc(t('stNone2'))}</p>`;
   const unread = state.notes.filter(n => !n.read_at).length;
@@ -108,6 +111,13 @@ $('#bellBtn').addEventListener('click', () => {
 });
 $('#ntAllRead').addEventListener('click', async () => {
   try { await db(`notifications?user_id=eq.${auth.session.user.id}&read_at=is.null`, { method: 'PATCH', body: { read_at: new Date().toISOString() }, prefer: 'return=minimal' }); } catch {}
+  load();
+});
+$('#stDays').addEventListener('change', async e => {
+  const sel = e.target.closest('[data-lakesel]'); if (!sel) return;
+  sel.disabled = true;
+  try { await rpc('staff_set_lake', { p_booking: sel.dataset.lakesel, p_lake: sel.value || null }); ui.toast(t(sel.value ? 'lakeSaved' : 'lakeCleared'), 'ok'); }
+  catch (x) { ui.toast(t(x.code === 'PW011' ? 'errLakeBusy' : 'errNet'), 'err'); }
   load();
 });
 $('#stRange').addEventListener('click', e => { const b = e.target.closest('[data-range]'); if (b) { state.range = b.dataset.range; render(); } });

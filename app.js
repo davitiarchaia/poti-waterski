@@ -18,13 +18,11 @@ const toast = (msg, kind = '') => { const el = $('#toast'); el.textContent = msg
 const firstOfMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
 const thisMonth = firstOfMonth(new Date());
 const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() + C.monthsAhead, 1);
-function startMonth() {
+const startMonth = () => new Date(thisMonth);      // the calendar opens on today's month; earlier months can't be opened
+function seasonStart() {                            // first month of the (next) season, for the off-season shortcut
   const d = new Date(thisMonth);
-  for (let i = 0; i <= C.monthsAhead; i++) {
-    if (C.seasonMonths.includes(d.getMonth()) && (i > 0 || openSlots(todayIso()).length || hasLaterDayThisMonth())) return new Date(d);
-    d.setMonth(d.getMonth() + 1);
-  }
-  return new Date(thisMonth);
+  for (let i = 0; i <= C.monthsAhead; i++) { if (C.seasonMonths.includes(d.getMonth())) return new Date(d); d.setMonth(d.getMonth() + 1); }
+  return null;
 }
 function hasLaterDayThisMonth() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate() > n.getDate(); }
 
@@ -40,8 +38,6 @@ async function loadClub() {
   ]);
   state.lakes = lakes; state.photos = photos; state.allBoats = boats; state.gear = gear;
   for (const id of Object.keys(state.eqSel)) if (!gear.some(g => g.id === id)) delete state.eqSel[id];
-  const lakeChanged = !state.lake || !lakes.some(l => l.id === state.lake);
-  if (lakeChanged) state.lake = (lakes[0] || {}).id || null;
   window.PW.applyServices(pr);
   if (!RIDES.some(r => r.id === state.ride.id)) state.ride = RIDES[0];
   state.prices = Object.fromEntries(pr.map(x => [x.ride, x]));
@@ -51,32 +47,26 @@ async function loadClub() {
   if (state.offer && !state.offers.some(o => o.id === state.offer.id)) state.offer = null;
   state.plans = plans;
   renderLakes(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPlans(); renderSlots(); renderCalendar(); update();
-  if (lakeChanged && state.lake) loadMonth();
 }
-function setBoats() { state.boats = state.allBoats.filter(b => !state.lake || b.lake_id === state.lake).length; }
+function setBoats() { state.boats = state.lakes.length; }   // one session per active lake at the same time; staff choose the lake later
 
 /* ---------- lakes (photos uploaded by the owner) ---------- */
 const photoUrl = path => `${window.SUPABASE.url}/storage/v1/object/public/lake-photos/${path.split('/').map(encodeURIComponent).join('/')}`;
 const lakeName = l => l ? (l['name_' + i18n.lang] || l.name_ka) : '';
 const lakeInfo = l => l ? (l['info_' + i18n.lang] || l.info_ka || '') : '';
 function renderLakes() {
-  const box = $('#lakes');
-  $('#lakeStep').hidden = !state.lakes.length;
-  box.innerHTML = state.lakes.map(l => {
-    const ph = state.photos.filter(p => p.lake_id === l.id), on = state.lake === l.id;
-    return `<label class="lake${on ? ' on' : ''}">
-      <input type="radio" name="lake" value="${l.id}" ${on ? 'checked' : ''}>
+  const sec = $('#lakesSec'), withPh = state.lakes.filter(l => state.photos.some(p => p.lake_id === l.id) || lakeInfo(l));
+  sec.hidden = !withPh.length;
+  $('#lakes').innerHTML = withPh.map(l => {
+    const ph = state.photos.filter(p => p.lake_id === l.id);
+    return `<article class="lake">
       <span class="lake-ph">${ph.length ? `<img src="${esc(photoUrl(ph[0].path))}" alt="" loading="lazy">` : '<span class="lake-noph" aria-hidden="true">🌊</span>'}
         ${ph.length ? `<button type="button" class="lake-gal" data-gal="${l.id}">📷 ${ph.length}</button>` : ''}</span>
       <span class="lake-tx"><b>${esc(lakeName(l))}</b>${lakeInfo(l) ? `<small>${esc(lakeInfo(l))}</small>` : ''}</span>
-    </label>`;
+    </article>`;
   }).join('');
 }
-$('#lakes').addEventListener('change', e => {
-  if (e.target.name !== 'lake') return;
-  state.lake = e.target.value; state.time = null; setBoats(); renderLakes(); loadMonth(); update();
-});
-$('#lakes').addEventListener('click', e => { const g = e.target.closest('[data-gal]'); if (g) { e.preventDefault(); openGallery(g.dataset.gal, 0); } });
+$('#lakes').addEventListener('click', e => { const c = e.target.closest('.lake'), g = c && c.querySelector('[data-gal]'); if (g) { e.preventDefault(); openGallery(g.dataset.gal, 0); } });
 // photo viewer
 const gal = { lake: null, i: 0 };
 function openGallery(lakeId, i) {
@@ -204,7 +194,7 @@ async function loadMonth() {
   const map = {};
   const closed = {};
   try {
-    const [load, cl] = await Promise.all([state.lake ? rpc('lake_load', { d1, d2, lk: state.lake }) : rpc('slot_load', { d1, d2 }), rpc('closed_slots', { d1, d2 }).catch(() => [])]);
+    const [load, cl] = await Promise.all([rpc('slot_load', { d1, d2 }), rpc('closed_slots', { d1, d2 }).catch(() => [])]);
     load.forEach(r => { (map[r.d] = map[r.d] || {})[r.t] = { used: r.used, coaches: r.coaches || [] }; });
     cl.forEach(r => { (closed[r.d] = closed[r.d] || {})[r.t || '*'] = r.reason || ''; });
     state.load = map; state.closed = closed;
@@ -224,16 +214,19 @@ function renderCalendar() {
     const st = state.busyMonth ? { s: 'loading', free: 0 } : dayStatus(di);
     const wx = state.wx && state.wx.daily[di];
     const icon = wx && st.s !== 'closed' ? `<span class="cd-wx" aria-hidden="true">${wxInfo(wx.code)[0]}</span>` : '';
-    const label = `${fmt(date, 'long')} — ${st.s === 'loading' ? t('loading') : st.s === 'closed' ? t('closed') : st.s === 'full' ? t('full') : t('slotsLeft')(st.free)}`;
-    html += `<button type="button" class="cd ${st.s}${di === todayIso() ? ' today' : ''}" data-iso="${di}" aria-pressed="${state.day === di}"
+    const past = di < todayIso(), off = !past && st.s === 'closed' && dayClosed(di);
+    const label = `${fmt(date, 'long')} — ${st.s === 'loading' ? t('loading') : off ? t('dayOff') : st.s === 'closed' ? t('closed') : st.s === 'full' ? t('full') : t('slotsLeft')(st.free)}`;
+    html += `<button type="button" class="cd ${st.s}${past ? ' past' : ''}${off ? ' dayoff' : ''}${di === todayIso() ? ' today' : ''}" data-iso="${di}" aria-pressed="${state.day === di}"
       aria-label="${esc(label)}" ${st.s === 'closed' || st.s === 'loading' ? 'disabled' : ''}><b>${d}</b>${icon}
       ${st.s === 'free' || st.s === 'few' ? `<span class="cd-bar" aria-hidden="true"><i style="width:${st.pct}%"></i></span>` : '<i class="dot" aria-hidden="true"></i>'}</button>`;
   }
   $('#calGrid').innerHTML = html;
-  const off = !C.seasonMonths.includes(m.getMonth());
-  $('#calNote').hidden = !off; if (off) $('#calNote').textContent = t('offSeason');
+  const off = !C.seasonMonths.includes(m.getMonth()), ss = off && seasonStart(), note = $('#calNote');
+  note.hidden = !off && state.boats > 0;
+  note.innerHTML = state.boats < 1 ? esc(t('noCapacity')) : off ? `${esc(t('offSeason'))}${ss ? ` <button type="button" class="btn-link inline" id="calJump">${esc(t('toSeason')(fmt(ss, 'month')))}</button>` : ''}` : '';
 }
-$('#calPrev').addEventListener('click', () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); loadMonth(); });
+$('#calPrev').addEventListener('click', () => { if (state.month <= thisMonth) return; state.month = new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1); loadMonth(); });
+$('#calNote').addEventListener('click', e => { if (e.target.id === 'calJump') { state.month = seasonStart(); loadMonth(); } });
 $('#calNext').addEventListener('click', () => { state.month = new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1); loadMonth(); });
 $('#calGrid').addEventListener('click', e => {
   const b = e.target.closest('.cd'); if (!b || b.disabled) return;
@@ -375,7 +368,7 @@ function currentPrice() {
 function update() {
   const coach = state.coaches.find(c => c.id === state.coach);
   const lk = state.lakes.find(l => l.id === state.lake), sets = equipSets();
-  $('#sumRide').textContent = `${lk ? lakeName(lk) + ' · ' : ''}${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
+  $('#sumRide').textContent = `${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
   $('#sumWhen').textContent = whenText();
   const o = state.offer, pct = o && o.discount_percent, p = currentPrice();
   $('#sumTotal').textContent = state.pass ? (p ? `${t('byPass')} + ₾${money(p)}` : t('byPass')) : p == null ? (pct ? t('offerOff')(pct) : t('onRequest')) : '₾' + money(p);
@@ -407,7 +400,7 @@ async function submit() {
   const group = crypto.randomUUID ? crypto.randomUUID() : '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
   const levelSum = state.groups.length === 1 ? window.DICT.en.levels[state.groups[0].l] : 'Mixed';
   const booking = { ride: state.ride.id, date: state.day, time: state.time, riders: state.riders, rider_groups: state.groups.map(g => ({ l: g.l, n: g.n })),
-    level: levelSum, name, phone, email, notes: form.notes.value.trim() || null, lang: i18n.lang, lake_id: state.lake, equip_items: equipItems().length ? equipItems() : null,
+    level: levelSum, name, phone, email, notes: form.notes.value.trim() || null, lang: i18n.lang, equip_items: equipItems().length ? equipItems() : null,
     offer_id: state.offer && !state.pass ? state.offer.id : null, coach_id: state.coach, pass_id: state.pass };
   const btn = $('#submitBtn'); btn.disabled = true; btn.textContent = t('sending');
   let res = 'error', row = null;
@@ -549,7 +542,7 @@ function renderMine() {
     }
     if (b.date <= today && b.status === 'confirmed') acts.push(b.ids.some(i => state.myReviews.has(i)) ? `<span class="pay-tag ok">★ ${esc(t('reviewed'))}</span>` : `<button type="button" class="btn-small star" data-review="${b.id}">★ ${esc(t('writeReview'))}</button>`);
     return `<li class="mb">
-      <div><b>${esc(rideName(b.ride))}${state.lakes.length > 1 && b.lake_id ? ` <small class="lake-tag">${esc(lakeName(state.lakes.find(l => l.id === b.lake_id)))}</small>` : ''}</b><span>${esc(whenText(b.date, b.time, b.dur))} · ${esc(t('rider')(b.riders))}${coach ? ' · ' + esc(coach.name) : ''}${equipText(b) ? ' · 🏄 ' + esc(equipText(b)) : ''}</span>
+      <div><b>${esc(rideName(b.ride))}${b.lake_id && state.lakes.some(l => l.id === b.lake_id) ? ` <small class="lake-tag">${esc(lakeName(state.lakes.find(l => l.id === b.lake_id)))}</small>` : ''}</b><span>${esc(whenText(b.date, b.time, b.dur))} · ${esc(t('rider')(b.riders))}${coach ? ' · ' + esc(coach.name) : ''}${equipText(b) ? ' · 🏄 ' + esc(equipText(b)) : ''}</span>
         ${pay}${b.owner_note ? `<span class="reply">${esc(t('ownerSays'))} ${esc(b.owner_note)}</span>` : ''}</div>
       <span class="badge ${k}">${esc(t('st_' + k))}</span>
       <div class="mb-acts">${acts.join('')}</div>
@@ -658,7 +651,8 @@ function renderWeather() {
   if (!wx) { days.innerHTML = `<p class="muted">${esc(t('wxNa'))}</p>`; now.hidden = true; return; }
   const c = wx.current, [ic, k] = wxInfo(c.weather_code);
   now.hidden = false;
-  now.innerHTML = `<span class="wn-ic" aria-hidden="true">${ic}</span><span><b>${Math.round(c.temperature_2m)}°</b> ${esc(t('wx')[k])}</span><span>${esc(t('wxWind'))} ${Math.round(c.wind_speed_10m)} ${esc(t('kmh'))}</span>`;
+  now.innerHTML = `<span class="wn-lab">${esc(t('wxLakeNow'))}</span><span class="wn-main"><span class="wn-ic" aria-hidden="true">${ic}</span><b>${Math.round(c.temperature_2m)}°C</b><span>${esc(t('wx')[k])}</span></span>
+    <span class="wn-wind"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M3 9h11a3 3 0 1 0-3-3M3 14h15a3 3 0 1 1-3 3M3 19h6"/></svg><span><b>${Math.round(c.wind_speed_10m)} ${esc(t('kmh'))}</b><small>${esc(t('wxWind'))}</small></span></span>`;
   days.innerHTML = `<div class="wx-card now">
       <small>${esc(t('wxNow'))}</small><span class="big" aria-hidden="true">${ic}</span><b class="temp">${Math.round(c.temperature_2m)}°</b>
       <span>${esc(t('wx')[k])}</span>

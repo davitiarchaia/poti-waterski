@@ -33,7 +33,6 @@ function renderLakes(st) {
           <label><span>${esc(t('svInfo'))} (EN)</span>${inp('info_en', 300)}</label><label><span>${esc(t('svInfo'))} (RU)</span>${inp('info_ru', 300)}</label>
         </div>
       </details>
-      <p class="muted small">${esc(t('lkBoats')(boats.length))}${boats.length ? ': ' + boats.map(b => esc(b.name)).join(', ') : ' — ' + esc(t('lkNoBoats'))}</p>
       <div class="lk-photos">
         ${ph.map((p, k) => `<figure class="lk-ph"><img src="${esc(photoUrl(p.path))}" alt="" loading="lazy">
           <input class="mini" data-phcap="${p.id}" maxlength="120" value="${esc(p.caption || '')}" placeholder="${esc(t('lkCaption'))}">

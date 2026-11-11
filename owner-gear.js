@@ -13,7 +13,7 @@ async function fetchGear() {
   try { st.gear = await db('equipment?select=*&order=sort.asc,created_at.asc') || []; st.loaded = true; } catch { st.gear = []; }
 }
 function rideOptions(S, sel) {
-  return [...S.prices].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100))
+  return S.prices.filter(r => !r.archived).sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100))
     .map(r => `<option value="${esc(r.ride)}" ${r.ride === sel ? 'selected' : ''}>${esc(rideLabel(r))}</option>`).join('');
 }
 function render(S) {
