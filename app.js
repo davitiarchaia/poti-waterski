@@ -110,7 +110,7 @@ const priceTag = p => +p > 0 ? `₾${money(+p)} / ${t('perH')}` : t('eqFree');
 function numberSteps() { [...document.querySelectorAll('#bookingForm fieldset.step')].filter(f => !f.hidden).forEach((f, k) => { const n = f.querySelector('legend i'); if (n) n.textContent = k + 1; }); }
 function renderEquip() {
   const list = state.picked ? gearFor(state.ride.id) : [], box = $('#equipBox');
-  $('#equipStep').hidden = !list.length; numberSteps();
+  box.hidden = !list.length; numberSteps();
   if (!list.length) return;
   const from = Math.min(...list.map(g => +g.price));
   box.innerHTML = `<p class="eq-q">${esc(t('eqQ'))}</p>
@@ -212,7 +212,7 @@ function renderCalendar() {
     const date = new Date(m.getFullYear(), m.getMonth(), d), di = iso(date);
     const st = state.busyMonth ? { s: 'loading', free: 0 } : dayStatus(di);
     const wx = state.wx && state.wx.daily[di];
-    const icon = wx && st.s !== 'closed' ? `<span class="cd-wx" aria-hidden="true">${wxInfo(wx.code)[0]}</span>` : '';
+    const icon = '';   // no weather icons inside the calendar cells
     const past = di < todayIso(), off = !past && st.s === 'closed' && dayClosed(di);
     const label = `${fmt(date, 'long')} — ${st.s === 'loading' ? t('loading') : off ? t('dayOff') : st.s === 'closed' ? t('closed') : st.s === 'full' ? t('full') : t('slotsLeft')(st.free)}`;
     html += `<button type="button" class="cd ${st.s}${past ? ' past' : ''}${off ? ' dayoff' : ''}${di === todayIso() ? ' today' : ''}" data-iso="${di}" aria-pressed="${state.day === di}"
