@@ -293,7 +293,8 @@ $('#dur').addEventListener('click', e => {
 const coachFits = c => c && (!c.rides || !c.rides.length || c.rides.includes(state.ride.id));
 const coachBusy = id => state.day && state.time && rangeOf(state.time).some(h => (((state.load[state.day] || {})[h] || {}).coaches || []).includes(id));
 function renderCoaches() {
-  const list = state.coaches.filter(coachFits);
+  // shown after the hour is chosen, and only the coaches who are free then
+  const list = state.day && state.time ? state.coaches.filter(coachFits).filter(c => !coachBusy(c.id)) : [];
   $('#coachPick').hidden = !list.length;
   if (!list.length) return;
   const card = (id, name, sub, photo, busy) => `<button type="button" class="coach" role="radio" aria-checked="${state.coach === id}" data-coach="${id || ''}" ${busy ? 'disabled' : ''}>
