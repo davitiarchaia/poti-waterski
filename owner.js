@@ -44,6 +44,8 @@ const activeBoats = () => Math.max(state.lakes.filter(l => l.active).length, 1);
 const CAP = () => HOURS * activeBoats();
 const notify = (event, id) => fn('notify', { event, id }).catch(() => {});
 
+/* unsaved typing pauses the 1-minute auto refresh (it redraws the lists and would wipe the fields); any save/manual load() clears it */
+document.addEventListener('input', e => { if (e.target.closest && e.target.closest('form, #priceRows, #fleet, #lakes, textarea')) state.dirty = true; });
 /* ---------- gate ---------- */
 async function start() {
   const p = await ui.init({ ownerLink: false, onSignIn: () => start(), onSignOut: () => start() });
@@ -53,7 +55,7 @@ async function start() {
   $('#gate').hidden = true; $('#dash').hidden = false;
   await load();
   if (!state.view) show(location.hash.slice(1) || 'inbox');
-  state.timer = setInterval(load, 60000);
+  state.timer = setInterval(() => { if (!state.dirty) load(true); }, 60000);   // never redraw while something is being typed
   if (!state.wx) weather().then(w => { state.wx = w; render(); }).catch(() => { $('#oWx').innerHTML = `<p class="muted">${esc(t('wxNa'))}</p>`; });
 }
 function gate(msg, showBtn) { $('#dash').hidden = true; $('#gate').hidden = false; $('#gateMsg').textContent = msg; $('#gateBtn').hidden = !showBtn; }
@@ -71,7 +73,8 @@ function show(v) {
 $('.o-tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) show(b.dataset.view); });
 
 /* ---------- data ---------- */
-async function load() {
+async function load(auto) {
+  if (!auto) state.dirty = false;
   try {
     const [b, p, o, pr, bo, co, pl, ps, rv, cl, lk, ph, dr, pe] = await Promise.all([
       
