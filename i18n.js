@@ -71,7 +71,7 @@ ka: {
   title: 'შენი ტალღა ოქროს ტბაზე — Poti Lake Club',
   place: 'ოქროს ტბა · მალთაყვა · ფოთი', h1a: 'დაიპყარი ტალღა.', h1b: 'ტბა შენია.',
   chip1: 'აღჭურვილობის ქირაობა', chip2: 'პროფესიონალი მწვრთნელები', chip3: 'ყველა დონისთვის',
-  s1: 'აირჩიე აქტივობა', s2: 'აირჩიე თვე და დღე', s3: 'აირჩიე საათი', s4: 'მონაწილეები', s5: 'შენი მონაცემები',
+  sEquip: 'აღჭურვილობა', s1: 'აირჩიე აქტივობა', s2: 'აირჩიე თვე და დღე', s3: 'აირჩიე საათი', s4: 'მონაწილეები', s5: 'შენი მონაცემები',
   rides: {
     first: ['პირველი სრიალი', 'დამწყებთათვის · მწვრთნელი შედის', 'დამწყებთათვის'],
     set: ['სავარჯიშო საათი', 'სლალომი, ვეიკი ან ტრიუკები'],
@@ -198,7 +198,7 @@ en: {
   title: 'Your wave on Golden Lake — Poti Lake Club',
   place: 'Golden Lake · Maltakva · Poti', h1a: 'Ride the wave.', h1b: 'Own the lake.',
   chip1: 'Equipment rental available', chip2: 'Professional coaching', chip3: 'All skill levels',
-  s1: 'Choose your ride', s2: 'Pick a month and day', s3: 'Pick an hour', s4: 'Riders', s5: 'Your details',
+  sEquip: 'Equipment', s1: 'Choose your ride', s2: 'Pick a month and day', s3: 'Pick an hour', s4: 'Riders', s5: 'Your details',
   rides: {
     first: ['First Ride', 'For beginners · coach included', 'Beginners'],
     set: ['Training Hour', 'Slalom, wake or tricks'],
@@ -290,7 +290,7 @@ ru: {
   title: 'Твоя волна на Золотом озере — Poti Lake Club',
   place: 'Золотое озеро · Малтаква · Поти', h1a: 'Поймай волну.', h1b: 'Озеро твоё.',
   chip1: 'Прокат снаряжения', chip2: 'Профессиональные тренеры', chip3: 'Любой уровень',
-  s1: 'Выбери катание', s2: 'Выбери месяц и день', s3: 'Выбери час', s4: 'Участники', s5: 'Твои данные',
+  sEquip: 'Снаряжение', s1: 'Выбери катание', s2: 'Выбери месяц и день', s3: 'Выбери час', s4: 'Участники', s5: 'Твои данные',
   rides: {
     first: ['Первое катание', 'Для новичков · с тренером', 'Новичкам'],
     set: ['Тренировочный час', 'Слалом, вейк или трюки'],

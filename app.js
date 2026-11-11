@@ -103,15 +103,15 @@ $('#rides').addEventListener('change', e => {
 /* ---------- equipment: the owner's catalogue (Owner page → Services → Equipment) ---------- */
 const gearFor = id => state.gear.filter(g => g.ride === id);
 const renting = () => state.equip === 'rent' && gearFor(state.ride.id).length > 0;
-const equipItems = () => !renting() ? [] : gearFor(state.ride.id).map(g => ({ id: g.id, n: Math.min(state.eqSel[g.id] || 0, state.riders) })).filter(x => x.n > 0);
+const equipItems = () => !renting() ? [] : gearFor(state.ride.id).map(g => ({ id: g.id, n: Math.min(state.eqSel[g.id] || 0, 12) })).filter(x => x.n > 0);
 const equipSets = () => equipItems().reduce((a, x) => a + x.n, 0);
 const equipHourly = () => equipItems().reduce((a, x) => a + +state.gear.find(g => g.id === x.id).price * x.n, 0);
 const priceTag = p => +p > 0 ? `₾${money(+p)} / ${t('perH')}` : t('eqFree');
+function numberSteps() { [...document.querySelectorAll('#bookingForm fieldset.step')].filter(f => !f.hidden).forEach((f, k) => { const n = f.querySelector('legend i'); if (n) n.textContent = k + 1; }); }
 function renderEquip() {
   const list = state.picked ? gearFor(state.ride.id) : [], box = $('#equipBox');
-  box.hidden = !list.length;
+  $('#equipStep').hidden = !list.length; numberSteps();
   if (!list.length) return;
-  for (const g of list) if (state.eqSel[g.id] > state.riders) state.eqSel[g.id] = state.riders;
   const from = Math.min(...list.map(g => +g.price));
   box.innerHTML = `<p class="eq-q">${esc(t('eqQ'))}</p>
     <div class="eq-opts" role="radiogroup">
@@ -120,19 +120,19 @@ function renderEquip() {
     </div>
     ${state.equip === 'rent' ? `<ul class="eq-items">${list.map(g => { const n = state.eqSel[g.id] || 0; return `<li class="eq-item${n ? ' on' : ''}">
         <div class="eq-name"><b>${esc(equipName(g))}</b>${equipInfo(g) ? `<small>${esc(equipInfo(g))}</small>` : ''}<span class="eq-price">${esc(priceTag(g.price))}</span></div>
-        <div class="stepper sm"><button type="button" data-eqid="${g.id}" data-d="-1" aria-label="−" ${n ? '' : 'disabled'}>−</button><output>${n}</output><button type="button" data-eqid="${g.id}" data-d="1" aria-label="+" ${n >= state.riders ? 'disabled' : ''}>+</button></div>
+        <div class="stepper sm"><button type="button" data-eqid="${g.id}" data-d="-1" aria-label="−" ${n ? '' : 'disabled'}>−</button><output>${n}</output><button type="button" data-eqid="${g.id}" data-d="1" aria-label="+" ${n >= 12 ? 'disabled' : ''}>+</button></div>
       </li>`; }).join('')}</ul>
       ${equipSets() ? `<p class="eq-total">${esc(t('eqTotal'))}: <b>${esc(equipHourly() > 0 ? `₾${money(equipHourly())} / ${t('perH')}` : t('eqFree'))}</b></p>` : `<p class="eq-hint">${esc(t('eqPickHint'))}</p>`}` : ''}`;
 }
 $('#equipBox').addEventListener('change', e => {
   if (e.target.name !== 'equip') return;
   state.equip = e.target.value;
-  if (state.equip === 'rent' && !equipSets()) { const g = gearFor(state.ride.id)[0]; if (g) state.eqSel[g.id] = state.riders; }  // start with one of the first item per rider
+  if (state.equip === 'rent' && !equipSets()) { const g = gearFor(state.ride.id)[0]; if (g) state.eqSel[g.id] = 1; }  // start with one of the first item; quantities are independent of the rider count
   renderEquip(); update();
 });
 $('#equipBox').addEventListener('click', e => {
   const b = e.target.closest('[data-eqid]'); if (!b) return;
-  const id = b.dataset.eqid; state.eqSel[id] = Math.min(state.riders, Math.max(0, (state.eqSel[id] || 0) + +b.dataset.d));
+  const id = b.dataset.eqid; state.eqSel[id] = Math.min(12, Math.max(0, (state.eqSel[id] || 0) + +b.dataset.d));
   renderEquip(); update();
 });
 
