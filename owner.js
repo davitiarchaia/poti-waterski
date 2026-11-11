@@ -371,7 +371,7 @@ function renderPrices() {
         <label class="check"><input type="checkbox" data-sv="${r.ride}" data-k="active" ${r.active !== false ? 'checked' : ''}> <span>${esc(t('fActive'))}</span></label>
       </div>
       <label class="svc-info"><span>${esc(t('svInfo'))} (ქარ)</span>${inp(r, 'info_ka', 140, t('svInfoPh'))}</label>
-      <a class="svc-eq gear-link" href="#gearPanel">🏄 <span data-gearcount="${r.ride}"></span></a>
+      <div class="svc-gear" data-gearbox="${esc(r.ride)}"></div>
       <details class="svc-more"><summary>${esc(t('svMore'))}</summary>
         <div class="svc-grid">
           <label><span>${esc(t('svName'))} (EN)</span>${inp(r, 'name_en', 60)}</label><label><span>${esc(t('svName'))} (RU)</span>${inp(r, 'name_ru', 60)}</label>
@@ -390,6 +390,7 @@ const SV_KEYS = ['name_ka', 'name_en', 'name_ru', 'info_ka', 'info_en', 'info_ru
 $('#savePrices').addEventListener('click', async e => {
   const btn = e.target; btn.disabled = true; $('#priceError').textContent = '';
   try {
+    if (window.ownerGearSave) await window.ownerGearSave();
     for (const r of state.prices.filter(r => !r.archived)) {
       const body = {};
       for (const k of SV_KEYS) { const v = svVal(r.ride, k); if (v !== undefined && v !== (NUM_KEYS.includes(k) && r[k] != null ? +r[k] : r[k] ?? null)) body[k] = v; }
