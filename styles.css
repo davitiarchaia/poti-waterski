@@ -1125,3 +1125,4 @@ body{background:#fff}
 .cal .cd.past{background:transparent}.cal .cd.closed{background:#f6f6fa}
 .cal .cal-legend{background:#f6f6fa}
 .chips li{background:rgba(95,240,224,.14)}
+.cal-legend .lg.free{background:#35e0cc}.cal-legend .lg.few{background:#b9b3e6}.cal-legend .lg.closed{background:#cfd2de}

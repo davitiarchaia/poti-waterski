@@ -2,7 +2,7 @@
 (() => {
 const form = document.querySelector('#bookingForm'); if (!form) return;
 const { i18n } = window.PW, t = k => i18n.t(k);
-const mq = window.matchMedia('(max-width: 720px)');
+const mq = { matches: true, addEventListener() {} };   // one step at a time on every screen size
 const bar = document.createElement('div'); bar.className = 'wiz-bar'; bar.hidden = true;
 bar.innerHTML = `<div class="wiz-prog"><span id="wizStep"></span><i><b id="wizFill"></b></i><strong id="wizSum"></strong></div>
   <p class="form-error" id="wizErr" role="alert"></p>
