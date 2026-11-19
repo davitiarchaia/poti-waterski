@@ -97,12 +97,13 @@ function renderRides() {
 }
 /* the equipment dropdown opens directly under the chosen service card */
 function placeEquip() {
-  const box = $('#equipBox'), sel = $('#rides input:checked');
+  const box = $('#equipBox'), sel = $('#rides input[name=ride]:checked');
   if (sel && state.picked) sel.closest('.ride').after(box); else if (box.parentNode === $('#rides')) $('#rides').after(box);
 }
 $('#rides').addEventListener('change', e => {
   if (e.target.name !== 'ride') return;
   state.ride = RIDES.find(r => r.id === e.target.value); state.picked = true;
+  state.equip = 'own'; state.eqSel = {};  // the previous service's dropdown folds back; the new one starts closed
   if (state.offer && state.offer.ride && state.offer.ride !== state.ride.id) state.offer = null;
   if (state.coach && !coachFits(state.coaches.find(c => c.id === state.coach))) state.coach = null;
   renderEquip(); renderOffers(); renderCoaches(); renderPassUse(); update();
