@@ -1289,3 +1289,5 @@ body{background:var(--bg)}
 html body *{text-transform:none!important}
 .cm-hero .eyebrow,.page-hero .eyebrow,.hero .eyebrow{color:var(--mint)}
 .story .eyebrow{color:var(--head2)}
+/* place line over the photo: white on a dark chip so it stays readable on any picture */
+.visual .eyebrow{display:inline-flex;align-items:center;color:#fff;font-weight:700;font-size:clamp(1rem,1.3vw,1.15rem);letter-spacing:.01em;padding:.45rem .95rem;border-radius:999px;background:color-mix(in srgb,var(--night) 78%,transparent);border:1px solid color-mix(in srgb,var(--mint) 55%,transparent);text-shadow:0 1px 2px rgba(0,0,0,.5)}
