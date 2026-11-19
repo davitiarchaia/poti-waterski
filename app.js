@@ -269,19 +269,24 @@ function renderSlots() {
   if (!open.length || open.every(q => slotFull(state.day, q))) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>`; return; }
   const sel = state.time ? rangeOf(state.time) : [];
   const hoursOpen = [...new Set(open.map(hourOf))];
-  box.innerHTML = hoursOpen.map(h => {
+  const legend = `<div class="slot-legend" aria-hidden="true"><span><i class="lg ok"></i>${esc(t('lgAvail'))}</span>${state.boats > 1 ? `<span><i class="lg few"></i>${esc(t('lgLimited'))}</span>` : ''}<span><i class="lg na"></i>${esc(t('lgNA'))}</span></div>`;
+  box.innerHTML = legend + hoursOpen.map(h => {
     const hw = state.wx && state.wx.hourly[`${state.day}T${h}`];
     const chips = open.filter(q => hourOf(q) === h).map(q => {
       const full = slotFull(state.day, q), ok = !full && startOk(state.day, q, state.dur, open);
       const why = hourClosed(state.day, q) ? t('closed') : full ? t('taken') : !ok ? t('noFitD')(durText(state.dur)) : '';
       const cls = `${sel.includes(q) && q !== state.time ? ' in-range' : ''}${full ? ' full' : !ok ? ' no-fit' : ''}`;
       return `<button type="button" class="q${cls}" role="radio" aria-checked="${state.time === q}" data-h="${q}" ${ok ? '' : 'disabled'}
-        aria-label="${q}–${addQ(q, state.dur)}${why ? ' — ' + esc(why) : ''}" title="${why ? esc(why) : `${q}–${addQ(q, state.dur)}`}">${q.slice(3)}</button>`;
+        aria-label="${q}–${addQ(q, state.dur)}${why ? ' — ' + esc(why) : ''}" title="${why ? esc(why) : `${q}–${addQ(q, state.dur)}`}">${q}</button>`;
     }).join('');
-    const left = Math.min(...open.filter(q => hourOf(q) === h).map(q => state.boats - slotUsed(state.day, q)));
-    return `<div class="hrow"><span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>
-      <span class="qs">${chips}</span>${state.boats > 1 && left > 0 ? `<small class="sb">${esc(t('boatsLeft')(left))}</small>` : ''}</div>`;
-  }).join('') + (state.time ? `<p class="sel-range">✓ ${esc(state.time)}–${esc(addQ(state.time, state.dur))} · ${esc(durText(state.dur))}</p>` : '');
+    const hq = open.filter(q => hourOf(q) === h), left = Math.min(...hq.map(q => state.boats - slotUsed(state.day, q))), allFull = hq.every(q => slotFull(state.day, q));
+    const ic = { boat: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 17l2.5-6h12.5l3 4 2 2z"/><path d="M5 11l3-4h5"/><path d="M2 21c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1"/></svg>', ban: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>' };
+    const side = allFull ? `<small class="sb is-full">${ic.ban} ${esc(t('fullLbl'))}</small>` : state.boats > 1 && left > 0 ? `<small class="sb">${ic.boat} ${esc(t('boatsN')(left))}</small>` : '';
+    return `<div class="hrow${allFull ? ' is-full' : state.boats > 1 && left === 1 ? ' limited' : ''}"><span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>
+      <span class="qs">${chips}</span>${side}</div>`;
+  }).join('') + (state.time ? `<div class="sel-bar"><b>${esc(t('yourSel'))}</b>
+      <span>${esc(fmt(state.day, 'dm'))}</span><span>${esc(state.lake ? lakeName(state.lakes.find(l => l.id === state.lake)) : t('lakeAny'))}</span>
+      <span><b>${esc(state.time)} – ${esc(addQ(state.time, state.dur))}</b><small>${esc(durText(state.dur))}</small></span><span>${esc(t('rider')(state.riders))}</span></div>` : '');
 }
 $('#slots').addEventListener('click', e => {
   const b = e.target.closest('.q'); if (!b || b.disabled) return;
@@ -289,6 +294,13 @@ $('#slots').addEventListener('click', e => {
   if (state.coach && coachBusy(state.coach)) state.coach = null;
   renderSlots(); renderCoaches(); update();
 });
+/* riders: "?" explains the skill levels (hover, focus or tap) */
+{ const b = $('#rHelpBtn'), pop = $('#rHelp'), set = v => { pop.hidden = !v; b.setAttribute('aria-expanded', v); };
+  let hov = 0;
+  b.addEventListener('click', e => { e.stopPropagation(); if (Date.now() - hov < 400) return set(true); set(pop.hidden); });   // a tap fires mouseenter first
+  b.addEventListener('mouseenter', () => { hov = Date.now(); set(true); }); b.addEventListener('mouseleave', () => set(false));
+  document.addEventListener('click', e => { if (!pop.hidden && !pop.contains(e.target)) set(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); }); }
 /* the customer may pick a lake; "any lake" leaves it to the staff */
 function renderLakePick() {
   const box = $('#lakePick'); box.hidden = state.lakes.length < 2; if (box.hidden) { state.lake = null; return; }
