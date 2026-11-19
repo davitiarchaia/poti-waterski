@@ -303,8 +303,8 @@ $('#slots').addEventListener('click', e => {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); }); }
 /* the customer may pick a lake; "any lake" leaves it to the staff */
 function renderLakePick() {
-  const box = $('#lakePick'); box.hidden = state.lakes.length < 2; if (box.hidden) { state.lake = null; return; }
-  if (state.lake && !state.lakes.some(l => l.id === state.lake)) state.lake = null;
+  const box = $('#lakePick'); box.hidden = state.lakes.length < 2; if (box.hidden) { if (state.loaded) state.lake = null; return; }
+  if (state.loaded && state.lake && !state.lakes.some(l => l.id === state.lake)) state.lake = null;
   const stock = { 'Lake 1': 'img/lake1.jpg', 'Lake 2': 'img/lake2.jpg' };   // default aerial crops; an uploaded photo (Owner page) replaces them
   const bg = l => { const p = state.photos.find(x => x.lake_id === l.id), u = p ? photoUrl(p.path) : stock[l.name_en]; return u ? ` style="background-image:url('${esc(u)}')"` : ''; };
   const opts = [...state.lakes.map(l => ({ id: l.id, n: lakeName(l), st: bg(l) })), { id: '', n: t('lakeAny'), st: '' }];
@@ -472,6 +472,7 @@ async function submit() {
 function submitIfReady() { if (state.day && state.time) submit(); }
 const lastWhen = b => whenText(b.date, b.time, b.dur || 1);
 function showDone() {
+  window.PW.clearBooking();
   const b = state.last, rn = rideName(b.ride);
   $('#doneText').textContent = t('doneText')(rn, lastWhen(b), t('rider')(b.riders));
   const lk = state.lakes.find(l => l.id === b.lake_id);
@@ -750,9 +751,34 @@ function afterAuth() { update(); return loadMine(); }
 /* ---------- start ---------- */
 state.month = startMonth();
 $('#yr').textContent = new Date().getFullYear();
+/* a refresh keeps the booking exactly where it was (same step, same choices) — stored per tab, cleared when a booking is sent */
+const SAVE = 'pw.booking';
+function saveBooking() {
+  try {
+    if (!state.picked && !state.day) return sessionStorage.removeItem(SAVE);
+    sessionStorage.setItem(SAVE, JSON.stringify({ ride: state.ride.id, picked: state.picked, groups: state.groups, riders: state.riders, day: state.day, time: state.time, dur: state.dur, lake: state.lake,
+      equip: state.equip, eqSel: state.eqSel, coach: state.coach, payMethod: state.payMethod, month: iso(state.month), form: { name: form.name.value, phone: form.phone.value, email: form.email.value, notes: form.notes.value } }));
+  } catch {}
+}
+window.PW.saveBooking = saveBooking;
+window.PW.clearBooking = () => { try { sessionStorage.removeItem(SAVE); sessionStorage.removeItem('pw.step'); } catch {} };
+try {
+  const s = JSON.parse(sessionStorage.getItem(SAVE) || 'null');
+  if (s) {
+    const r = RIDES.find(x => x.id === s.ride); if (r) { state.ride = r; state.picked = !!s.picked; }
+    if (Array.isArray(s.groups) && s.groups.length) { state.groups = s.groups; state.riders = s.groups.reduce((n, g) => n + g.n, 0); }
+    state.dur = Math.min(MAX_Q, Math.max(1, +s.dur || 1)); state.lake = s.lake || null; state.equip = s.equip === 'rent' ? 'rent' : 'own'; state.eqSel = s.eqSel || {}; state.coach = s.coach || null;
+    state.payMethod = s.payMethod || 'card';
+    const pm = document.querySelector(`input[name=paym][value="${state.payMethod}"]`); if (pm) pm.checked = true;
+    if (s.day && s.day >= todayIso()) { state.day = s.day; state.time = s.time || null; }
+    if (s.month) { const m = fromIso(s.month); if (m >= thisMonth && m <= lastMonth) state.month = m; }
+    for (const k of ['name', 'phone', 'email', 'notes']) if (s.form && s.form[k]) form[k].value = s.form[k];
+  }
+} catch {}
+form.addEventListener('input', () => setTimeout(saveBooking, 100)); form.addEventListener('click', () => setTimeout(saveBooking, 150)); form.addEventListener('change', () => setTimeout(saveBooking, 100));
 applyLang(i18n.lang);
 ui.init({ onSignIn: p => { prefill(p); afterAuth(); }, onSignOut: () => { afterAuth(); } }).then(p => { prefill(p); return afterAuth(); }).then(handleReviewLink).then(handlePayReturn);
-loadClub().catch(() => {}).then(() => requestAnimationFrame(() => document.documentElement.classList.remove('boot')));   // the page stays hidden until the club's own services/prices are in — no flash of built-in defaults
+loadClub().catch(() => {}).then(() => requestAnimationFrame(() => { document.documentElement.classList.remove('boot'); try { if (+sessionStorage.getItem('pw.step') > 0 && state.picked) window.scrollTo(0, Math.max(0, form.getBoundingClientRect().top + window.scrollY - 76)); } catch {} }));   // the page stays hidden until the club's own services/prices are in — no flash of built-in defaults
 loadMonth(); loadWeather(); loadReviews();
 if (location.hash === '#mine') setTimeout(() => $('#mine').scrollIntoView(), 700);
 })();

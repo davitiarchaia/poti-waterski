@@ -10,6 +10,7 @@ bar.innerHTML = `<div class="wiz-prog"><span id="wizStep"></span><i><b id="wizFi
 form.append(bar);
 const $ = s => form.querySelector(s);
 let i = 0, on = false;
+try { i = +sessionStorage.getItem('pw.step') || 0; if (!(window.bookingState || {}).picked) i = 0; } catch {}
 const steps = () => [...form.querySelectorAll('fieldset.step')].filter(f => !f.hidden);
 const S = () => window.bookingState || {};
 
@@ -23,6 +24,8 @@ function paint(scroll) {
   $('#wizBack').textContent = t('wizBack'); $('#wizBack').hidden = i === 0;
   $('#wizNext').textContent = t('wizNext'); $('#wizNext').hidden = last;
   $('#wizErr').textContent = '';
+  try { sessionStorage.setItem('pw.step', i); } catch {}
+  if (window.PW && window.PW.saveBooking) window.PW.saveBooking();
   sum();
   if (scroll) { const y = form.getBoundingClientRect().top + window.scrollY - 76; window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); }
 }
@@ -58,7 +61,7 @@ function back() {
   if (need < 0 || need === i) return;
   const msg = document.querySelector('#formError').textContent; i = need; paint(true); $('#wizErr').textContent = msg;
 }
-document.querySelector('#again')?.addEventListener('click', () => { i = 0; if (on) setTimeout(() => paint(true), 30); });
+document.querySelector('#again')?.addEventListener('click', () => { i = 0; try { sessionStorage.setItem('pw.step', 0); } catch {} if (on) setTimeout(() => paint(true), 30); });
 // offers and "book again" links jump to the form: start from the first step that still needs a choice
 document.querySelector('.lang')?.addEventListener('click', () => on && setTimeout(() => paint(false), 50));
 new MutationObserver(() => on && paint(false)).observe(form.querySelector('#lakeStep') || form, { attributes: true, attributeFilter: ['hidden'] });
