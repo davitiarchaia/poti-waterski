@@ -706,8 +706,8 @@ async function loadWeather() {
   renderWeather(); renderCalendar(); renderSlots();
 }
 function renderWeather() {
-  const wx = state.wx, days = $('#wxDays'), now = $('#wxNow');
-  if (!wx) { days.innerHTML = `<p class="muted">${esc(t('wxNa'))}</p>`; now.hidden = true; return; }
+  const wx = state.wx, days = $('#wxDays'), now = $('#wxNow'), strip = $('#wxStrip');
+  if (!wx) { if (strip) strip.hidden = true; days.innerHTML = `<p class="muted">${esc(t('wxNa'))}</p>`; now.hidden = true; return; }
   const c = wx.current, [ic, k] = wxInfo(c.weather_code);
   now.hidden = false;
   now.innerHTML = `<span class="wn-lab">${esc(t('wxLakeNow'))}</span><span class="wn-main"><span class="wn-ic" aria-hidden="true">${ic}</span><b>${Math.round(c.temperature_2m)}°C</b><span>${esc(t('wx')[k])}</span></span>
@@ -724,6 +724,13 @@ function renderWeather() {
         <span>${esc(t('wx')[k2])}</span><span class="muted">${esc(t('wxWind'))} ${Math.round(x.wind)} · ${esc(t('wxRain'))} ${x.rain ?? 0}%</span>
         <span class="score ${sc}">${esc(t('ride_' + sc))}</span></div>`;
     }).join('');
+  if (strip) {
+    strip.innerHTML = wx.days.slice(0, 7).map(d => {
+      const x = wx.daily[d], [i2] = wxInfo(x.code);
+      return `<div class="ws"><small>${esc(d === todayIso() ? t('today') : fmt(d, 'wd'))} ${fromIso(d).getDate()}</small><span aria-hidden="true">${i2}</span><b>${Math.round(x.max)}°</b><i>${Math.round(x.min)}°</i></div>`;
+    }).join('');
+    strip.hidden = false;
+  }
 }
 
 /* ---------- contact ---------- */

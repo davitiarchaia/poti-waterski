@@ -1300,3 +1300,20 @@ html body *{text-transform:none!important}
 .top{z-index:60}
 .wiz .wiz-bar{z-index:5}
 .wiz.wiz-last .wiz-bar{z-index:auto}
+
+/* mobile: forecast strip right in the hero, tidy current-weather box */
+.wx-strip{display:none}
+@media (max-width:900px){
+  .wx-strip:not([hidden]){display:flex;gap:.45rem;overflow-x:auto;margin-top:.7rem;padding:.1rem 0 .3rem;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .wx-strip::-webkit-scrollbar{display:none}
+  .wx-strip .ws{flex:0 0 auto;min-width:3.6rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.5rem .5rem;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#fff;font-size:.8rem}
+  .wx-strip .ws small{font-size:.68rem;opacity:.8;white-space:nowrap}
+  .wx-strip .ws span{font-size:1.25rem;line-height:1.2}
+  .wx-strip .ws b{font-size:.95rem}
+  .wx-strip .ws i{font-style:normal;opacity:.65;font-size:.75rem}
+  .wx-now{width:100%;box-sizing:border-box}
+  .wx-now>.wn-main{flex:1 1 auto;min-width:0;flex-wrap:nowrap}
+  .wx-now>.wn-main>span:last-child{white-space:normal;min-width:0}
+  .wx-now>.wn-wind{flex:0 0 auto}
+}
+@media (max-width:560px){.wx-now>.wn-wind{border-left:0!important;padding-left:0!important}}
