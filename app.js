@@ -9,7 +9,7 @@ i18n.init(window.DICT, ['ka', 'en', 'ru']);
 const state = {
   ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 1, riders: 1, load: {}, lakeLoad: {}, wx: null, mine: [], myPasses: [], myReviews: new Set(),
   busyMonth: false, offers: [], offer: null, prices: {}, boats: 1, allBoats: [], coaches: [], coach: null, plans: [], pass: null, reviews: [],
-  lakes: [], photos: [], lake: null, groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
+  lakes: [], photos: [], lake: null, payMethod: 'card', groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
 };
 const money = v => (Math.round(v * 100) / 100).toLocaleString(i18n.lang === 'en' ? 'en-GB' : 'ka-GE', { maximumFractionDigits: 2 });
 const toast = (msg, kind = '') => { const el = $('#toast'); el.textContent = msg; el.className = 'toast ' + kind; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 5000); };
@@ -451,7 +451,7 @@ async function submit() {
   if (row && row.id) fn('notify', { event: 'booking_created', id: row.id }).catch(() => {});
   showDone(); loadMonth(); loadMine();
   // with online payment the amount is only held on the card now; it is charged when the club confirms
-  if (C.onlinePayment && row && row.id && row.price > 0 && !row.paid) startPay('booking', row.id, $('#payBtn'));
+  if (C.onlinePayment && row && row.id && row.price > 0 && !row.paid) startPay('booking', row.id, $('#payBtn'), state.payMethod);
 }
 function submitIfReady() { if (state.day && state.time) submit(); }
 const lastWhen = b => whenText(b.date, b.time, b.dur || 1);
@@ -471,7 +471,7 @@ function showDone() {
   }
   form.hidden = true; const d = $('#done'); d.hidden = false; d.scrollIntoView({ behavior: 'smooth', block: 'center' }); d.focus({ preventScroll: true });
 }
-$('#payBtn').addEventListener('click', e => startPay('booking', e.target.dataset.id, e.target));
+$('#payBtn').addEventListener('click', e => startPay('booking', e.target.dataset.id, e.target, state.payMethod));
 $('#again').addEventListener('click', () => {
   const keep = { name: form.name.value, phone: form.phone.value };
   form.reset(); form.name.value = keep.name; form.phone.value = keep.phone;
@@ -481,15 +481,18 @@ $('#again').addEventListener('click', () => {
 });
 
 /* ---------- online payment (Bank of Georgia) ---------- */
-async function startPay(kind, id, btn) {
+async function startPay(kind, id, btn, method) {
   if (!id) return;
   if (!C.onlinePayment) return toast(t('payNotReady'));
   if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = t('paying'); }
-  const r = await fn('bog-pay', { kind, id, return_url: location.href.split(/[?#]/)[0] }).catch(() => ({}));
+  const r = await fn('bog-pay', { kind, id, method: method || 'card', return_url: location.href.split(/[?#]/)[0] }).catch(() => ({}));
   if (r.url) { location.href = r.url; return; }
   if (btn) { btn.disabled = false; btn.textContent = btn.dataset.label; }
   toast(r.error === 'not_configured' ? t('payNotReady') : r.error === 'already_paid' ? t('payOk') : t('payFail'), r.error === 'already_paid' ? 'ok' : 'bad');
 }
+/* payment method (card / Google Pay / Apple Pay) — the card itself is entered on the bank's secure page, never on this site */
+function renderPayInfo() { $('#paySecure').textContent = C.onlinePayment ? t('paySecure') : t('payLater'); }
+$('#payMethods').addEventListener('change', e => { if (e.target.name === 'paym') state.payMethod = e.target.value; });
 /* review link from the reminder email: ?review=<booking id> */
 async function handleReviewLink() {
   const q = new URLSearchParams(location.search), id = q.get('review');
@@ -722,7 +725,7 @@ function renderContact() {
 /* ---------- language ---------- */
 function applyLang(l) {
   i18n.set(l); document.title = t('title'); i18n.apply();
-  renderLakes(); renderLakePick(); renderGroups(); renderEquip(); renderRides(); renderOffers(); renderDur(); renderCoaches(); renderPlans(); renderCalendar(); renderSlots(); renderContact(); renderWeather(); renderMine(); renderReviews(); renderPassUse(); update(); ui.refresh();
+  renderLakes(); renderLakePick(); renderPayInfo(); renderGroups(); renderEquip(); renderRides(); renderOffers(); renderDur(); renderCoaches(); renderPlans(); renderCalendar(); renderSlots(); renderContact(); renderWeather(); renderMine(); renderReviews(); renderPassUse(); update(); ui.refresh();
   if (!$('#done').hidden && state.last) showDone();
 }
 $('.lang').addEventListener('click', e => { const l = e.target.dataset.lang; if (l) applyLang(l); });

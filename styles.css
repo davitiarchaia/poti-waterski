@@ -1150,3 +1150,15 @@ body{background:#fff}
 .lake-opts .lk[aria-checked=true]{outline:3px solid var(--lake);outline-offset:2px;border-color:var(--lake)}
 .lake-opts .lk[aria-checked=true]::after{content:"✓";position:absolute;top:8px;right:10px;z-index:1;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#35e0cc;color:#14123a;font-size:.85rem}
 @media (max-width:480px){.lake-opts{grid-template-columns:1fr 1fr}.lake-opts .lk:last-child{grid-column:1/-1;min-height:64px}}
+
+/* step 5: payment methods */
+.pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.pm{position:relative;display:flex;flex-direction:column;gap:.15rem;padding:.85rem .9rem;border:2px solid var(--line);border-radius:var(--r);background:#fff;cursor:pointer}
+.pm input{position:absolute;opacity:0;pointer-events:none}
+.pm b{font-size:1rem}.pm small{color:var(--muted);font-size:.78rem}
+.pm:hover{border-color:var(--mint)}
+.pm:has(input:checked){border-color:var(--lake);background:var(--tint);box-shadow:0 0 0 3px rgba(75,63,176,.12)}
+.pm:has(input:focus-visible){outline:2px solid var(--ink);outline-offset:2px}
+.pay-secure{margin:.6rem 0 0;font-size:.84rem;color:var(--muted)}
+.det-title{margin:1.1rem 0 .1rem;font-size:1rem}
+@media (max-width:480px){.pay-methods{grid-template-columns:1fr}.pm{flex-direction:row;align-items:baseline;gap:.6rem}}

@@ -71,7 +71,7 @@ ka: {
   title: 'შენი ტალღა ოქროს ტბაზე — Poti Lake Club',
   place: 'ოქროს ტბა · მალთაყვა · ფოთი', h1a: 'დადექი', h1b: 'წყალზე.',
   chip1: 'აღჭურვილობის ქირაობა', chip2: 'პროფესიონალი მწვრთნელები', chip3: 'ყველა დონისთვის',
-  sEquip: 'აღჭურვილობა', s1: 'აირჩიე აქტივობა', s2: 'აირჩიე თვე და დღე', s3: 'აირჩიე საათი', s4: 'მონაწილეები', s5: 'შენი მონაცემები',
+  sEquip: 'აღჭურვილობა', s1: 'აირჩიე აქტივობა', s2: 'აირჩიე თვე და დღე', s3: 'აირჩიე საათი', s4: 'მონაწილეები', s5: 'გადახდა', pmCard: 'ბარათი', pmCardSub: 'ბარათით გადახდა', pmWallet: 'სწრაფი გადახდა', paySecure: 'ბარათის მონაცემებს შეიყვან საქართველოს ბანკის დაცულ გვერდზე. თანხა მხოლოდ დაჯავშნისას დაიბლოკება, ჩამოიჭრება დადასტურების შემდეგ.', payLater: 'ონლაინ გადახდა მალე ჩაირთვება. ახლა ჯავშანს ადგილზე გადაიხდი.', detailsTitle: 'შენი მონაცემები',
   rides: {
     first: ['პირველი სრიალი', 'დამწყებთათვის · მწვრთნელი შედის', 'დამწყებთათვის'],
     set: ['სავარჯიშო საათი', 'სლალომი, ვეიკი ან ტრიუკები'],
@@ -198,7 +198,7 @@ en: {
   title: 'Your wave on Golden Lake — Poti Lake Club',
   place: 'Golden Lake · Maltakva · Poti', h1a: 'Ride the wave.', h1b: 'Own the lake.',
   chip1: 'Equipment rental available', chip2: 'Professional coaching', chip3: 'All skill levels',
-  sEquip: 'Equipment', s1: 'Choose your ride', s2: 'Pick a month and day', s3: 'Pick an hour', s4: 'Riders', s5: 'Your details',
+  sEquip: 'Equipment', s1: 'Choose your ride', s2: 'Pick a month and day', s3: 'Pick an hour', s4: 'Riders', s5: 'Payment', pmCard: 'Card', pmCardSub: 'Pay by card', pmWallet: 'Fast checkout', paySecure: 'You enter your card details on the Bank of Georgia’s secure page. The amount is only held now and charged once we confirm.', payLater: 'Online payment is coming soon. For now you pay at the lake.', detailsTitle: 'Your details',
   rides: {
     first: ['First Ride', 'For beginners · coach included', 'Beginners'],
     set: ['Training Hour', 'Slalom, wake or tricks'],
@@ -290,7 +290,7 @@ ru: {
   title: 'Твоя волна на Золотом озере — Poti Lake Club',
   place: 'Золотое озеро · Малтаква · Поти', h1a: 'Поймай волну.', h1b: 'Озеро твоё.',
   chip1: 'Прокат снаряжения', chip2: 'Профессиональные тренеры', chip3: 'Любой уровень',
-  sEquip: 'Снаряжение', s1: 'Выбери катание', s2: 'Выбери месяц и день', s3: 'Выбери час', s4: 'Участники', s5: 'Твои данные',
+  sEquip: 'Снаряжение', s1: 'Выбери катание', s2: 'Выбери месяц и день', s3: 'Выбери час', s4: 'Участники', s5: 'Оплата', pmCard: 'Карта', pmCardSub: 'Оплата картой', pmWallet: 'Быстрая оплата', paySecure: 'Данные карты вводятся на защищённой странице Банка Грузии. Сумма только блокируется и списывается после подтверждения.', payLater: 'Онлайн-оплата скоро заработает. Пока оплата на месте.', detailsTitle: 'Твои данные',
   rides: {
     first: ['Первое катание', 'Для новичков · с тренером', 'Новичкам'],
     set: ['Тренировочный час', 'Слалом, вейк или трюки'],

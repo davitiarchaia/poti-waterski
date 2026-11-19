@@ -106,6 +106,13 @@
 
       <fieldset class="step">
         <legend><i>5</i> <span data-i18n="s5"></span></legend>
+        <div class="pay-methods" id="payMethods" role="radiogroup" aria-label="Payment method">
+          <label class="pm"><input type="radio" name="paym" value="card" checked><b data-i18n="pmCard"></b><small data-i18n="pmCardSub"></small></label>
+          <label class="pm"><input type="radio" name="paym" value="google_pay"><b>Google Pay</b><small data-i18n="pmWallet"></small></label>
+          <label class="pm"><input type="radio" name="paym" value="apple_pay"><b>Apple Pay</b><small data-i18n="pmWallet"></small></label>
+        </div>
+        <p class="pay-secure" id="paySecure"></p>
+        <h4 class="det-title" data-i18n="detailsTitle"></h4>
         <div class="row">
           <label><span data-i18n="name"></span><input name="name" required autocomplete="name" maxlength="80" data-i18n-ph="namePh"></label>
           <label><span data-i18n="phone"></span><input name="phone" type="tel" required autocomplete="tel" inputmode="tel" maxlength="30" placeholder="+995 5XX XX XX XX"></label>
