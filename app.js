@@ -289,7 +289,8 @@ $('#slots').addEventListener('click', e => {
 function renderLakePick() {
   const box = $('#lakePick'); box.hidden = state.lakes.length < 2; if (box.hidden) { state.lake = null; return; }
   if (state.lake && !state.lakes.some(l => l.id === state.lake)) state.lake = null;
-  const bg = l => { const p = state.photos.find(x => x.lake_id === l.id); return p ? ` style="background-image:url('${esc(photoUrl(p.path))}')"` : ''; };
+  const stock = { 'Lake 1': 'img/lake1.jpg', 'Lake 2': 'img/lake2.jpg' };   // default aerial crops; an uploaded photo (Owner page) replaces them
+  const bg = l => { const p = state.photos.find(x => x.lake_id === l.id), u = p ? photoUrl(p.path) : stock[l.name_en]; return u ? ` style="background-image:url('${esc(u)}')"` : ''; };
   const opts = [...state.lakes.map(l => ({ id: l.id, n: lakeName(l), st: bg(l) })), { id: '', n: t('lakeAny'), st: '' }];
   $('#lakeOpts').innerHTML = opts.map(o => `<button type="button" class="lk${o.st ? ' has-ph' : ''}" role="radio" aria-checked="${(state.lake || '') === o.id}" data-lk="${o.id}"${o.st}><span>${esc(o.n)}</span></button>`).join('');
 }
