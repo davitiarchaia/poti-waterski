@@ -28,7 +28,7 @@ async function loadClub() {
     get('ride_prices?select=*'), get('boats?select=id,lake_id&active=eq.true'),
     get('coaches?select=id,name,bio,photo_url,rides&active=eq.true&order=sort.asc,created_at.asc'),
     get('offers?select=*&order=sort.asc,created_at.desc'), get('pass_plans?select=*&active=eq.true&order=sort.asc,price.asc'),
-    get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), Promise.resolve([]),
+    get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc').catch(() => []),
     get('equipment?select=*&active=eq.true&order=sort.asc,created_at.asc'),
   ]);
   state.periods = await get(`closed_periods?select=date_from,reopen_on,reason&reopen_on=gt.${todayIso()}&order=date_from.asc`);
@@ -289,8 +289,9 @@ $('#slots').addEventListener('click', e => {
 function renderLakePick() {
   const box = $('#lakePick'); box.hidden = state.lakes.length < 2; if (box.hidden) { state.lake = null; return; }
   if (state.lake && !state.lakes.some(l => l.id === state.lake)) state.lake = null;
-  const opts = [{ id: '', n: t('lakeAny') }, ...state.lakes.map(l => ({ id: l.id, n: lakeName(l) }))];
-  $('#lakeOpts').innerHTML = opts.map(o => `<button type="button" class="lk" role="radio" aria-checked="${(state.lake || '') === o.id}" data-lk="${o.id}">${esc(o.n)}</button>`).join('');
+  const bg = l => { const p = state.photos.find(x => x.lake_id === l.id); return p ? ` style="background-image:url('${esc(photoUrl(p.path))}')"` : ''; };
+  const opts = [...state.lakes.map(l => ({ id: l.id, n: lakeName(l), st: bg(l) })), { id: '', n: t('lakeAny'), st: '' }];
+  $('#lakeOpts').innerHTML = opts.map(o => `<button type="button" class="lk${o.st ? ' has-ph' : ''}" role="radio" aria-checked="${(state.lake || '') === o.id}" data-lk="${o.id}"${o.st}><span>${esc(o.n)}</span></button>`).join('');
 }
 $('#lakeOpts').addEventListener('click', e => {
   const b = e.target.closest('[data-lk]'); if (!b) return;

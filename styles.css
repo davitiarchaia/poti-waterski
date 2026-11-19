@@ -1138,3 +1138,15 @@ body{background:#fff}
 .lake-opts .lk{padding:.45rem .95rem;border-radius:999px;border:2px solid var(--line);background:#fff;font:inherit;font-weight:600;cursor:pointer;color:var(--ink)}
 .lake-opts .lk:hover{border-color:var(--lake)}
 .lake-opts .lk[aria-checked=true]{border-color:var(--lake);background:var(--tint);color:var(--deep)}
+
+/* big lake buttons (photo background when the owner has uploaded one) */
+.lake-pick{display:grid;gap:.5rem}
+.lake-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.lake-opts .lk{position:relative;min-height:104px;padding:.8rem;border-radius:16px;display:flex;align-items:flex-end;justify-content:flex-start;text-align:left;font-size:1.02rem;font-weight:800;background-color:var(--tint);background-size:cover;background-position:center;overflow:hidden;isolation:isolate}
+.lake-opts .lk>span{position:relative;z-index:1}
+.lake-opts .lk.has-ph{color:#fff;border-color:transparent}
+.lake-opts .lk.has-ph::before{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(20,18,58,.05) 25%,rgba(20,18,58,.72))}
+.lake-opts .lk.has-ph>span{text-shadow:0 1px 6px rgba(0,0,0,.5)}
+.lake-opts .lk[aria-checked=true]{outline:3px solid var(--lake);outline-offset:2px;border-color:var(--lake)}
+.lake-opts .lk[aria-checked=true]::after{content:"✓";position:absolute;top:8px;right:10px;z-index:1;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#35e0cc;color:#14123a;font-size:.85rem}
+@media (max-width:480px){.lake-opts{grid-template-columns:1fr 1fr}.lake-opts .lk:last-child{grid-column:1/-1;min-height:64px}}

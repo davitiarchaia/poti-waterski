@@ -26,6 +26,8 @@ function renderLakes(st) {
         <label class="check"><input type="checkbox" data-lk="${l.id}" data-k="active" ${l.active ? 'checked' : ''}> <span>${esc(t('fActive'))}</span></label>
         <button type="button" class="btn-small primary" data-lksave="${l.id}">${esc(t('save'))}</button>
       </div>
+      <div class="lk-photos">${ph.map(p => `<figure class="lk-ph"><img src="${esc(photoUrl(p.path))}" alt="" loading="lazy"><div class="lk-ph-acts"><button type="button" class="btn-small" data-phdel="${p.id}">✕</button></div></figure>`).join('')}
+        <label class="lk-upload"><input type="file" accept="image/*" multiple hidden data-upload="${l.id}"><span>＋ ${esc(t('lkUpload'))}</span></label></div>
     </article>`;
   }).join('') || `<p class="inbox-empty">${esc(t('noData'))}</p>`;
 }
