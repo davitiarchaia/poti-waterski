@@ -737,6 +737,7 @@ state.month = startMonth();
 $('#yr').textContent = new Date().getFullYear();
 applyLang(i18n.lang);
 ui.init({ onSignIn: p => { prefill(p); afterAuth(); }, onSignOut: () => { afterAuth(); } }).then(p => { prefill(p); return afterAuth(); }).then(handleReviewLink).then(handlePayReturn);
-loadClub(); loadMonth(); loadWeather(); loadReviews();
+loadClub().catch(() => {}).then(() => requestAnimationFrame(() => document.documentElement.classList.remove('boot')));   // the page stays hidden until the club's own services/prices are in — no flash of built-in defaults
+loadMonth(); loadWeather(); loadReviews();
 if (location.hash === '#mine') setTimeout(() => $('#mine').scrollIntoView(), 700);
 })();
