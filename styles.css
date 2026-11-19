@@ -1162,3 +1162,9 @@ body{background:#fff}
 .pay-secure{margin:.6rem 0 0;font-size:.84rem;color:var(--muted)}
 .det-title{margin:1.1rem 0 .1rem;font-size:1rem}
 @media (max-width:480px){.pay-methods{grid-template-columns:1fr}.pm{flex-direction:row;align-items:baseline;gap:.6rem}}
+
+/* owner tabs: compact and wrapping, so every section is visible at once */
+.o-tabs{flex-wrap:wrap;overflow:visible;gap:.25rem;border-radius:18px;padding:.25rem}
+.o-tabs button{flex:1 1 auto;padding:.42rem .7rem;font-size:.84rem;border-radius:999px}
+.o-tabs .count{font-size:.7rem}
+@media (max-width:600px){.o-tabs button{padding:.38rem .55rem;font-size:.8rem}}
