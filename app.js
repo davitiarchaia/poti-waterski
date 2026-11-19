@@ -7,7 +7,7 @@ const t = k => i18n.t(k);
 i18n.init(window.DICT, ['ka', 'en', 'ru']);
 
 const state = {
-  ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 4, riders: 1, load: {}, wx: null, mine: [], myPasses: [], myReviews: new Set(),
+  ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 1, riders: 1, load: {}, lakeLoad: {}, wx: null, mine: [], myPasses: [], myReviews: new Set(),
   busyMonth: false, offers: [], offer: null, prices: {}, boats: 1, allBoats: [], coaches: [], coach: null, plans: [], pass: null, reviews: [],
   lakes: [], photos: [], lake: null, groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
 };
@@ -42,7 +42,7 @@ async function loadClub() {
   state.offers = offers.filter(o => o.active && (!o.valid_to || o.valid_to >= todayIso()));
   if (state.offer && !state.offers.some(o => o.id === state.offer.id)) state.offer = null;
   state.plans = plans;
-  renderLakes(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPlans(); renderSlots(); renderCalendar(); update();
+  renderLakes(); renderLakePick(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPlans(); renderSlots(); renderCalendar(); update();
 }
 function setBoats() { state.boats = state.lakes.length; }   // one session per active lake at the same time; staff choose the lake later
 
@@ -180,7 +180,8 @@ const dayClosed = d => !!periodOf(d) || !!(state.closed && state.closed[d] && '*
 const dayReason = d => { const p = periodOf(d); return p ? (p.reason || '') : ((state.closed && state.closed[d] && state.closed[d]['*']) || ''); };
 const hourOf = q => q.slice(0, 2) + ':00';
 const hourClosed = (d, q) => dayClosed(d) || !!(state.closed && state.closed[d] && hourOf(q) in state.closed[d]);
-const slotFull = (d, q) => hourClosed(d, q) || slotUsed(d, q) >= state.boats;
+const lakeTaken = (d, q) => !!state.lake && (((state.lakeLoad[d] || {})[q]) || []).includes(state.lake);
+const slotFull = (d, q) => hourClosed(d, q) || slotUsed(d, q) >= state.boats || lakeTaken(d, q);
 const MAX_Q = 40;                                   // 10 hours
 const toMin = q => +q.slice(0, 2) * 60 + +q.slice(3, 5);
 const fromMin = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
@@ -202,11 +203,12 @@ async function loadMonth() {
   const map = {};
   const closed = {};
   try {
-    const [load, cl] = await Promise.all([rpc('slot_load', { d1, d2 }), rpc('closed_slots', { d1, d2 }).catch(() => [])]);
+    const [load, cl, lk] = await Promise.all([rpc('slot_load', { d1, d2 }), rpc('closed_slots', { d1, d2 }).catch(() => []), rpc('slot_lakes', { d1, d2 }).catch(() => [])]);
+    const ll = {}; lk.forEach(r => { (ll[r.d] = ll[r.d] || {})[r.t] = r.lakes || []; }); state.lakeLoad = ll;
     load.forEach(r => { (map[r.d] = map[r.d] || {})[r.t] = { used: r.used, coaches: r.coaches || [] }; });
     cl.forEach(r => { (closed[r.d] = closed[r.d] || {})[r.t || '*'] = r.reason || ''; });
     state.load = map; state.closed = closed;
-  } catch { state.load = {}; state.closed = {}; }
+  } catch { state.load = {}; state.closed = {}; state.lakeLoad = {}; }
   state.busyMonth = false; renderCalendar(); renderSlots(); renderCoaches();
 }
 function renderCalendar() {
@@ -283,8 +285,20 @@ $('#slots').addEventListener('click', e => {
   if (state.coach && coachBusy(state.coach)) state.coach = null;
   renderSlots(); renderCoaches(); update();
 });
+/* the customer may pick a lake; "any lake" leaves it to the staff */
+function renderLakePick() {
+  const box = $('#lakePick'); box.hidden = state.lakes.length < 2; if (box.hidden) { state.lake = null; return; }
+  if (state.lake && !state.lakes.some(l => l.id === state.lake)) state.lake = null;
+  const opts = [{ id: '', n: t('lakeAny') }, ...state.lakes.map(l => ({ id: l.id, n: lakeName(l) }))];
+  $('#lakeOpts').innerHTML = opts.map(o => `<button type="button" class="lk" role="radio" aria-checked="${(state.lake || '') === o.id}" data-lk="${o.id}">${esc(o.n)}</button>`).join('');
+}
+$('#lakeOpts').addEventListener('click', e => {
+  const b = e.target.closest('[data-lk]'); if (!b) return;
+  state.lake = b.dataset.lk || null;
+  renderLakePick(); renderCalendar(); renderSlots(); renderCoaches(); update();
+});
 // duration: 15 minutes … 10 hours
-const DUR_QUICK = [2, 4, 6, 8, 12];
+const DUR_QUICK = [1, 2, 4, 6, 8, 12];
 function renderDur() {
   $('#dur').innerHTML = `<div class="stepper dur-step"><button type="button" data-dd="-1" aria-label="−15" ${state.dur <= 1 ? 'disabled' : ''}>−</button>
       <output aria-live="polite">${esc(durText(state.dur))}</output><button type="button" data-dd="1" aria-label="+15" ${state.dur >= MAX_Q ? 'disabled' : ''}>+</button></div>
@@ -379,7 +393,7 @@ function currentPrice() {
 function update() {
   const coach = state.coaches.find(c => c.id === state.coach);
   const lk = state.lakes.find(l => l.id === state.lake), sets = equipSets();
-  $('#sumRide').textContent = !state.picked ? '—' : `${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
+  $('#sumRide').textContent = !state.picked ? '—' : `${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${lk ? ' · ' + lakeName(lk) : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
   $('#sumWhen').textContent = whenText();
   const o = state.offer, pct = o && o.discount_percent, p = currentPrice();
   $('#sumTotal').textContent = state.pass ? (p ? `${t('byPass')} + ₾${money(p)}` : t('byPass')) : p == null ? (pct ? t('offerOff')(pct) : t('onRequest')) : '₾' + money(p);
@@ -413,7 +427,7 @@ async function submit() {
   const levelSum = state.groups.length === 1 ? window.DICT.en.levels[state.groups[0].l] : 'Mixed';
   const booking = { ride: state.ride.id, date: state.day, time: state.time, riders: state.riders, rider_groups: state.groups.map(g => ({ l: g.l, n: g.n })),
     level: levelSum, name, phone, email, notes: form.notes.value.trim() || null, lang: i18n.lang, equip_items: equipItems().length ? equipItems() : null,
-    offer_id: state.offer && !state.pass ? state.offer.id : null, coach_id: state.coach, pass_id: state.pass };
+    offer_id: state.offer && !state.pass ? state.offer.id : null, coach_id: state.coach, pass_id: state.pass, lake_id: state.lake || null };
   const btn = $('#submitBtn'); btn.disabled = true; btn.textContent = t('sending');
   let res = 'error', row = null;
   const rows = rangeOf(state.time).map(h => ({ ...booking, time: h, group_id: group }));
@@ -459,7 +473,7 @@ $('#payBtn').addEventListener('click', e => startPay('booking', e.target.dataset
 $('#again').addEventListener('click', () => {
   const keep = { name: form.name.value, phone: form.phone.value };
   form.reset(); form.name.value = keep.name; form.phone.value = keep.phone;
-  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 4, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, pass: null }); renderDur();
+  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, pass: null }); renderDur();
   prefill(ui.state.profile); renderGroups(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPassUse(); renderCalendar(); renderSlots(); update();
   $('#done').hidden = true; form.hidden = false;
 });
@@ -706,7 +720,7 @@ function renderContact() {
 /* ---------- language ---------- */
 function applyLang(l) {
   i18n.set(l); document.title = t('title'); i18n.apply();
-  renderLakes(); renderGroups(); renderEquip(); renderRides(); renderOffers(); renderDur(); renderCoaches(); renderPlans(); renderCalendar(); renderSlots(); renderContact(); renderWeather(); renderMine(); renderReviews(); renderPassUse(); update(); ui.refresh();
+  renderLakes(); renderLakePick(); renderGroups(); renderEquip(); renderRides(); renderOffers(); renderDur(); renderCoaches(); renderPlans(); renderCalendar(); renderSlots(); renderContact(); renderWeather(); renderMine(); renderReviews(); renderPassUse(); update(); ui.refresh();
   if (!$('#done').hidden && state.last) showDone();
 }
 $('.lang').addEventListener('click', e => { const l = e.target.dataset.lang; if (l) applyLang(l); });

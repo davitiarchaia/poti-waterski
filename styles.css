@@ -1131,3 +1131,10 @@ body{background:#fff}
 #rides>.equip{grid-column:1/-1;margin:0;transform-origin:top;animation:eqDrop .22s ease-out}
 @keyframes eqDrop{from{opacity:0;transform:translateY(-8px) scaleY(.96)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:reduce){#rides>.equip{animation:none}}
+
+/* lake choice in the time step */
+.lake-pick{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .75rem;margin:.2rem 0 .8rem;font-weight:600}
+.lake-opts{display:flex;flex-wrap:wrap;gap:.4rem}
+.lake-opts .lk{padding:.45rem .95rem;border-radius:999px;border:2px solid var(--line);background:#fff;font:inherit;font-weight:600;cursor:pointer;color:var(--ink)}
+.lake-opts .lk:hover{border-color:var(--lake)}
+.lake-opts .lk[aria-checked=true]{border-color:var(--lake);background:var(--tint);color:var(--deep)}
