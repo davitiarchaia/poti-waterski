@@ -2,7 +2,7 @@
 (() => {
 const { i18n, esc } = window.PW;
 const t = k => i18n.t(k);
-const COLORS = ['#3a2f94', '#4b3fb0', '#b9b3e6', '#7c3aed', '#5ff0e0', '#db2777', '#2563eb', '#3a2f94'];
+const COLORS = ['#2a7461', '#7db5ad', '#8fa3a9', '#f5a623', '#2c5a60', '#b83a3a', '#33856f', '#1c3338'];
 const hash = s => { let h = 2166136261; for (const c of String(s || '')) { h ^= c.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return (h ^ (h >>> 15)) >>> 0; };
 const initials = n => String(n || '?').trim().split(/\s+/).slice(0, 2).map(w => w[0]).join('').toUpperCase();
 const avatar = (name, key, size = '') => `<span class="r-ava ${size}" style="background:${COLORS[hash(key || name) % COLORS.length]}" aria-hidden="true">${esc(initials(name))}</span>`;
