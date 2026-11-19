@@ -23,6 +23,9 @@ function hasLaterDayThisMonth() { const n = new Date(); return new Date(n.getFul
 
 /* ---------- club data: prices, boats, coaches, offers, pass plans, reviews ---------- */
 async function loadClub() {
+  try { await loadClubData(); } finally { state.loaded = true; renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPlans(); update(); }
+}
+async function loadClubData() {
   const get = p => db(p).catch(() => []);
   const [pr, boats, coaches, offers, plans, lakes, photos, gear] = await Promise.all([
     get('ride_prices?select=*'), get('boats?select=id,lake_id&active=eq.true'),
@@ -84,6 +87,7 @@ const priceOf = id => state.prices[id] && state.prices[id].price != null ? +stat
 
 /* ---------- rides ---------- */
 function renderRides() {
+  if (!state.loaded) { $('#rides').innerHTML = ''; return; }   // never draw the built-in default services — wait for the club's own data
   const eqb = $('#equipBox'); if (eqb.parentNode === $('#rides')) $('#rides').after(eqb);  // keep the dropdown alive while the cards re-render
   const list = RIDES.filter(r => rideOn(r.id));
   if (!list.some(r => r.id === state.ride.id) && list.length) state.ride = list[0];
