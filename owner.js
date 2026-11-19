@@ -670,7 +670,7 @@ function renderTable() {
     if (['confirmed', 'rejected'].includes(k) && b.phone) acts.push(`<a class="btn-small wa" href="${esc(replyLink(b))}" target="_blank" rel="noopener">WhatsApp</a>`);
     return `<tr class="is-${b.status}">
       <td class="when"><b>${esc(fmt(b.date, 'long'))}</b><span>${esc(b.time)}–${esc(b.end)} · ${esc(durText(b.dur))}</span>${b.status !== 'cancelled' && b.date >= todayIso() ? lakeSelect(b) : b.lake_id ? `<span>🌊 ${esc(lakeName(lakeById(b.lake_id)))}</span>` : ''}</td>
-      <td>${esc(rideName(b.ride))}${c ? `<span class="sub">${esc(c.name)}</span>` : ''}${o ? `<span class="offer-chip sm">${esc(o.title)}</span>` : ''}</td>
+      <td>${esc(rideName(b.ride))}${c ? `<span class="sub">${esc(c.name)}</span>` : b.status === 'cancelled' ? '' : b.no_coach ? `<span class="sub">${esc(t('coachNotNeeded'))}</span>` : (b.rider_groups || []).some(g => g.l <= 1) ? `<span class="sub" style="color:var(--orange)">⚠ ${esc(t('coachToAssign'))}</span>` : ''}${o ? `<span class="offer-chip sm">${esc(o.title)}</span>` : ''}</td>
       <td class="who"><b>${esc(b.name)}</b><span><a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a>${wa ? ` · <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}</span>${b.email ? `<span><a href="mailto:${esc(b.email)}">${esc(b.email)}</a></span>` : ''}${p ? `<span>@${esc(p.username)}</span>` : ''}</td>
       <td>${b.riders}${equipText(b) ? `<span class="sub">🏄 ${esc(equipText(b))}</span>` : ''}</td><td>${esc(b.rider_groups ? groupsText(b.rider_groups) : levelName(b.level))}</td><td>${payTag(b)}</td>
       <td class="notes">${esc(b.notes || '')}${b.owner_note ? `<span class="o-note">↳ ${esc(b.owner_note)}</span>` : ''}</td>

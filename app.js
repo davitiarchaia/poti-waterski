@@ -332,15 +332,25 @@ $('#dur').addEventListener('click', e => {
 /* ---------- coaches ---------- */
 const coachFits = c => c && (!c.rides || !c.rides.length || c.rides.includes(state.ride.id));
 const coachBusy = id => state.day && state.time && rangeOf(state.time).some(h => (((state.load[state.day] || {})[h] || {}).coaches || []).includes(id));
+/* beginners (never tried / can get up) are given a coach by the club; intermediate and above choose one — or ride without */
+const needsCoach = () => state.groups.some(g => g.l <= 1);
 function renderCoaches() {
+  const ready = state.day && state.time, box = $('#coaches'), note = $('#coachNote');
+  if (needsCoach()) {
+    state.coach = null;
+    $('#coachPick').hidden = !(ready && state.coaches.length); box.hidden = true; note.hidden = false; note.textContent = t('coachAssigned');
+    return;
+  }
+  box.hidden = true; note.hidden = true; box.hidden = false;
   // shown after the hour is chosen, and only the coaches who are free then
-  const list = state.day && state.time ? state.coaches.filter(coachFits).filter(c => !coachBusy(c.id)) : [];
+  const list = ready ? state.coaches.filter(coachFits).filter(c => !coachBusy(c.id)) : [];
   $('#coachPick').hidden = !list.length;
+  if (state.coach && !list.some(c => c.id === state.coach)) state.coach = null;
   if (!list.length) return;
-  const card = (id, name, sub, photo, busy) => `<button type="button" class="coach" role="radio" aria-checked="${state.coach === id}" data-coach="${id || ''}" ${busy ? 'disabled' : ''}>
-      <span class="ph">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy">` : esc(name.slice(0, 1))}</span>
+  const card = (id, name, sub, photo, busy) => `<button type="button" class="coach${id ? '' : ' none'}" role="radio" aria-checked="${(state.coach || null) === id}" data-coach="${id || ''}" ${busy ? 'disabled' : ''}>
+      <span class="ph">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy">` : id ? esc(name.slice(0, 1)) : '–'}</span>
       <span class="cn"><b>${esc(name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}${busy ? `<small class="busy">${esc(t('coachBusy'))}</small>` : ''}</span></button>`;
-  $('#coaches').innerHTML = card(null, t('coachAny'), t('coachAnySub'), '', false) +
+  box.innerHTML = card(null, t('noCoach'), t('noCoachSub'), '', false) +
     list.map(c => card(c.id, c.name, c.bio, c.photo_url, coachBusy(c.id))).join('');
 }
 $('#coaches').addEventListener('click', e => {
@@ -409,6 +419,7 @@ function currentPrice() {
   return base == null ? null : Math.round(base * (100 - (pct || 0)) / 4) / 100 * state.dur + equipCost();
 }
 function update() {
+  renderCoaches();
   const coach = state.coaches.find(c => c.id === state.coach);
   const lk = state.lakes.find(l => l.id === state.lake), sets = equipSets();
   $('#sumRide').textContent = !state.picked ? '—' : `${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${lk ? ' · ' + lakeName(lk) : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
@@ -445,7 +456,7 @@ async function submit() {
   const levelSum = state.groups.length === 1 ? window.DICT.en.levels[state.groups[0].l] : 'Mixed';
   const booking = { ride: state.ride.id, date: state.day, time: state.time, riders: state.riders, rider_groups: state.groups.map(g => ({ l: g.l, n: g.n })),
     level: levelSum, name, phone, email, notes: form.notes.value.trim() || null, lang: i18n.lang, equip_items: equipItems().length ? equipItems() : null,
-    offer_id: state.offer && !state.pass ? state.offer.id : null, coach_id: state.coach, pass_id: state.pass, lake_id: state.lake || null };
+    offer_id: state.offer && !state.pass ? state.offer.id : null, coach_id: state.coach, pass_id: state.pass, lake_id: state.lake || null, no_coach: !needsCoach() && !state.coach };
   const btn = $('#submitBtn'); btn.disabled = true; btn.textContent = t('sending');
   let res = 'error', row = null;
   const rows = rangeOf(state.time).map(h => ({ ...booking, time: h, group_id: group }));
