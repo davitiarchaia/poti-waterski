@@ -1317,3 +1317,4 @@ html body *{text-transform:none!important}
   .wx-now>.wn-wind{flex:0 0 auto}
 }
 @media (max-width:560px){.wx-now>.wn-wind{border-left:0!important;padding-left:0!important}}
+@media (max-width:900px){.wx-strip .ws{flex-direction:row;gap:.6rem;padding:.45rem .9rem}}

@@ -725,7 +725,7 @@ function renderWeather() {
         <span class="score ${sc}">${esc(t('ride_' + sc))}</span></div>`;
     }).join('');
   if (strip) {
-    strip.innerHTML = wx.days.slice(0, 7).map(d => {
+    strip.innerHTML = wx.days.slice(0, 1).map(d => {
       const x = wx.daily[d], [i2] = wxInfo(x.code);
       return `<div class="ws"><small>${esc(d === todayIso() ? t('today') : fmt(d, 'wd'))} ${fromIso(d).getDate()}</small><span aria-hidden="true">${i2}</span><b>${Math.round(x.max)}°</b><i>${Math.round(x.min)}°</i></div>`;
     }).join('');
