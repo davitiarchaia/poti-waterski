@@ -1318,3 +1318,11 @@ html body *{text-transform:none!important}
 }
 @media (max-width:560px){.wx-now>.wn-wind{border-left:0!important;padding-left:0!important}}
 @media (max-width:900px){.wx-strip .ws{flex-direction:row;gap:.6rem;padding:.45rem .9rem}}
+
+/* phones/tablets: the first screen is the hero (photo + title + CTA + lake weather), filling the viewport */
+@media (max-width:900px){
+  .wx-strip{display:none!important}
+  .visual{min-height:calc(100vh - 68px);min-height:calc(100svh - 68px)}
+  .visual-text{min-height:calc(100vh - 68px);min-height:calc(100svh - 68px);box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding-top:24px;padding-bottom:24px}
+  .visual-text .wx-now{margin-top:1.1rem;align-self:stretch}
+}
