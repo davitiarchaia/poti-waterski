@@ -34,9 +34,9 @@ async function token() {
 const auth = {
   get session() { return session; },
   onChange(f) { listeners.add(f); },
-  async signUp({ email, password, username, full_name, phone }) {
+  async signUp({ email, password, username, full_name, phone, birth_date }) {
     const b = this.backUrl();
-    const j = await authFetch(`signup${b ? '?redirect_to=' + encodeURIComponent(b) : ''}`, { email, password, data: { username: username.toLowerCase(), full_name, phone } });
+    const j = await authFetch(`signup${b ? '?redirect_to=' + encodeURIComponent(b) : ''}`, { email, password, data: { username: username.toLowerCase(), full_name, phone, birth_date } });
     if (j.access_token) { setSession(j); return 'signed-in'; }
     return 'check-email';
   },

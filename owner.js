@@ -517,7 +517,7 @@ function renderFleet() {
     return `<article class="offer-card coach-card ${c.active ? 'oLive' : 'oHidden'}${state.editCoach === c.id ? ' editing' : ''}">
       <div class="cc-top"><span class="ph">${c.photo_url ? `<img src="${esc(c.photo_url)}" alt="">` : esc(c.name.slice(0, 1))}</span><div><h3>${esc(c.name)}</h3><span class="ostate ${c.active ? 'oLive' : 'oHidden'}">${esc(t(c.active ? 'oLive' : 'oHidden'))}</span></div></div>
       ${c.bio ? `<p>${esc(c.bio)}</p>` : ''}
-      <ul class="oc-meta"><li>${esc(c.rides && c.rides.length ? c.rides.map(rideName).join(', ') : t('fAny'))}</li><li>${esc(t('coachUpcoming')(upcoming))}</li></ul>
+      <ul class="oc-meta"><li>${esc(c.rides && c.rides.length ? c.rides.map(rideName).join(', ') : t('fAny'))}</li><li><label class="oc-fee">${esc(t('coFee'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-cprice="${c.id}" value="${+c.price || 0}" aria-label="${esc(t('coFee'))}"></label></li><li>${esc(t('coachUpcoming')(upcoming))}</li></ul>
       ${window.staffLinkUI ? window.staffLinkUI('coach', c) : ''}
       <div class="oc-actions"><button type="button" class="btn-small" data-cact="edit" data-id="${c.id}">${esc(t('edit'))}</button>
         <button type="button" class="btn-small" data-cact="toggle" data-id="${c.id}">${esc(t(c.active ? 'hide' : 'show'))}</button>
@@ -541,13 +541,13 @@ $('#boatList').addEventListener('click', async e => {
     try { await db(`boats?id=eq.${dl.dataset.bdel}`, { method: 'DELETE', prefer: 'return=minimal' }); } catch { $('#tblError').textContent = t('errNet'); } load(); }
 });
 const cform = $('#coachForm');
-function fillCoach(c) { cform.name.value = c ? c.name : ''; cform.bio.value = c ? c.bio || '' : ''; cform.photo_url.value = c ? c.photo_url || '' : ''; cform.active.checked = c ? c.active : true; $('#coachError').textContent = ''; }
+function fillCoach(c) { cform.name.value = c ? c.name : ''; cform.bio.value = c ? c.bio || '' : ''; cform.photo_url.value = c ? c.photo_url || '' : ''; cform.price.value = c && +c.price ? c.price : ''; cform.active.checked = c ? c.active : true; $('#coachError').textContent = ''; }
 cform.addEventListener('submit', async e => {
   e.preventDefault();
   const name = cform.name.value.trim(), photo = cform.photo_url.value.trim();
   if (!name) return $('#coachError').textContent = t('errTitle');
   if (photo && !/^https:\/\//.test(photo)) return $('#coachError').textContent = t('errPhoto');
-  const body = { name, bio: cform.bio.value.trim() || null, photo_url: photo || null, rides: $$('[data-cride]:checked').map(x => x.value), active: cform.active.checked };
+  const body = { name, bio: cform.bio.value.trim() || null, photo_url: photo || null, price: Math.max(0, +cform.price.value || 0), rides: $$('[data-cride]:checked').map(x => x.value), active: cform.active.checked };
   try {
     if (state.editCoach) await db(`coaches?id=eq.${state.editCoach}`, { method: 'PATCH', body, prefer: 'return=minimal' });
     else await db('coaches', { method: 'POST', body: { ...body, sort: state.coaches.length }, prefer: 'return=minimal' });
@@ -849,4 +849,11 @@ $('.lang').addEventListener('click', e => { const l = e.target.dataset.lang; if 
 
 i18n.set(i18n.lang); i18n.apply(); document.title = `${t('oTitle')} — Poti Lake Club`;
 start();
+// inline change of a coach's fee (charged to the customer per hour when the coach is chosen)
+document.addEventListener('change', async e => {
+  const f = e.target.closest('[data-cprice]'); if (!f) return;
+  const v = Math.max(0, +f.value || 0);
+  try { await db(`coaches?id=eq.${f.dataset.cprice}`, { method: 'PATCH', body: { price: v }, prefer: 'return=minimal' }); ui.toast(t('saved'), 'ok'); } catch { ui.toast(t('errNet'), 'bad'); }
+});
+
 })();

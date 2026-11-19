@@ -29,7 +29,7 @@ async function loadClubData() {
   const get = p => db(p).catch(() => []);
   const [pr, boats, coaches, offers, plans, lakes, photos, gear] = await Promise.all([
     get('ride_prices?select=*'), get('boats?select=id,lake_id&active=eq.true'),
-    get('coaches?select=id,name,bio,photo_url,rides&active=eq.true&order=sort.asc,created_at.asc'),
+    get('coaches?select=id,name,bio,photo_url,rides,price&active=eq.true&order=sort.asc,created_at.asc'),
     get('offers?select=*&order=sort.asc,created_at.desc'), get('pass_plans?select=*&active=eq.true&order=sort.asc,price.asc'),
     get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc').catch(() => []),
     get('equipment?select=*&active=eq.true&order=sort.asc,created_at.asc'),
@@ -351,7 +351,7 @@ function renderCoaches() {
       <span class="ph">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy">` : id ? esc(name.slice(0, 1)) : '–'}</span>
       <span class="cn"><b>${esc(name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}${busy ? `<small class="busy">${esc(t('coachBusy'))}</small>` : ''}</span></button>`;
   box.innerHTML = card(null, t('noCoach'), t('noCoachSub'), '', false) +
-    list.map(c => card(c.id, c.name, c.bio, c.photo_url, coachBusy(c.id))).join('');
+    list.map(c => card(c.id, c.name, [+c.price > 0 ? `+₾${money(+c.price)} ${t('perHour')}` : '', c.bio].filter(Boolean).join(' · '), c.photo_url, coachBusy(c.id))).join('');
 }
 $('#coaches').addEventListener('click', e => {
   const b = e.target.closest('.coach'); if (!b || b.disabled) return;
@@ -416,7 +416,8 @@ const equipCost = () => Math.round(equipHourly() / 4 * 100) / 100 * state.dur;  
 function currentPrice() {
   if (state.pass) return equipCost();
   const base = priceOf(state.ride.id), pct = state.offer && state.offer.discount_percent;
-  return base == null ? null : Math.round(base * (100 - (pct || 0)) / 4) / 100 * state.dur + equipCost();
+  const cf = (state.coaches.find(c => c.id === state.coach) || {}).price;
+  return base == null ? null : Math.round(base * (100 - (pct || 0)) / 4) / 100 * state.dur + equipCost() + (cf > 0 ? Math.round(+cf / 4 * 100) / 100 * state.dur : 0);
 }
 function update() {
   renderCoaches();

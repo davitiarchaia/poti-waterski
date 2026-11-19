@@ -92,7 +92,9 @@ form.addEventListener('submit', async e => {
       const username = form.username.value.trim().toLowerCase();
       if (!/^[a-z0-9_]{3,20}$/.test(username)) throw Object.assign(new Error(), { ui: 'errUser' });
       if (!(await rpc('username_available', { u: username }))) throw Object.assign(new Error(), { ui: 'errUserTaken' });
-      const res = await auth.signUp({ email, password, username, full_name: form.full_name.value.trim(), phone: form.phone.value.trim() });
+      const bd = form.birth_date.value, bdOk = /^\d{4}-\d{2}-\d{2}$/.test(bd) && bd >= '1900-01-01' && bd <= new Date().toISOString().slice(0, 10);
+      if (!bdOk) throw Object.assign(new Error(), { ui: 'errBirth' });
+      const res = await auth.signUp({ email, password, username, full_name: form.full_name.value.trim(), phone: form.phone.value.trim(), birth_date: bd });
       if (res === 'check-email') { ok.textContent = t('checkEmail'); setMode('in'); form.password.value = ''; return; }
     } else {
       await auth.signIn(email, password);
@@ -115,6 +117,7 @@ pm.innerHTML = `<form method="dialog" class="modal-x"><button aria-label="Close"
     <div class="pf-id"><span class="avatar" id="pfAvatar"></span><div><b id="pfUser"></b><small id="pfEmail" class="muted"></small></div></div>
     <label><span data-i18n="fullName"></span><input name="full_name" maxlength="80" autocomplete="name"></label>
     <label><span data-i18n="phone"></span><input name="phone" type="tel" maxlength="30" autocomplete="tel" placeholder="+995 5XX XX XX XX"></label>
+    <label><span data-i18n="birthDate"></span><input name="birth_date" type="date" min="1900-01-01" autocomplete="bday"></label>
     <p class="form-ok" id="pfOk" role="status"></p><p class="form-error" id="pfErr" role="alert"></p>
     <button class="btn" type="submit" data-i18n="save"></button>
   </form>
@@ -131,7 +134,7 @@ function openProfile() {
   pm.querySelector('#pfAvatar').textContent = (p.username || '?').slice(0, 1).toUpperCase();
   pm.querySelector('#pfUser').textContent = '@' + (p.username || '');
   pm.querySelector('#pfEmail').textContent = (auth.session && auth.session.user && auth.session.user.email) || '';
-  f.full_name.value = p.full_name || ''; f.phone.value = p.phone || '';
+  f.full_name.value = p.full_name || ''; f.phone.value = p.phone || ''; f.birth_date.value = p.birth_date || '';
   pm.querySelector('#pfOk').textContent = ''; pm.querySelector('#pfErr').textContent = ''; pm.querySelector('#pwErr').textContent = '';
   pm.showModal();
 }
@@ -139,7 +142,7 @@ pm.querySelector('#profileForm').addEventListener('submit', async e => {
   e.preventDefault();
   const f = e.target, btn = f.querySelector('[type=submit]'); btn.disabled = true;
   try {
-    await db(`profiles?id=eq.${auth.session.user.id}`, { method: 'PATCH', body: { full_name: f.full_name.value.trim() || null, phone: f.phone.value.trim() || null }, prefer: 'return=minimal' });
+    await db(`profiles?id=eq.${auth.session.user.id}`, { method: 'PATCH', body: { full_name: f.full_name.value.trim() || null, phone: f.phone.value.trim() || null, birth_date: /^\d{4}-\d{2}-\d{2}$/.test(f.birth_date.value) && f.birth_date.value >= '1900-01-01' && f.birth_date.value <= new Date().toISOString().slice(0, 10) ? f.birth_date.value : null }, prefer: 'return=minimal' });
     state.profile = await myProfile().catch(() => state.profile);
     pm.querySelector('#pfOk').textContent = t('profileSaved'); renderAccount(); opts.onProfile && opts.onProfile(state.profile);
   } catch { pm.querySelector('#pfErr').textContent = t('errNet'); }
