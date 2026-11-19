@@ -1295,3 +1295,8 @@ html body *{text-transform:none!important}
 /* coach note / none card */
 .coach-note{margin:.3rem 0 0;padding:.7rem .9rem;border-radius:12px;background:var(--tint);border:1px solid var(--line);color:var(--deep);font-size:.9rem}
 .coach.none .ph{background:var(--line);color:var(--muted)}
+
+/* sticky "Next" bar must never cover the header / owner button */
+.top{z-index:60}
+.wiz .wiz-bar{z-index:5}
+.wiz.wiz-last .wiz-bar{z-index:auto}
