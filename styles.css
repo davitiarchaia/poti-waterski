@@ -1126,3 +1126,8 @@ body{background:#fff}
 .cal .cal-legend{background:#f6f6fa}
 .chips li{background:rgba(95,240,224,.14)}
 .cal-legend .lg.free{background:#35e0cc}.cal-legend .lg.few{background:#b9b3e6}.cal-legend .lg.closed{background:#cfd2de}
+
+/* equipment dropdown under the chosen service card */
+#rides>.equip{grid-column:1/-1;margin:0;transform-origin:top;animation:eqDrop .22s ease-out}
+@keyframes eqDrop{from{opacity:0;transform:translateY(-8px) scaleY(.96)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#rides>.equip{animation:none}}

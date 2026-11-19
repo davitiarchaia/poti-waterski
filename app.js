@@ -84,6 +84,7 @@ const priceOf = id => state.prices[id] && state.prices[id].price != null ? +stat
 
 /* ---------- rides ---------- */
 function renderRides() {
+  const eqb = $('#equipBox'); if (eqb.parentNode === $('#rides')) $('#rides').after(eqb);  // keep the dropdown alive while the cards re-render
   const list = RIDES.filter(r => rideOn(r.id));
   if (!list.some(r => r.id === state.ride.id) && list.length) state.ride = list[0];
   $('#rides').innerHTML = list.map(r => {
@@ -92,8 +93,15 @@ function renderRides() {
     return `<label class="ride"><input type="radio" name="ride" value="${r.id}" ${state.picked && state.ride.id === r.id ? 'checked' : ''}>
       ${r.tag && tag ? `<span class="tag">${esc(tag)}</span>` : ''}<b>${esc(name)}</b><small>${esc(info)}</small><span class="price">${esc(price)}</span></label>`;
   }).join('');
+  placeEquip();
+}
+/* the equipment dropdown opens directly under the chosen service card */
+function placeEquip() {
+  const box = $('#equipBox'), sel = $('#rides input:checked');
+  if (sel && state.picked) sel.closest('.ride').after(box); else if (box.parentNode === $('#rides')) $('#rides').after(box);
 }
 $('#rides').addEventListener('change', e => {
+  if (e.target.name !== 'ride') return;
   state.ride = RIDES.find(r => r.id === e.target.value); state.picked = true;
   if (state.offer && state.offer.ride && state.offer.ride !== state.ride.id) state.offer = null;
   if (state.coach && !coachFits(state.coaches.find(c => c.id === state.coach))) state.coach = null;
@@ -110,7 +118,7 @@ const priceTag = p => +p > 0 ? `₾${money(+p)} / ${t('perH')}` : t('eqFree');
 function numberSteps() { [...document.querySelectorAll('#bookingForm fieldset.step')].filter(f => !f.hidden).forEach((f, k) => { const n = f.querySelector('legend i'); if (n) n.textContent = k + 1; }); }
 function renderEquip() {
   const list = state.picked ? gearFor(state.ride.id) : [], box = $('#equipBox');
-  box.hidden = !list.length; numberSteps();
+  placeEquip(); box.hidden = !list.length; numberSteps();
   if (!list.length) return;
   const from = Math.min(...list.map(g => +g.price));
   box.innerHTML = `<p class="eq-q">${esc(t('eqQ'))}</p>
