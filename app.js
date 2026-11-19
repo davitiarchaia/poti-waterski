@@ -612,7 +612,6 @@ $('#mineList').addEventListener('click', async e => {
 /* ---------- pass plans (buy) ---------- */
 function renderPlans() {
   $('#passesSec').hidden = !state.plans.length;
-  $('#navPasses').hidden = !state.plans.length;
   $('#plans').innerHTML = state.plans.map((p, i) => {
     const per = p.hours ? p.price / p.hours : 0, base = p.ride ? priceOf(p.ride) : null;
     const save = base && per < base ? Math.round((1 - per / base) * 100) : 0;
