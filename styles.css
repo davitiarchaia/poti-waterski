@@ -1326,3 +1326,8 @@ html body *{text-transform:none!important}
   .visual-text{min-height:calc(100vh - 68px);min-height:calc(100svh - 68px);box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding-top:24px;padding-bottom:24px}
   .visual-text .wx-now{margin-top:1.1rem;align-self:stretch}
 }
+
+/* owner: club settings + expired badge */
+.stg-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
+.stg-row label{display:grid;gap:.3rem}
+.badge.expired{color:var(--muted);background:var(--tint);border-color:var(--line)}.badge.expired::before{content:"◷"}

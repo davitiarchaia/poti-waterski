@@ -84,7 +84,7 @@ async function load(auto) {
       db('offers?select=*&order=sort.asc,created_at.desc'),
       db('ride_prices?select=*'),
       db('boats?select=*&order=sort.asc,created_at.asc'),
-      db('coaches?select=*&order=sort.asc,created_at.asc'),
+      db('coaches?select=id,created_at,name,bio,photo_url,rides,active,sort,user_id,price&order=sort.asc,created_at.asc'),
       db('pass_plans?select=*&order=sort.asc,price.asc'),
       db('passes?select=*&order=created_at.desc&limit=2000'),
       db('reviews?select=*&order=created_at.desc&limit=1000'),
@@ -92,6 +92,10 @@ async function load(auto) {
       db('lakes?select=*&order=sort.asc,created_at.asc'), db('lake_photos?select=*&order=sort.asc,created_at.asc'), db('drivers?select=*&order=sort.asc,created_at.asc'),
       db('closed_periods?select=*&order=date_from.asc').catch(() => []),
     ]);
+    // pay rates are private (owner only), read through their own function
+    const [rates, stg] = await Promise.all([rpc('coach_pay_rates', {}).catch(() => []), db('club_settings?select=*&id=eq.1').catch(() => [])]);
+    const rm = Object.fromEntries((rates || []).map(r => [r.id, r.pay_rate])); co.forEach(c => { c.pay_rate = rm[c.id] ?? null; });
+    state.settings = (stg && stg[0]) || null; fillSettings();
     b.sort((x, y) => (x.date + x.time).localeCompare(y.date + y.time));
     window.PW.applyServices(pr);
     Object.assign(state, { bookings: b, offers: o, prices: pr, boats: bo, coaches: co, plans: pl, passes: ps, reviews: rv, closures: cl, lakes: lk, photos: ph, drivers: dr, periods: pe,
@@ -849,6 +853,17 @@ $('.lang').addEventListener('click', e => { const l = e.target.dataset.lang; if 
 
 i18n.set(i18n.lang); i18n.apply(); document.title = `${t('oTitle')} — Poti Lake Club`;
 start();
+// club-wide settings: beginners' coach fee, free-cancellation window
+function fillSettings() {
+  const f = $('#settingsForm'); if (!f || !state.settings) return;
+  if (document.activeElement && f.contains(document.activeElement)) return;
+  f.beginner_coach_fee.value = +state.settings.beginner_coach_fee || 0; f.cancel_hours.value = state.settings.cancel_hours ?? 24;
+}
+document.addEventListener('change', async e => {
+  const f = e.target.closest('#settingsForm'); if (!f || !e.target.name) return;
+  const body = { beginner_coach_fee: Math.max(0, +f.beginner_coach_fee.value || 0), cancel_hours: Math.min(168, Math.max(0, Math.round(+f.cancel_hours.value || 0))), updated_at: new Date().toISOString() };
+  try { await db('club_settings?id=eq.1', { method: 'PATCH', body, prefer: 'return=minimal' }); state.settings = { ...state.settings, ...body }; ui.toast(t('saved'), 'ok'); } catch { ui.toast(t('errNet'), 'bad'); }
+});
 // inline change of a coach's fee (charged to the customer per hour when the coach is chosen)
 document.addEventListener('change', async e => {
   const f = e.target.closest('[data-cprice]'); if (!f) return;

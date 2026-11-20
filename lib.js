@@ -97,16 +97,19 @@ async function myProfile() {
 const pad = n => String(n).padStart(2, '0');
 const iso = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 const fromIso = s => new Date(s + 'T12:00');
-const todayIso = () => iso(new Date());
+// the club's clock (Asia/Tbilisi), whatever time zone the visitor's phone is in
+const tbNow = () => { try { const d = new Date(new Date().toLocaleString('en-US', { timeZone: C.timezone || 'Asia/Tbilisi' })); return isNaN(d) ? new Date() : d; } catch { return new Date(); } };
+const tbMs = (dayIso, hm) => Date.parse(`${dayIso}T${hm}:00+04:00`);   // a club date+time as a real moment (Georgia has no DST)
+const todayIso = () => iso(tbNow());
 function hours() { const h = []; for (let x = C.openHour; x <= C.closeHour; x++) h.push(`${pad(x)}:00`); return h; }
 const inSeason = d => C.seasonMonths.includes(d.getMonth());
 function openSlots(dayIso) {          // slots that can still be booked on that day
-  const now = new Date();
+  const now = tbNow();
   if (dayIso < iso(now)) return [];
   if (!inSeason(fromIso(dayIso))) return [];
   if (dayIso !== iso(now)) return hours();
-  const cutoff = now.getHours() + 1;  // at least one hour ahead
-  return hours().filter(h => +h.slice(0, 2) > cutoff);
+  const first = now.getHours() * 60 + now.getMinutes() + (C.leadMinutes ?? 60);   // at least an hour ahead
+  return hours().filter(h => +h.slice(0, 2) * 60 + 45 >= first);
 }
 
 /* ---------- language ---------- */
@@ -188,7 +191,7 @@ async function weather() {
 
 /* ---------- misc ---------- */
 // 'rejected' = the owner declined a request that was never confirmed
-const statusKey = b => b.status === 'cancelled' && b.cancelled_by === 'owner' && !b.confirmed_at ? 'rejected' : b.status;
+const statusKey = b => b.status === 'cancelled' && b.cancelled_by === 'owner' && !b.confirmed_at ? 'rejected' : b.status === 'new' && b.date < todayIso() ? 'expired' : b.status;
 const phoneWa = p => { const d = String(p || '').replace(/\D/g, ''); return d.length === 9 ? '995' + d : d; };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const waLink = (num, text) => num ? `https://wa.me/${String(num).replace(/\D/g, '')}${text ? '?text=' + encodeURIComponent(text) : ''}` : '';
@@ -216,5 +219,5 @@ function applyServices(rows) {
     window.RIDES.push({ id: r.ride, tag: !!(r.tag_ka || r.tag_en || r.tag_ru) });
   }
 }
-window.PW = { applyServices, equipName, equipInfo, equipText, token, auth, db, rpc, fn, myProfile, store, iso, fromIso, todayIso, hours, inSeason, openSlots, pad, i18n, fmt, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, statusKey, phoneWa };
+window.PW = { applyServices, equipName, equipInfo, equipText, token, auth, db, rpc, fn, myProfile, store, iso, fromIso, todayIso, tbNow, tbMs, hours, inSeason, openSlots, pad, i18n, fmt, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, statusKey, phoneWa };
 })();

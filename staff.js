@@ -31,7 +31,7 @@ async function start() {
   state.kind = p.role;
   const uid = auth.session.user.id;
   const [me, lakes, coaches] = await Promise.all([
-    db(`${p.role === 'coach' ? 'coaches' : 'drivers'}?user_id=eq.${uid}&select=*`).catch(() => []),
+    db(`${p.role === 'coach' ? 'coaches' : 'drivers'}?user_id=eq.${uid}&select=id,name,user_id,active`).catch(() => []),
     db('lakes?select=id,name_ka,name_en,name_ru,active,driver_id&order=sort.asc').catch(() => []),
     db('coaches?select=id,name').catch(() => []),
   ]);

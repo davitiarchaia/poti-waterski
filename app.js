@@ -1,6 +1,6 @@
 /* Booking page */
 (() => {
-const { auth, db, rpc, fn, equipName, equipInfo, equipText, i18n, fmt, iso, fromIso, todayIso, hours, inSeason, openSlots, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, pad, statusKey } = window.PW;
+const { auth, db, rpc, fn, equipName, equipInfo, equipText, i18n, fmt, iso, fromIso, todayIso, tbNow, tbMs, hours, inSeason, openSlots, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, pad, statusKey } = window.PW;
 const C = window.CONFIG, RIDES = window.RIDES, ui = window.PW.ui;
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const t = k => i18n.t(k);
@@ -9,17 +9,17 @@ i18n.init(window.DICT, ['ka', 'en', 'ru']);
 const state = {
   ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 1, riders: 1, load: {}, lakeLoad: {}, wx: null, mine: [], myPasses: [], myReviews: new Set(),
   busyMonth: false, offers: [], offer: null, prices: {}, boats: 1, allBoats: [], coaches: [], coach: null, plans: [], pass: null, reviews: [],
-  lakes: [], photos: [], lake: null, payMethod: 'card', groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
+  lakes: [], photos: [], lake: null, settings: { beginner_coach_fee: 0, cancel_hours: C.cancelHours ?? 24, min_lead_minutes: 60 }, payMethod: 'card', groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
 };
 const money = v => (Math.round(v * 100) / 100).toLocaleString(i18n.lang === 'en' ? 'en-GB' : 'ka-GE', { maximumFractionDigits: 2 });
 const toast = (msg, kind = '') => { const el = $('#toast'); el.textContent = msg; el.className = 'toast ' + kind; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 5000); };
 
 /* ---------- months ---------- */
 const firstOfMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
-const thisMonth = firstOfMonth(new Date());
+const thisMonth = firstOfMonth(tbNow());
 const lastMonth = new Date(thisMonth.getFullYear(), thisMonth.getMonth() + C.monthsAhead, 1);
 const startMonth = () => new Date(thisMonth);      // the calendar opens on today's month; earlier months can't be opened
-function hasLaterDayThisMonth() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate() > n.getDate(); }
+function hasLaterDayThisMonth() { const n = tbNow(); return new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate() > n.getDate(); }
 
 /* ---------- club data: prices, boats, coaches, offers, pass plans, reviews ---------- */
 async function loadClub() {
@@ -34,6 +34,8 @@ async function loadClubData() {
     get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc').catch(() => []),
     get('equipment?select=*&active=eq.true&order=sort.asc,created_at.asc'),
   ]);
+  const st = (await get('club_settings?select=beginner_coach_fee,cancel_hours,min_lead_minutes&id=eq.1'))[0];
+  if (st) { state.settings = st; C.cancelHours = st.cancel_hours; C.leadMinutes = st.min_lead_minutes; }
   state.periods = await get(`closed_periods?select=date_from,reopen_on,reason&reopen_on=gt.${todayIso()}&order=date_from.asc`);
   state.lakes = lakes; state.photos = photos; state.allBoats = boats; state.gear = gear;
   for (const id of Object.keys(state.eqSel)) if (!gear.some(g => g.id === id)) delete state.eqSel[id];
@@ -190,7 +192,12 @@ const MAX_Q = 40;                                   // 10 hours
 const toMin = q => +q.slice(0, 2) * 60 + +q.slice(3, 5);
 const fromMin = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
 const addQ = (q, n) => fromMin(toMin(q) + 15 * n);
-const quarters = d => openSlots(d).flatMap(h => ['00', '15', '30', '45'].map(m => h.slice(0, 3) + m));
+const quarters = d => {
+  const q = openSlots(d).flatMap(h => ['00', '15', '30', '45'].map(m => h.slice(0, 3) + m));
+  if (d !== todayIso()) return q;
+  const n = tbNow(), first = n.getHours() * 60 + n.getMinutes() + (C.leadMinutes ?? 60);   // same rule as the database
+  return q.filter(x => toMin(x) >= first);
+};
 const rangeOf = (q, n = state.dur) => [...Array(n)].map((_, i) => addQ(q, i));
 const startOk = (d, q, n = state.dur, open = quarters(d)) => rangeOf(q, n).every(x => open.includes(x) && !slotFull(d, x));
 const durText = n => t('durText')(Math.floor(n / 4), (n % 4) * 15);
@@ -338,7 +345,7 @@ function renderCoaches() {
   const ready = state.day && state.time, box = $('#coaches'), note = $('#coachNote');
   if (needsCoach()) {
     state.coach = null;
-    $('#coachPick').hidden = !(ready && state.coaches.length); box.hidden = true; note.hidden = false; note.textContent = t('coachAssigned');
+    $('#coachPick').hidden = !(ready && state.coaches.length); box.hidden = true; note.hidden = false; const bf = +state.settings.beginner_coach_fee || 0; note.textContent = t('coachAssigned') + (bf > 0 ? ` (+₾${money(bf)} ${t('perHour')})` : '');
     return;
   }
   box.hidden = true; note.hidden = true; box.hidden = false;
@@ -413,11 +420,13 @@ const rideName = id => (t('rides')[id] || [id])[0];
 window.bookingState = state;   // read by wizard.js (phone step-by-step form)
 const whenText = (day = state.day, time = state.time, n = state.dur) => !day ? t('noWhen') : `${fmt(day, 'long')} · ${time ? `${time}–${addQ(time, n)} (${durText(n)})` : t('pickTime')}`;
 const equipCost = () => Math.round(equipHourly() / 4 * 100) / 100 * state.dur;   // same rounding as the database (per 15 minutes)
+// coach fee per hour: beginners pay the club's fixed coach fee (the club assigns the coach); others pay the chosen coach's fee
+const coachFee = () => +(needsCoach() ? state.settings.beginner_coach_fee : (state.coaches.find(c => c.id === state.coach) || {}).price) || 0;
+const coachCost = () => coachFee() > 0 ? Math.round(coachFee() / 4 * 100) / 100 * state.dur : 0;
 function currentPrice() {
-  if (state.pass) return equipCost();
+  if (state.pass) return equipCost() + coachCost();
   const base = priceOf(state.ride.id), pct = state.offer && state.offer.discount_percent;
-  const cf = (state.coaches.find(c => c.id === state.coach) || {}).price;
-  return base == null ? null : Math.round(base * (100 - (pct || 0)) / 4) / 100 * state.dur + equipCost() + (cf > 0 ? Math.round(+cf / 4 * 100) / 100 * state.dur : 0);
+  return base == null ? null : Math.round(base * (100 - (pct || 0)) / 4) / 100 * state.dur + equipCost() + coachCost();
 }
 function update() {
   renderCoaches();
@@ -597,7 +606,7 @@ function renderMine() {
     if (b.date >= today && b.status !== 'cancelled') {
       if (!b.paid && b.price > 0 && C.onlinePayment && b.payment_status !== 'held' && b.status !== 'cancelled') acts.push(`<button type="button" class="btn-small primary" data-pay="${b.id}">${esc(t('payHold'))}</button>`);
       const cancelAttr = b.group_id ? `data-cancelgroup="${b.group_id}"` : `data-cancel="${b.id}"`;
-      const hoursLeft = (new Date(`${b.date}T${b.time}:00`) - Date.now()) / 3.6e6;
+      const hoursLeft = (tbMs(b.date, b.time) - Date.now()) / 3.6e6;
       acts.push(hoursLeft >= (C.cancelHours || 0) ? `<button type="button" class="btn-small ghost" ${cancelAttr}>${esc(t('cancel'))}</button>` : `<small class="muted late">${esc(t('lateCancel'))}</small>`);
     }
     if (b.date <= today && b.status === 'confirmed') acts.push(b.ids.some(i => state.myReviews.has(i)) ? `<span class="pay-tag ok">★ ${esc(t('reviewed'))}</span>` : `<button type="button" class="btn-small star" data-review="${b.id}">★ ${esc(t('writeReview'))}</button>`);
@@ -618,7 +627,12 @@ $('#mineList').addEventListener('click', async e => {
   const b = e.target.closest('[data-cancel],[data-cancelgroup]'); if (!b) return;
   if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('cancelQ'); b.classList.add('danger'); return; }
   b.disabled = true;
-  try { b.dataset.cancelgroup ? await rpc('cancel_my_group', { g: b.dataset.cancelgroup }) : await rpc('cancel_my_booking', { b: b.dataset.cancel }); } catch {}
+  const one = state.mine.find(x => b.dataset.cancelgroup ? x.group_id === b.dataset.cancelgroup : x.id === b.dataset.cancel);
+  try {
+    b.dataset.cancelgroup ? await rpc('cancel_my_group', { g: b.dataset.cancelgroup }) : await rpc('cancel_my_booking', { b: b.dataset.cancel });
+    // money held on the card for this booking is released at once
+    if (one && one.payment_status === 'held') fn('bog-capture', { id: one.id, action: 'cancel' }).catch(() => {});
+  } catch (x) { toast(t(x.code === 'PW014' ? 'lateCancel' : 'errNet'), 'bad'); }
   await loadMine(); loadMonth();
 });
 
