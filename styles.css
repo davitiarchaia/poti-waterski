@@ -1352,3 +1352,8 @@ html body *{text-transform:none!important}
 .boat-list .boat-name{flex:1 1 10rem;min-width:9rem}
 .boat-list .oc-fee{display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;color:var(--muted)}
 .boat-list .oc-fee input{width:5.5rem;padding:.3rem .5rem}
+
+/* "no equipment chosen" nudge */
+@keyframes pw-shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-10px)}30%{transform:translateX(9px)}45%{transform:translateX(-7px)}60%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
+#bookingForm.shake{animation:pw-shake .45s ease}
+@media (prefers-reduced-motion:reduce){#bookingForm.shake{animation:none}}

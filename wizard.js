@@ -38,10 +38,21 @@ function blocker() {
   if (f.querySelector('#slots') && !S().time) return t('errTime');
   return '';
 }
-function go(d) {
+// "Rent it" chosen but no item picked: shake + vibrate and ask before moving on
+const noGear = () => { const f = steps()[i], box = document.querySelector('#equipBox');
+  return f && f.querySelector('#rides') && S().equip === 'rent' && box && !box.hidden && !Object.values(S().eqSel || {}).some(n => n > 0); };
+function warnNoGear() {
+  form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch {}
+  const dlg = $('#eqDlg'); if (dlg && dlg.showModal) setTimeout(() => dlg.showModal(), 350); else { i += 1; paint(true); }
+}
+function go(d, force) {
   if (d > 0) { const b = blocker(); if (b) return $('#wizErr').textContent = b; }
+  if (d > 0 && !force && noGear()) return warnNoGear();
   i += d; paint(true);
 }
+$('#eqBack') && $('#eqBack').addEventListener('click', () => { $('#eqDlg').close(); const x = document.querySelector('#equipBox .eq-items'); if (x) x.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
+$('#eqGo') && $('#eqGo').addEventListener('click', () => { $('#eqDlg').close(); go(1, true); });
 function enable(v) {
   on = v; form.classList.toggle('wiz', v); bar.hidden = !v;
   if (v) paint(false); else form.querySelectorAll('.wiz-on').forEach(f => f.classList.remove('wiz-on'));
