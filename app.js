@@ -7,7 +7,7 @@ const t = k => i18n.t(k);
 i18n.init(window.DICT, ['ka', 'en', 'ru']);
 
 const state = {
-  ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 1, riders: 1, load: {}, lakeLoad: {}, wx: null, mine: [], myPasses: [], myReviews: new Set(),
+  ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 1, riders: 1, load: {}, lakeLoad: {}, boatLoad: {}, boat: null, wx: null, mine: [], myPasses: [], myReviews: new Set(),
   busyMonth: false, offers: [], offer: null, prices: {}, boats: 1, allBoats: [], coaches: [], coach: null, plans: [], pass: null, reviews: [],
   lakes: [], photos: [], lake: null, settings: { beginner_coach_fee: 0, cancel_hours: C.cancelHours ?? 24, min_lead_minutes: 60 }, payMethod: 'card', groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
 };
@@ -28,7 +28,7 @@ async function loadClub() {
 async function loadClubData() {
   const get = p => db(p).catch(() => []);
   const [pr, boats, coaches, offers, plans, lakes, photos, gear] = await Promise.all([
-    get('ride_prices?select=*'), get('boats?select=id,lake_id&active=eq.true'),
+    get('ride_prices?select=*'), get('boats?select=id,name,price,lake_id,sort&active=eq.true&order=sort.asc,created_at.asc'),
     get('coaches?select=id,name,bio,photo_url,rides,price&active=eq.true&order=sort.asc,created_at.asc'),
     get('offers?select=*&order=sort.asc,created_at.desc'), get('pass_plans?select=*&active=eq.true&order=sort.asc,price.asc'),
     get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc').catch(() => []),
@@ -127,11 +127,10 @@ function renderEquip() {
   const list = state.picked ? gearFor(state.ride.id) : [], box = $('#equipBox');
   placeEquip(); box.hidden = !list.length; numberSteps();
   if (!list.length) return;
-  const from = Math.min(...list.map(g => +g.price));
   box.innerHTML = `<p class="eq-q">${esc(t('eqQ'))}</p>
     <div class="eq-opts" role="radiogroup">
       <label class="eq-opt${state.equip === 'own' ? ' on' : ''}"><input type="radio" name="equip" value="own" ${state.equip === 'own' ? 'checked' : ''}><b>${esc(t('eqOwn'))}</b><small>${esc(t('eqOwnSub'))}</small></label>
-      <label class="eq-opt${state.equip === 'rent' ? ' on' : ''}"><input type="radio" name="equip" value="rent" ${state.equip === 'rent' ? 'checked' : ''}><b>${esc(t('eqRent'))}</b><small>${esc(from > 0 ? t('eqFrom')(money(from)) : t('eqPick'))}</small></label>
+      <label class="eq-opt${state.equip === 'rent' ? ' on' : ''}"><input type="radio" name="equip" value="rent" ${state.equip === 'rent' ? 'checked' : ''}><b>${esc(t('eqRent'))}</b></label>
     </div>
     ${state.equip === 'rent' ? `<ul class="eq-items">${list.map(g => { const n = state.eqSel[g.id] || 0; return `<li class="eq-item${n ? ' on' : ''}">
         <div class="eq-name"><b>${esc(equipName(g))}</b>${equipInfo(g) ? `<small>${esc(equipInfo(g))}</small>` : ''}<span class="eq-price">${esc(priceTag(g.price))}</span></div>
@@ -214,12 +213,13 @@ async function loadMonth() {
   const map = {};
   const closed = {};
   try {
-    const [load, cl, lk] = await Promise.all([rpc('slot_load', { d1, d2 }), rpc('closed_slots', { d1, d2 }).catch(() => []), rpc('slot_lakes', { d1, d2 }).catch(() => [])]);
+    const [load, cl, lk, bl] = await Promise.all([rpc('slot_load', { d1, d2 }), rpc('closed_slots', { d1, d2 }).catch(() => []), rpc('slot_lakes', { d1, d2 }).catch(() => []), rpc('slot_boats', { d1, d2 }).catch(() => [])]);
     const ll = {}; lk.forEach(r => { (ll[r.d] = ll[r.d] || {})[r.t] = r.lakes || []; }); state.lakeLoad = ll;
+    const bb = {}; bl.forEach(r => { (bb[r.d] = bb[r.d] || {})[r.t] = r.boats || []; }); state.boatLoad = bb;
     load.forEach(r => { (map[r.d] = map[r.d] || {})[r.t] = { used: r.used, coaches: r.coaches || [] }; });
     cl.forEach(r => { (closed[r.d] = closed[r.d] || {})[r.t || '*'] = r.reason || ''; });
     state.load = map; state.closed = closed;
-  } catch { state.load = {}; state.closed = {}; state.lakeLoad = {}; }
+  } catch { state.load = {}; state.closed = {}; state.lakeLoad = {}; state.boatLoad = {}; }
   state.busyMonth = false; renderCalendar(); renderSlots(); renderCoaches();
 }
 function renderCalendar() {
@@ -276,7 +276,7 @@ function renderSlots() {
   if (!open.length || open.every(q => slotFull(state.day, q))) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>`; return; }
   const sel = state.time ? rangeOf(state.time) : [];
   const hoursOpen = [...new Set(open.map(hourOf))];
-  const legend = `<div class="slot-legend" aria-hidden="true"><span><i class="lg ok"></i>${esc(t('lgAvail'))}</span>${state.boats > 1 ? `<span><i class="lg few"></i>${esc(t('lgLimited'))}</span>` : ''}<span><i class="lg na"></i>${esc(t('lgNA'))}</span></div>`;
+  const legend = `<div class="slot-legend" aria-hidden="true"><span><i class="lg ok"></i>${esc(t('lgAvail'))}</span><span><i class="lg na"></i>${esc(t('lgNA'))}</span></div>`;
   box.innerHTML = legend + hoursOpen.map(h => {
     const hw = state.wx && state.wx.hourly[`${state.day}T${h}`];
     const chips = open.filter(q => hourOf(q) === h).map(q => {
@@ -288,8 +288,8 @@ function renderSlots() {
     }).join('');
     const hq = open.filter(q => hourOf(q) === h), left = Math.min(...hq.map(q => state.boats - slotUsed(state.day, q))), allFull = hq.every(q => slotFull(state.day, q));
     const ic = { boat: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 17l2.5-6h12.5l3 4 2 2z"/><path d="M5 11l3-4h5"/><path d="M2 21c2 0 2-1 4-1s2 1 4 1 2-1 4-1 2 1 4 1"/></svg>', ban: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>' };
-    const side = allFull ? `<small class="sb is-full">${ic.ban} ${esc(t('fullLbl'))}</small>` : state.boats > 1 && left > 0 ? `<small class="sb">${ic.boat} ${esc(t('boatsN')(left))}</small>` : '';
-    return `<div class="hrow${allFull ? ' is-full' : state.boats > 1 && left === 1 ? ' limited' : ''}"><span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>
+    const side = allFull ? `<small class="sb is-full">${ic.ban} ${esc(t('fullLbl'))}</small>` : '';
+    return `<div class="hrow${allFull ? ' is-full' : ''}"><span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>
       <span class="qs">${chips}</span>${side}</div>`;
   }).join('') + (state.time ? `<div class="sel-bar"><b>${esc(t('yourSel'))}</b>
       <span>${esc(fmt(state.day, 'dm'))}</span><span>${esc(state.lake ? lakeName(state.lakes.find(l => l.id === state.lake)) : t('lakeAny'))}</span>
@@ -340,19 +340,20 @@ $('#dur').addEventListener('click', e => {
 const coachFits = c => c && (!c.rides || !c.rides.length || c.rides.includes(state.ride.id));
 const coachBusy = id => state.day && state.time && rangeOf(state.time).some(h => (((state.load[state.day] || {})[h] || {}).coaches || []).includes(id));
 /* beginners (never tried / can get up) are given a coach by the club; intermediate and above choose one — or ride without */
+// beginners (level 0-1) get a coach from the club; intermediate/advanced riders may choose one; only advanced (pro) riders choose the boat
 const needsCoach = () => state.groups.some(g => g.l <= 1);
+const allBeginners = () => state.groups.every(g => g.l <= 1);
+const allPro = () => state.groups.every(g => g.l >= 3);
 function renderCoaches() {
+  renderBoats();
   const ready = state.day && state.time, box = $('#coaches'), note = $('#coachNote');
-  if (needsCoach()) {
-    state.coach = null;
-    $('#coachPick').hidden = !(ready && state.coaches.length); box.hidden = true; note.hidden = false; const bf = +state.settings.beginner_coach_fee || 0; note.textContent = t('coachAssigned') + (bf > 0 ? ` (+₾${money(bf)} ${t('perHour')})` : '');
-    return;
-  }
-  box.hidden = true; note.hidden = true; box.hidden = false;
+  const bf = +state.settings.beginner_coach_fee || 0;
+  note.hidden = !needsCoach(); note.textContent = t('coachAssigned') + (bf > 0 ? ` (+₾${money(bf)} ${t('perHour')})` : '') + (allBeginners() ? '' : ' ' + t('coachMixed'));
+  if (allBeginners()) { state.coach = null; box.hidden = true; $('#coachPick').hidden = !(ready && state.coaches.length); return; }
   // shown after the hour is chosen, and only the coaches who are free then
   const list = ready ? state.coaches.filter(coachFits).filter(c => !coachBusy(c.id)) : [];
-  $('#coachPick').hidden = !list.length;
   if (state.coach && !list.some(c => c.id === state.coach)) state.coach = null;
+  box.hidden = !list.length; $('#coachPick').hidden = !(ready && (list.length || needsCoach()));
   if (!list.length) return;
   const card = (id, name, sub, photo, busy) => `<button type="button" class="coach${id ? '' : ' none'}" role="radio" aria-checked="${(state.coach || null) === id}" data-coach="${id || ''}" ${busy ? 'disabled' : ''}>
       <span class="ph">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy">` : id ? esc(name.slice(0, 1)) : '–'}</span>
@@ -360,6 +361,22 @@ function renderCoaches() {
   box.innerHTML = card(null, t('noCoach'), t('noCoachSub'), '', false) +
     list.map(c => card(c.id, c.name, [+c.price > 0 ? `+₾${money(+c.price)} ${t('perHour')}` : '', c.bio].filter(Boolean).join(' · '), c.photo_url, coachBusy(c.id))).join('');
 }
+const boatBusy = id => state.day && state.time && rangeOf(state.time).some(h => (((state.boatLoad[state.day] || {})[h]) || []).includes(id));
+function renderBoats() {
+  const pick = $('#boatPick'); if (!pick) return;
+  const ready = state.day && state.time, list = state.allBoats || [];
+  if (!ready || !allPro() || !list.length) { pick.hidden = true; state.boat = null; return; }
+  if (state.boat && (boatBusy(state.boat) || !list.some(b => b.id === state.boat))) state.boat = null;
+  pick.hidden = false;
+  const card = (id, name, sub, busy) => `<button type="button" class="coach boat${id ? '' : ' none'}" role="radio" aria-checked="${(state.boat || null) === id}" data-boat="${id || ''}" ${busy ? 'disabled' : ''}>
+      <span class="ph">${id ? '🚤' : '–'}</span><span class="cn"><b>${esc(name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}${busy ? `<small class="busy">${esc(t('boatBusy'))}</small>` : ''}</span></button>`;
+  $('#boats').innerHTML = card(null, t('boatAny'), t('boatAnySub'), false) +
+    list.map(b => card(b.id, b.name, +b.price > 0 ? `+₾${money(+b.price)} ${t('perHour')}` : '', boatBusy(b.id))).join('');
+}
+$('#boats').addEventListener('click', e => {
+  const b = e.target.closest('.boat'); if (!b || b.disabled) return;
+  state.boat = b.dataset.boat || null; renderBoats(); update();
+});
 $('#coaches').addEventListener('click', e => {
   const b = e.target.closest('.coach'); if (!b || b.disabled) return;
   state.coach = b.dataset.coach || null; renderCoaches(); update();
@@ -421,7 +438,10 @@ window.bookingState = state;   // read by wizard.js (phone step-by-step form)
 const whenText = (day = state.day, time = state.time, n = state.dur) => !day ? t('noWhen') : `${fmt(day, 'long')} · ${time ? `${time}–${addQ(time, n)} (${durText(n)})` : t('pickTime')}`;
 const equipCost = () => Math.round(equipHourly() / 4 * 100) / 100 * state.dur;   // same rounding as the database (per 15 minutes)
 // coach fee per hour: beginners pay the club's fixed coach fee (the club assigns the coach); others pay the chosen coach's fee
-const coachFee = () => +(needsCoach() ? state.settings.beginner_coach_fee : (state.coaches.find(c => c.id === state.coach) || {}).price) || 0;
+// extra per hour: the club's beginner coach fee (any beginner) + the chosen coach (intermediate/advanced) + the chosen boat (pro)
+const coachFee = () => (needsCoach() ? +state.settings.beginner_coach_fee || 0 : 0)
+  + (!allBeginners() && state.coach ? +(state.coaches.find(c => c.id === state.coach) || {}).price || 0 : 0)
+  + (allPro() && state.boat ? +((state.allBoats || []).find(b => b.id === state.boat) || {}).price || 0 : 0);
 const coachCost = () => coachFee() > 0 ? Math.round(coachFee() / 4 * 100) / 100 * state.dur : 0;
 function currentPrice() {
   if (state.pass) return equipCost() + coachCost();
@@ -432,7 +452,7 @@ function update() {
   renderCoaches();
   const coach = state.coaches.find(c => c.id === state.coach);
   const lk = state.lakes.find(l => l.id === state.lake), sets = equipSets();
-  $('#sumRide').textContent = !state.picked ? '—' : `${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${lk ? ' · ' + lakeName(lk) : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
+  $('#sumRide').textContent = !state.picked ? '—' : `${rideName(state.ride.id)} · ${t('rider')(state.riders)}${coach ? ' · ' + coach.name : ''}${state.boat && allPro() ? ' · 🚤 ' + ((state.allBoats || []).find(b => b.id === state.boat) || {}).name : ''}${lk ? ' · ' + lakeName(lk) : ''}${sets ? ' · 🏄 ' + equipText({ equip_items: equipItems().map(x => ({ ...x, ...state.gear.find(g => g.id === x.id) , n: x.n })) }) : ''}`;
   $('#sumWhen').textContent = whenText();
   const o = state.offer, pct = o && o.discount_percent, p = currentPrice();
   $('#sumTotal').textContent = state.pass ? (p ? `${t('byPass')} + ₾${money(p)}` : t('byPass')) : p == null ? (pct ? t('offerOff')(pct) : t('onRequest')) : '₾' + money(p);
@@ -450,7 +470,25 @@ function prefill(p) {
   if (!form.phone.value && p.phone) form.phone.value = p.phone;
   if (!form.email.value && auth.session && auth.session.user && auth.session.user.email) form.email.value = auth.session.user.email;
 }
-form.addEventListener('submit', e => { e.preventDefault(); submit(); });
+form.addEventListener('submit', e => { e.preventDefault(); askConfirm(); });
+// "Book now" first asks the rider to check the booking
+function askConfirm() {
+  const err = $('#formError');
+  if (!state.picked) return submit();
+  if (!state.day) return err.textContent = t('errDay');
+  if (!state.time) return err.textContent = t('errTime');
+  if (!$('#agree').checked) { $('#agree').focus(); return err.textContent = t('errAgree'); }
+  if (auth.session) {
+    const name = form.name.value.trim(), phone = form.phone.value.trim(), email = form.email.value.trim();
+    if (!name || phone.replace(/\D/g, '').length < 9) { form.name.value ? form.phone.focus() : form.name.focus(); return err.textContent = t('errContact'); }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { form.email.focus(); return err.textContent = t('errEmail'); }
+  }
+  const dlg = $('#confirmDlg');
+  $('#cfSummary').textContent = [rideName(state.ride.id), whenText(state.day, state.time, state.dur), $('#sumTotal').textContent].filter(Boolean).join(' · ');
+  if (dlg.showModal) dlg.showModal(); else submit();
+}
+$('#cfBack').addEventListener('click', () => $('#confirmDlg').close());
+$('#cfGo').addEventListener('click', () => { $('#confirmDlg').close(); submit(); });
 async function submit() {
   const err = $('#formError');
   if (!state.picked) { document.querySelector('#rides').scrollIntoView({ block: 'center', behavior: 'smooth' }); return err.textContent = t('errRide'); }
@@ -466,7 +504,7 @@ async function submit() {
   const levelSum = state.groups.length === 1 ? window.DICT.en.levels[state.groups[0].l] : 'Mixed';
   const booking = { ride: state.ride.id, date: state.day, time: state.time, riders: state.riders, rider_groups: state.groups.map(g => ({ l: g.l, n: g.n })),
     level: levelSum, name, phone, email, notes: form.notes.value.trim() || null, lang: i18n.lang, equip_items: equipItems().length ? equipItems() : null,
-    offer_id: state.offer && !state.pass ? state.offer.id : null, coach_id: state.coach, pass_id: state.pass, lake_id: state.lake || null, no_coach: !needsCoach() && !state.coach };
+    offer_id: state.offer && !state.pass ? state.offer.id : null, coach_id: allBeginners() ? null : state.coach, pass_id: state.pass, lake_id: state.lake || null, no_coach: !allBeginners() && !state.coach, boat_id: allPro() ? state.boat : null };
   const btn = $('#submitBtn'); btn.disabled = true; btn.textContent = t('sending');
   let res = 'error', row = null;
   const rows = rangeOf(state.time).map(h => ({ ...booking, time: h, group_id: group }));
@@ -475,11 +513,12 @@ async function submit() {
     row = r && r[0] && { ...r[0], time: state.time, dur: r.length, price: r.some(x => x.price == null) ? null : r.reduce((a, x) => a + +x.price, 0), paid: r.every(x => x.paid) };
     res = 'ok';
   }
-  catch (x) { res = x.code === '23505' ? 'taken' : x.code === 'PW001' ? 'coach' : x.code === 'PW002' ? 'pass' : x.code === 'PW010' ? 'equip' : x.code === 'PW005' || x.code === 'PW008' ? 'closed' : x.status === 401 ? 'auth' : 'error'; }
+  catch (x) { res = x.code === '23505' ? 'taken' : x.code === 'PW001' ? 'coach' : x.code === 'PW015' ? 'boat' : x.code === 'PW002' ? 'pass' : x.code === 'PW010' ? 'equip' : x.code === 'PW005' || x.code === 'PW008' ? 'closed' : x.status === 401 ? 'auth' : 'error'; }
   btn.disabled = false; update();
   if (res === 'auth') { await auth.signOut(); ui.renderAccount(); return ui.open('in', () => afterAuth().then(submitIfReady)); }
   if (res === 'taken') { state.time = null; await loadMonth(); update(); return err.textContent = t('errTaken'); }
   if (res === 'equip') { await loadClub(); return err.textContent = t('errEquip'); }
+  if (res === 'boat') { state.boat = null; await loadMonth(); update(); return err.textContent = t('errBoat'); }
   if (res === 'coach') { state.coach = null; await loadMonth(); update(); return err.textContent = t('errCoach'); }
   if (res === 'closed') { state.time = null; await loadMonth(); update(); return err.textContent = t('closedHour'); }
   if (res === 'pass') { state.pass = null; renderPassUse(); update(); return err.textContent = t('errPass'); }
@@ -513,7 +552,7 @@ $('#payBtn').addEventListener('click', e => startPay('booking', e.target.dataset
 $('#again').addEventListener('click', () => {
   const keep = { name: form.name.value, phone: form.phone.value };
   form.reset(); form.name.value = keep.name; form.phone.value = keep.phone;
-  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, pass: null }); renderDur();
+  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, boat: null, pass: null }); renderDur();
   prefill(ui.state.profile); renderGroups(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPassUse(); renderCalendar(); renderSlots(); update();
   $('#done').hidden = true; form.hidden = false;
 });
@@ -790,7 +829,7 @@ function saveBooking() {
   try {
     if (!state.picked && !state.day) return sessionStorage.removeItem(SAVE);
     sessionStorage.setItem(SAVE, JSON.stringify({ ride: state.ride.id, picked: state.picked, groups: state.groups, riders: state.riders, day: state.day, time: state.time, dur: state.dur, lake: state.lake,
-      equip: state.equip, eqSel: state.eqSel, coach: state.coach, payMethod: state.payMethod, month: iso(state.month), form: { name: form.name.value, phone: form.phone.value, email: form.email.value, notes: form.notes.value } }));
+      equip: state.equip, eqSel: state.eqSel, coach: state.coach, boat: state.boat, payMethod: state.payMethod, month: iso(state.month) }));
   } catch {}
 }
 window.PW.saveBooking = saveBooking;
@@ -805,12 +844,15 @@ try {
     const pm = document.querySelector(`input[name=paym][value="${state.payMethod}"]`); if (pm) pm.checked = true;
     if (s.day && s.day >= todayIso()) { state.day = s.day; state.time = s.time || null; }
     if (s.month) { const m = fromIso(s.month); if (m >= thisMonth && m <= lastMonth) state.month = m; }
-    for (const k of ['name', 'phone', 'email', 'notes']) if (s.form && s.form[k]) form[k].value = s.form[k];
+    state.boat = s.boat || null;
   }
 } catch {}
 form.addEventListener('input', () => setTimeout(saveBooking, 100)); form.addEventListener('click', () => setTimeout(saveBooking, 150)); form.addEventListener('change', () => setTimeout(saveBooking, 100));
 applyLang(i18n.lang);
-ui.init({ onSignIn: p => { prefill(p); afterAuth(); }, onSignOut: () => { afterAuth(); } }).then(p => { prefill(p); return afterAuth(); }).then(handleReviewLink).then(handlePayReturn);
+// "Your details" always start empty after a page load (also when the browser tries to restore typed values)
+const clearDetails = () => { for (const k of ['name', 'phone', 'email', 'notes']) form[k].value = ''; };
+clearDetails(); window.addEventListener('pageshow', clearDetails);
+ui.init({ onSignIn: p => { prefill(p); afterAuth(); }, onSignOut: () => { afterAuth(); } }).then(() => afterAuth()).then(handleReviewLink).then(handlePayReturn);
 loadClub().catch(() => {}).then(() => requestAnimationFrame(() => { document.documentElement.classList.remove('boot'); try { if (+sessionStorage.getItem('pw.step') > 0 && state.picked) window.scrollTo(0, Math.max(0, form.getBoundingClientRect().top + window.scrollY - 76)); } catch {} }));   // the page stays hidden until the club's own services/prices are in — no flash of built-in defaults
 loadMonth(); loadWeather(); loadReviews();
 if (location.hash === '#mine') setTimeout(() => $('#mine').scrollIntoView(), 700);

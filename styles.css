@@ -1331,3 +1331,24 @@ html body *{text-transform:none!important}
 .stg-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem}
 .stg-row label{display:grid;gap:.3rem}
 .badge.expired{color:var(--muted);background:var(--tint);border-color:var(--line)}.badge.expired::before{content:"◷"}
+
+/* owner: services stand out from each other */
+#priceRows{gap:.9rem}
+.svc-row{background:var(--tint);border:1px solid var(--line);border-left:4px solid var(--lake);box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.svc-row input:not([type=checkbox]){background:var(--card)}
+/* booking confirmation dialog */
+.cf-dlg{border:0;border-radius:18px;padding:1.4rem 1.4rem 1.1rem;max-width:min(440px,calc(100vw - 32px));background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.cf-dlg::backdrop{background:rgba(8,20,22,.55)}
+.cf-dlg h3{margin:0 0 .5rem;font-size:1.25rem}
+.cf-dlg p{margin:.35rem 0;line-height:1.45}
+.cf-dlg .cf-sum{padding:.6rem .75rem;border-radius:12px;background:var(--tint);font-weight:600}
+.cf-dlg .cf-q{font-weight:600}
+.cf-btns{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1rem;flex-wrap:wrap}
+.cf-btns .btn{flex:1 1 140px;letter-spacing:.04em}
+.cf-btns .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.boat-list .oc-fee{white-space:nowrap}
+.cf-dlg[open]{position:fixed;inset:0;margin:auto;height:fit-content;max-height:calc(100dvh - 32px);overflow:auto}
+.boat-list li{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem}
+.boat-list .boat-name{flex:1 1 10rem;min-width:9rem}
+.boat-list .oc-fee{display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;color:var(--muted)}
+.boat-list .oc-fee input{width:5.5rem;padding:.3rem .5rem}

@@ -510,6 +510,7 @@ $('#planList').addEventListener('click', async e => {
 function renderFleet() {
   $('#boatList').innerHTML = state.boats.map(b => `<li class="${b.active ? '' : 'off'}">
       <span class="boat-ic" aria-hidden="true">🚤</span><input class="boat-name" value="${esc(b.name)}" maxlength="60" data-bname="${b.id}" aria-label="${esc(t('boat'))}">
+      <label class="oc-fee">${esc(t('boatPrice'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-bprice="${b.id}" value="${+b.price || 0}" aria-label="${esc(t('boatPrice'))}"> <small>${esc(t('perHour'))}</small></label>
       <select class="mini" data-blake="${b.id}" aria-label="${esc(t('lakeLabel'))}"><option value="">—</option>${state.lakes.map(l => `<option value="${l.id}" ${l.id === b.lake_id ? 'selected' : ''}>${esc(lakeName(l))}</option>`).join('')}</select>
       <span class="muted">${esc(t('boatUse')(uniq(state.bookings.filter(x => x.boat_id === b.id && x.status !== 'cancelled' && x.date >= todayIso()))))}</span>
       <button type="button" class="btn-small" data-btoggle="${b.id}">${esc(t(b.active ? 'hide' : 'show'))}</button>
@@ -537,6 +538,8 @@ $('#boatList').addEventListener('change', async e => {
   const i = e.target.closest('[data-bname]'), l = e.target.closest('[data-blake]');
   if (i && i.value.trim()) { await patch('boats', i.dataset.bname, { name: i.value.trim() }); load(); }
   if (l) { await patch('boats', l.dataset.blake, { lake_id: l.value || null }); load(); }
+  const pr = e.target.closest('[data-bprice]');
+  if (pr) { await patch('boats', pr.dataset.bprice, { price: Math.max(0, +pr.value || 0) }); load(); }
 });
 $('#boatList').addEventListener('click', async e => {
   const tg = e.target.closest('[data-btoggle]'), dl = e.target.closest('[data-bdel]');
