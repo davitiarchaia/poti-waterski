@@ -141,7 +141,7 @@ function renderEquip() {
 $('#equipBox').addEventListener('change', e => {
   if (e.target.name !== 'equip') return;
   state.equip = e.target.value;
-  if (state.equip === 'rent' && !equipSets()) { const g = gearFor(state.ride.id)[0]; if (g) state.eqSel[g.id] = 1; }  // start with one of the first item; quantities are independent of the rider count
+  if (state.equip === 'rent') state.eqSel = {};  // renting starts with every item at zero; the rider adds what they need
   renderEquip(); update();
 });
 $('#equipBox').addEventListener('click', e => {
