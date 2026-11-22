@@ -117,7 +117,7 @@ const add = {
     nt_new: 'New booking', nt_confirmed: 'Booking confirmed', nt_cancelled: 'Booking cancelled', nt_assigned: 'A booking was assigned to you', nt_remind: 'Session starts soon', remindPick: 'Pick the lake',
     stToday: 'Today', stWeekH: 'Hours this week', stPending: 'Awaiting confirmation', stTotalUp: 'Upcoming bookings',
     stR_today: 'Today', stR_week: '7 days', stR_all: 'All upcoming', stR_past: 'Past', stNone2: 'No bookings in this period.',
-    sLake: 'Choose a lake', s3q: 'Pick a Time and Lake', lakePhotos: 'Photos',
+    sLake: 'Choose a lake', s3q: 'Pick a Time & Lake', lakePhotos: 'Photos',
     durText: (h, m) => [h ? `${h} h` : '', m ? `${m} min` : ''].filter(Boolean).join(' '),
     noFitD: d => `${d} doesn't fit`,
     heroPill: 'Georgia’s home of watersports', heroLead: 'Experience waterskiing and wakeboarding at Golden Lake. From your first ride to your next personal best, there’s a place for everyone on the water.', heroCta: 'Book your session', wxLakeNow: 'Golden Lake weather',
