@@ -263,15 +263,16 @@ $('#calGrid').addEventListener('click', e => {
 /* ---------- hours ---------- */
 function renderSlots() {
   const box = $('#slots'), dw = $('#dayWx');
-  $('#daySub').textContent = state.day ? `· ${fmt(state.day, 'long')}` : '';
+  $('#daySub').textContent = '';   // no date next to the title
+  dw.hidden = true;                 // no weather in this step
   if (!state.day) { dw.hidden = true; box.innerHTML = `<p class="hint">${esc(t('pickDayFirst'))}</p>`; return; }
-  const dwx = state.wx && state.wx.daily[state.day];
+  const dwx = false && state.wx && state.wx.daily[state.day];
   if (dwx) {
     const [ic, k] = wxInfo(dwx.code), sc = rideScore(dwx.wind, dwx.code, dwx.rain);
     dw.hidden = false;
     dw.innerHTML = `<span class="dw-ic" aria-hidden="true">${ic}</span><span><b>${esc(t('wx')[k])}</b> · ${Math.round(dwx.max)}° / ${Math.round(dwx.min)}°</span>
       <span>${esc(t('wxWind'))} ${Math.round(dwx.wind)} ${esc(t('kmh'))}</span><span>${esc(t('wxRain'))} ${dwx.rain ?? 0}%</span><span class="score ${sc}">${esc(t('ride_' + sc))}</span>`;
-  } else { dw.hidden = false; dw.innerHTML = `<span class="muted">${esc(t('wxFar'))}</span>`; }
+  }
   const open = quarters(state.day);
   if (state.time && !startOk(state.day, state.time, state.dur, open)) state.time = null;
   if (!open.length || open.every(q => slotFull(state.day, q))) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>`; return; }
@@ -299,7 +300,7 @@ function renderSlots() {
 $('#slots').addEventListener('click', e => {
   const b = e.target.closest('.q'); if (!b || b.disabled) return;
   state.time = b.dataset.h;
-  if (state.coach && coachBusy(state.coach)) state.coach = null;
+  if (state.coach && coachBusy(state.coach)) { state.coach = null; state.coachPicked = false; }
   renderSlots(); renderCoaches(); update();
 });
 /* riders: "?" explains the skill levels (hover, focus or tap) */
@@ -342,12 +343,12 @@ const DUR_QUICK = [1, 2, 4, 6, 8, 12];
 function renderDur() {
   $('#dur').innerHTML = `<div class="stepper dur-step"><button type="button" data-dd="-1" aria-label="−15" ${state.dur <= 1 ? 'disabled' : ''}>−</button>
       <output aria-live="polite">${esc(durText(state.dur))}</output><button type="button" data-dd="1" aria-label="+15" ${state.dur >= MAX_Q ? 'disabled' : ''}>+</button></div>
-    <div class="dur-quick">${DUR_QUICK.map(n => `<button type="button" data-dq="${n}" aria-pressed="${state.dur === n}">${esc(durText(n))}</button>`).join('')}</div>`;
+`;
 }
 $('#dur').addEventListener('click', e => {
   const b = e.target.closest('[data-dd],[data-dq]'); if (!b) return;
   state.dur = b.dataset.dq ? +b.dataset.dq : Math.min(MAX_Q, Math.max(1, state.dur + +b.dataset.dd));
-  if (state.coach && coachBusy(state.coach)) state.coach = null;
+  if (state.coach && coachBusy(state.coach)) { state.coach = null; state.coachPicked = false; }
   renderDur(); renderCalendar(); renderSlots(); renderCoaches(); renderPassUse(); update();
 });
 
@@ -370,10 +371,10 @@ function renderCoaches() {
   if (allBeginners()) { state.coach = null; box.hidden = true; $('#coachPick').hidden = !(ready && state.coaches.length); return; }
   // shown after the hour is chosen, and only the coaches who are free then
   const list = ready ? state.coaches.filter(coachFits).filter(c => !coachBusy(c.id)) : [];
-  if (state.coach && !list.some(c => c.id === state.coach)) state.coach = null;
+  if (state.coach && !list.some(c => c.id === state.coach)) { state.coach = null; state.coachPicked = false; }
   box.hidden = !list.length; $('#coachPick').hidden = !(ready && (list.length || needsCoach()));
   if (!list.length) return;
-  const card = (id, name, sub, photo, busy) => `<button type="button" class="coach${id ? '' : ' none'}" role="radio" aria-checked="${(state.coach || null) === id}" data-coach="${id || ''}" ${busy ? 'disabled' : ''}>
+  const card = (id, name, sub, photo, busy) => `<button type="button" class="coach${id ? '' : ' none'}" role="radio" aria-checked="${state.coachPicked && (state.coach || null) === id}" data-coach="${id || ''}" ${busy ? 'disabled' : ''}>
       <span class="ph">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy">` : id ? esc(name.slice(0, 1)) : '–'}</span>
       <span class="cn"><b>${esc(name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}${busy ? `<small class="busy">${esc(t('coachBusy'))}</small>` : ''}</span><span class="rd" aria-hidden="true"></span></button>`;
   box.innerHTML = card(null, t('noCoach'), t('noCoachSub'), '', false) +
@@ -397,7 +398,7 @@ $('#boats').addEventListener('click', e => {
 });
 $('#coaches').addEventListener('click', e => {
   const b = e.target.closest('.coach'); if (!b || b.disabled) return;
-  state.coach = b.dataset.coach || null; renderCoaches(); update();
+  state.coach = b.dataset.coach || null; state.coachPicked = true; renderCoaches(); update();
 });
 
 /* ---------- riders: groups of different levels ---------- */
@@ -570,7 +571,7 @@ $('#payBtn').addEventListener('click', e => startPay('booking', e.target.dataset
 $('#again').addEventListener('click', () => {
   const keep = { name: form.name.value, phone: form.phone.value };
   form.reset(); form.name.value = keep.name; form.phone.value = keep.phone;
-  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, boat: null, pass: null }); renderDur();
+  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, coachPicked: false, boat: null, pass: null }); renderDur();
   prefill(ui.state.profile); renderGroups(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPassUse(); renderCalendar(); renderSlots(); update();
   $('#done').hidden = true; form.hidden = false;
 });
@@ -847,7 +848,7 @@ function saveBooking() {
   try {
     if (!state.picked && !state.day) return sessionStorage.removeItem(SAVE);
     sessionStorage.setItem(SAVE, JSON.stringify({ ride: state.ride.id, picked: state.picked, groups: state.groups, riders: state.riders, day: state.day, time: state.time, dur: state.dur, lake: state.lake,
-      equip: state.equip, eqSel: state.eqSel, coach: state.coach, boat: state.boat, payMethod: state.payMethod, month: iso(state.month) }));
+      equip: state.equip, eqSel: state.eqSel, coach: state.coach, boat: state.boat, coachPicked: !!state.coachPicked, payMethod: state.payMethod, month: iso(state.month) }));
   } catch {}
 }
 window.PW.saveBooking = saveBooking;
@@ -857,7 +858,7 @@ try {
   if (s) {
     const r = RIDES.find(x => x.id === s.ride); if (r) { state.ride = r; state.picked = !!s.picked; }
     if (Array.isArray(s.groups) && s.groups.length) { state.groups = s.groups; state.riders = s.groups.reduce((n, g) => n + g.n, 0); }
-    state.dur = Math.min(MAX_Q, Math.max(1, +s.dur || 1)); state.lake = s.lake || null; state.equip = s.equip === 'rent' ? 'rent' : 'own'; state.eqSel = s.eqSel || {}; state.coach = s.coach || null;
+    state.dur = Math.min(MAX_Q, Math.max(1, +s.dur || 1)); state.lake = s.lake || null; state.equip = s.equip === 'rent' ? 'rent' : 'own'; state.eqSel = s.eqSel || {}; state.coach = s.coach || null; state.coachPicked = !!s.coachPicked;
     state.payMethod = s.payMethod || 'card';
     const pm = document.querySelector(`input[name=paym][value="${state.payMethod}"]`); if (pm) pm.checked = true;
     if (s.day && s.day >= todayIso()) { state.day = s.day; state.time = s.time || null; }

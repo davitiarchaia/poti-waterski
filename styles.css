@@ -1458,7 +1458,7 @@ html body *{text-transform:none!important}
 .eq-dlg p{color:var(--muted);font-size:1.02rem;margin:0}
 .eq-dlg .cf-btns{margin-top:1.3rem;justify-content:center}
 .eq-dlg .cf-btns .btn{border-radius:999px;letter-spacing:0;text-transform:none}
-.eq-dlg #eqGo{background:linear-gradient(180deg,#1b8a80,#126b63);color:#fff;box-shadow:0 6px 16px rgba(18,107,99,.3)}
+.eq-dlg .cf-btns .btn:not(.ghost){background:linear-gradient(180deg,#1b8a80,#126b63);color:#fff;box-shadow:0 6px 16px rgba(18,107,99,.3)}
 :root[data-theme="dark"] .dlg-ico{color:#7fe0d2}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dlg-ico{color:#7fe0d2}}
 .eq-dlg .cf-btns .btn.ghost{box-shadow:none}

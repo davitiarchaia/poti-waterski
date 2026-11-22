@@ -46,12 +46,24 @@ function warnNoGear() {
   try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch {}
   const dlg = $('#eqDlg'); if (dlg && dlg.showModal) setTimeout(() => dlg.showModal(), 350); else { i += 1; paint(true); }
 }
+// coach cards shown but none tapped: ask before moving on
+const noCoach = () => { const f = steps()[i], box = document.querySelector('#coaches'), pick = document.querySelector('#coachPick');
+  return f && f.contains(box) && pick && !pick.hidden && !box.hidden && box.children.length > 0 && !S().coachPicked; };
+function warn(id) {
+  form.classList.remove('shake'); void form.offsetWidth; form.classList.add('shake');
+  try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch {}
+  const dlg = $(id); if (dlg && dlg.showModal) setTimeout(() => dlg.showModal(), 350); else go(1, true);
+}
 function go(d, force) {
   if (d > 0) { const b = blocker(); if (b) return $('#wizErr').textContent = b; }
   if (d > 0 && !force && noGear()) return warnNoGear();
+  if (d > 0 && !force && noCoach()) return warn('#coachDlg');
   i += d; paint(true);
 }
 $('#eqX') && $('#eqX').addEventListener('click', () => $('#eqDlg').close());
+$('#ncX') && $('#ncX').addEventListener('click', () => $('#coachDlg').close());
+$('#ncBack') && $('#ncBack').addEventListener('click', () => { $('#coachDlg').close(); const x = document.querySelector('#coachPick'); if (x) x.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
+$('#ncGo') && $('#ncGo').addEventListener('click', () => { $('#coachDlg').close(); const nc = document.querySelector('#coaches .coach.none'); if (nc) nc.click(); go(1, true); });
 $('#eqBack') && $('#eqBack').addEventListener('click', () => { $('#eqDlg').close(); const x = document.querySelector('#equipBox .eq-items'); if (x) x.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
 $('#eqGo') && $('#eqGo').addEventListener('click', () => { $('#eqDlg').close(); go(1, true); });
 function enable(v) {

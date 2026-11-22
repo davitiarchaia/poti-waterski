@@ -15,8 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Display:wght@400;600;700;800&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
   <meta name="color-scheme" content="light dark">
-  <script src="theme.js?v=20261122e"></script>
-  <link rel="stylesheet" href="styles.css?v=20261122e">
+  <script src="theme.js?v=20261122f"></script>
+  <link rel="stylesheet" href="styles.css?v=20261122f">
 <script>document.documentElement.classList.add("boot");setTimeout(function(){document.documentElement.classList.remove("boot")},4000)</script>
 <style>html.boot body{visibility:hidden}</style>
 </head>
@@ -148,6 +148,13 @@
         <h3 id="eqNoneTitle" data-i18n="eqNoneTitle"></h3>
         <p data-i18n="eqNoneText"></p>
         <div class="cf-btns"><button type="button" class="btn ghost" id="eqBack" data-i18n="eqNoneBack"></button><button type="button" class="btn" id="eqGo" data-i18n="eqNoneGo"></button></div>
+      </dialog>
+      <dialog class="cf-dlg eq-dlg" id="coachDlg" aria-labelledby="ncTitle">
+        <button type="button" class="dlg-x" id="ncX" aria-label="Close">✕</button>
+        <div class="dlg-ico"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M14 34a14 14 0 1 0 28 0a14 14 0 1 0-28 0z" fill="none" stroke="currentColor" stroke-width="3.2"/><path d="M28 20h26v10H40" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round"/><circle cx="28" cy="34" r="5" fill="currentColor"/><path d="M20 20l-6-8" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M14 12c-3 3-3 6 0 8" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+        <h3 id="ncTitle" data-i18n="ncTitle"></h3>
+        <p data-i18n="ncText"></p>
+        <div class="cf-btns"><button type="button" class="btn ghost" id="ncBack" data-i18n="eqNoneBack"></button><button type="button" class="btn" id="ncGo" data-i18n="eqNoneGo"></button></div>
       </dialog>
       <dialog class="cf-dlg" id="confirmDlg" aria-labelledby="cfTitle">
         <h3 id="cfTitle" data-i18n="cfTitle"></h3>
@@ -339,13 +346,13 @@
 </dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="config.js?v=20261122e"></script>
-<script src="demo.js?v=20261122e" defer></script>
-<script src="i18n.js?v=20261122e"></script>
-<script src="community-i18n.js?v=20261122e"></script>
-<script src="lib.js?v=20261122e"></script>
-<script src="auth-ui.js?v=20261122e"></script>
-<script src="app.js?v=20261122e"></script>
-<script src="wizard.js?v=20261122e"></script>
+<script src="config.js?v=20261122f"></script>
+<script src="demo.js?v=20261122f" defer></script>
+<script src="i18n.js?v=20261122f"></script>
+<script src="community-i18n.js?v=20261122f"></script>
+<script src="lib.js?v=20261122f"></script>
+<script src="auth-ui.js?v=20261122f"></script>
+<script src="app.js?v=20261122f"></script>
+<script src="wizard.js?v=20261122f"></script>
 </body>
 </html>
