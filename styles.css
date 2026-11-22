@@ -1462,3 +1462,20 @@ html body *{text-transform:none!important}
 :root[data-theme="dark"] .dlg-ico{color:#7fe0d2}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dlg-ico{color:#7fe0d2}}
 .eq-dlg .cf-btns .btn.ghost{box-shadow:none}
+.r-need{margin:.5rem 0 0;color:var(--crit,#c0392b);font-size:.85rem;font-weight:600}
+
+/* header wordmark: plcbook.ge */
+.brand .wm{display:inline-flex!important;align-items:baseline;font-family:'Instrument Sans','Noto Sans Display',system-ui,sans-serif;font-weight:800;font-size:1.32rem;letter-spacing:-.01em;color:#fff;text-transform:none}
+.brand .wm em{font-style:normal;color:#f0954a}
+.brand .wm small{font-size:.62em;font-weight:600;margin-left:.08em;opacity:.95}
+@media (max-width:560px){.brand .wm{font-size:1.08rem}.brand .logo{height:38px}}
+
+@media (max-width:420px){
+  .lang{position:relative}
+  .lang:not(.open) button[aria-pressed=false]{display:none}
+  .lang:not(.open) button[aria-pressed=true]::after{content:" ▾";font-size:.7em;opacity:.8}
+  .lang.open{overflow:visible}
+  .lang.open button[aria-pressed=false]{position:absolute;left:0;right:0;z-index:70;border-radius:12px;background:#1d3a40;color:#fff;box-shadow:0 8px 22px rgba(0,0,0,.35)}
+}
+@media (max-width:560px){header .top-right{gap:6px}.brand{gap:.35rem}.brand .logo{height:34px}.brand .wm{font-size:1.05rem}}
+@media (max-width:420px){.lang.open button[aria-pressed=false]{background:#1d3a40!important;border:1px solid rgba(255,255,255,.22)!important;opacity:1!important;padding:.45rem .5rem}}

@@ -9,7 +9,7 @@ i18n.init(window.DICT, ['ka', 'en', 'ru']);
 const state = {
   ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 1, riders: 1, load: {}, lakeLoad: {}, boatLoad: {}, boat: null, wx: null, mine: [], myPasses: [], myReviews: new Set(),
   busyMonth: false, offers: [], offer: null, prices: {}, boats: 1, allBoats: [], coaches: [], coach: null, plans: [], pass: null, reviews: [],
-  lakes: [], photos: [], lake: null, settings: { beginner_coach_fee: 0, cancel_hours: C.cancelHours ?? 24, min_lead_minutes: 60 }, payMethod: 'card', groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
+  lakes: [], photos: [], lake: null, settings: { beginner_coach_fee: 0, cancel_hours: C.cancelHours ?? 24, min_lead_minutes: 60 }, payMethod: 'card', groups: [], equip: 'own', gear: [], eqSel: {},
 };
 const money = v => (Math.round(v * 100) / 100).toLocaleString(i18n.lang === 'en' ? 'en-GB' : 'ka-GE', { maximumFractionDigits: 2 });
 const toast = (msg, kind = '') => { const el = $('#toast'); el.textContent = msg; el.className = 'toast ' + kind; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 5000); };
@@ -358,8 +358,8 @@ const coachBusy = id => state.day && state.time && rangeOf(state.time).some(h =>
 /* beginners (never tried / can get up) are given a coach by the club; intermediate and above choose one — or ride without */
 // beginners (level 0-1) get a coach from the club; intermediate/advanced riders may choose one; only advanced (pro) riders choose the boat
 const needsCoach = () => state.groups.some(g => g.l <= 1);
-const allBeginners = () => state.groups.every(g => g.l <= 1);
-const allPro = () => state.groups.every(g => g.l >= 3);
+const allBeginners = () => state.groups.length > 0 && state.groups.every(g => g.l <= 1);
+const allPro = () => state.groups.length > 0 && state.groups.every(g => g.l >= 3);
 function renderCoaches() {
   renderBoats();
   const ready = state.day && state.time, box = $('#coaches'), note = $('#coachNote');
@@ -371,7 +371,7 @@ function renderCoaches() {
   if (allBeginners()) { state.coach = null; box.hidden = true; $('#coachPick').hidden = !(ready && state.coaches.length); return; }
   // shown after the hour is chosen, and only the coaches who are free then
   const list = ready ? state.coaches.filter(coachFits).filter(c => !coachBusy(c.id)) : [];
-  if (state.coach && !list.some(c => c.id === state.coach)) { state.coach = null; state.coachPicked = false; }
+  if (state.loaded && state.coach && !list.some(c => c.id === state.coach)) { state.coach = null; state.coachPicked = false; }   // not before the club data has loaded (a restored choice would be lost)
   box.hidden = !list.length; $('#coachPick').hidden = !(ready && (list.length || needsCoach()));
   if (!list.length) return;
   const card = (id, name, sub, photo, busy) => `<button type="button" class="coach${id ? '' : ' none'}" role="radio" aria-checked="${state.coachPicked && (state.coach || null) === id}" data-coach="${id || ''}" ${busy ? 'disabled' : ''}>
@@ -384,7 +384,7 @@ const boatBusy = id => state.day && state.time && rangeOf(state.time).some(h => 
 function renderBoats() {
   const pick = $('#boatPick'); if (!pick) return;
   const ready = state.day && state.time, list = state.allBoats || [];
-  if (!ready || !allPro() || !list.length) { pick.hidden = true; state.boat = null; return; }
+  if (!ready || !allPro() || !list.length) { pick.hidden = true; if (state.loaded) state.boat = null; return; }
   if (state.boat && (boatBusy(state.boat) || !list.some(b => b.id === state.boat))) state.boat = null;
   pick.hidden = false;
   const card = (id, name, sub, busy) => `<button type="button" class="coach boat${id ? '' : ' none'}" role="radio" aria-checked="${(state.boat || null) === id}" data-boat="${id || ''}" ${busy ? 'disabled' : ''}>
@@ -410,9 +410,10 @@ function renderGroups() {
   $('#rgroups').innerHTML = state.groups.map((g, i) => `<div class="rg" data-gi="${i}">
       <select data-gl="${i}" aria-label="${esc(t('levelLabel'))}">${lv.map((x, k) => `<option value="${k}" ${g.l === k ? 'selected' : ''}>${esc(x)}</option>`).join('')}</select>
       <div class="stepper sm"><button type="button" data-gn="-1" data-i="${i}" aria-label="−" ${g.n <= 1 ? 'disabled' : ''}>−</button><output>${g.n}</output><button type="button" data-gn="1" data-i="${i}" aria-label="+" ${state.riders >= MAX_R ? 'disabled' : ''}>+</button></div>
-      ${state.groups.length > 1 ? `<button type="button" class="rg-x" data-gx="${i}" aria-label="${esc(t('remove'))}">×</button>` : '<span></span>'}
+      ${state.groups.length >= 1 ? `<button type="button" class="rg-x" data-gx="${i}" aria-label="${esc(t('remove'))}">×</button>` : '<span></span>'}
     </div>`).join('');
-  $('#rTotal').textContent = t('ridersTotal')(state.riders);
+  $('#rTotal').textContent = state.riders ? t('ridersTotal')(state.riders) : '';
+  $('#rNeed').hidden = state.riders > 0;   // nobody added yet: small red note, and the next step stays locked
   $('#addRider').disabled = state.riders >= MAX_R || state.groups.length >= 4;
 }
 $('#rgroups').addEventListener('change', e => { const i = e.target.dataset.gl; if (i == null) return; state.groups[+i].l = +e.target.value; update(); });
@@ -494,6 +495,7 @@ form.addEventListener('submit', e => { e.preventDefault(); askConfirm(); });
 function askConfirm() {
   const err = $('#formError');
   if (!state.picked) return submit();
+  if (!state.groups.length) return err.textContent = t('errRiders');
   if (!state.day) return err.textContent = t('errDay');
   if (!state.time) return err.textContent = t('errTime');
   if (!$('#agree').checked) { $('#agree').focus(); return err.textContent = t('errAgree'); }
@@ -571,7 +573,7 @@ $('#payBtn').addEventListener('click', e => startPay('booking', e.target.dataset
 $('#again').addEventListener('click', () => {
   const keep = { name: form.name.value, phone: form.phone.value };
   form.reset(); form.name.value = keep.name; form.phone.value = keep.phone;
-  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, coachPicked: false, boat: null, pass: null }); renderDur();
+  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 0, groups: [], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, coachPicked: false, boat: null, pass: null }); renderDur();
   prefill(ui.state.profile); renderGroups(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPassUse(); renderCalendar(); renderSlots(); update();
   $('#done').hidden = true; form.hidden = false;
 });
@@ -857,7 +859,7 @@ try {
   const s = JSON.parse(sessionStorage.getItem(SAVE) || 'null');
   if (s) {
     const r = RIDES.find(x => x.id === s.ride); if (r) { state.ride = r; state.picked = !!s.picked; }
-    if (Array.isArray(s.groups) && s.groups.length) { state.groups = s.groups; state.riders = s.groups.reduce((n, g) => n + g.n, 0); }
+    if (Array.isArray(s.groups)) { state.groups = s.groups; state.riders = s.groups.reduce((n, g) => n + g.n, 0); }
     state.dur = Math.min(MAX_Q, Math.max(1, +s.dur || 1)); state.lake = s.lake || null; state.equip = s.equip === 'rent' ? 'rent' : 'own'; state.eqSel = s.eqSel || {}; state.coach = s.coach || null; state.coachPicked = !!s.coachPicked;
     state.payMethod = s.payMethod || 'card';
     const pm = document.querySelector(`input[name=paym][value="${state.payMethod}"]`); if (pm) pm.checked = true;

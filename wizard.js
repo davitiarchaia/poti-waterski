@@ -34,6 +34,7 @@ const sum = () => { const el = document.querySelector('#sumTotal'); $('#wizSum')
 function blocker() {
   const f = steps()[i]; if (!f) return '';
   if (f.querySelector('#rides') && !S().picked) return t('errRide');
+  if (f.querySelector('#rgroups') && !(S().groups || []).length) return t('errRiders');
   if (f.querySelector('#calGrid') && !S().day) return t('errDay');
   if (f.querySelector('#slots') && !S().time) return t('errTime');
   return '';

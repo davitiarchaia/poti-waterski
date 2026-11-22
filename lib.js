@@ -219,5 +219,15 @@ function applyServices(rows) {
     window.RIDES.push({ id: r.ride, tag: !!(r.tag_ka || r.tag_en || r.tag_ru) });
   }
 }
+// phones: the language switch shows only the current language; tapping it opens the other two
+document.addEventListener('click', e => {
+  const lg = e.target.closest && e.target.closest('.lang');
+  document.querySelectorAll('.lang.open').forEach(x => { if (x !== lg) x.classList.remove('open'); });
+  if (!lg || !matchMedia('(max-width:420px)').matches) return;
+  const btn = e.target.closest('button');
+  if (!lg.classList.contains('open')) { e.stopPropagation(); e.preventDefault(); lg.classList.add('open'); [...lg.querySelectorAll('button[aria-pressed=false]')].forEach((x, k) => { x.style.top = `calc(${(k + 1) * 100}% + ${(k + 1) * 4}px)`; }); return; }
+  if (btn && btn.getAttribute('aria-pressed') === 'true') { e.stopPropagation(); e.preventDefault(); }
+  setTimeout(() => lg.classList.remove('open'), 0);
+}, true);
 window.PW = { applyServices, equipName, equipInfo, equipText, token, auth, db, rpc, fn, myProfile, store, iso, fromIso, todayIso, tbNow, tbMs, hours, inSeason, openSlots, pad, i18n, fmt, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, statusKey, phoneWa };
 })();
