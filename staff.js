@@ -12,7 +12,7 @@ const fromMin = m => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
 const addQ = (q, n) => fromMin(toMin(q) + 15 * n);
 const durText = n => t('durText')(Math.floor(n / 4), (n % 4) * 15);
 const rideName = id => (t('rides')[id] || [id])[0];
-const lakeName = id => { const l = state.lakes.find(x => x.id === id); return l ? (l['name_' + i18n.lang] || l.name_ka) : ''; };
+const lakeName = id => { const l = state.lakes.find(x => x.id === id); return l ? (l['name_' + i18n.lang] || (i18n.lang !== 'ka' && l.name_en) || l.name_ka) : ''; };
 const groupsText = gr => (gr || []).map(g => `${g.n} × ${t('levels')[g.l] || ''}`).join(', ');
 function merge(rows) {
   const out = [], by = {};

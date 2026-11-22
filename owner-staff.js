@@ -18,7 +18,7 @@ function renderLakes(st) {
   // the lakes are fixed (no adding / deleting): each one is open, or closed with a reason the riders see
   box.innerHTML = st.lakes.map(l => `<article class="panel lk-card${l.active ? '' : ' off'}" data-lkcard="${l.id}">
       <div class="lk-head">
-        <b class="lk-title">${esc(l.name_ka || l.name_en || '—')}</b>
+        <b class="lk-title">${esc(l['name_' + i18n.lang] || (i18n.lang !== 'ka' && l.name_en) || l.name_ka || '—')}</b>
         <div class="seg lk-state" role="group">
           <button type="button" data-lkset="${l.id}" data-on="1" aria-pressed="${!!l.active}">${esc(t('lkOpen'))}</button>
           <button type="button" data-lkset="${l.id}" data-on="0" aria-pressed="${!l.active}">${esc(t('lkClosed'))}</button>

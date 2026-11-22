@@ -17,7 +17,7 @@ const addQ = (q, n) => fromMin(toMin(q) + 15 * n);
 const hourOf = q => q.slice(0, 2) + ':00';
 const durText = n => t('durText')(Math.floor(n / 4), (n % 4) * 15);
 const lakeById = id => state.lakes.find(l => l.id === id);
-const lakeName = l => l ? (l['name_' + i18n.lang] || l.name_ka) : '';
+const lakeName = l => l ? (l['name_' + i18n.lang] || (i18n.lang !== 'ka' && l.name_en) || l.name_ka) : '';
 const driverById = id => state.drivers.find(d => d.id === id);
 const groupsText = gr => (gr || []).map(g => `${g.n} × ${t('levels')[g.l] || ''}`).join(', ');
 // one customer booking = several 15-minute rows sharing group_id → merge them for display

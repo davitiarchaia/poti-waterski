@@ -54,7 +54,7 @@ function setBoats() { state.boats = state.lakes.length; }   // one session per a
 
 /* ---------- lakes (photos uploaded by the owner) ---------- */
 const photoUrl = path => `${window.SUPABASE.url}/storage/v1/object/public/lake-photos/${path.split('/').map(encodeURIComponent).join('/')}`;
-const lakeName = l => l ? (l['name_' + i18n.lang] || l.name_ka) : '';
+const lakeName = l => l ? (l['name_' + i18n.lang] || (i18n.lang !== 'ka' && l.name_en) || l.name_ka) : '';
 const lakeInfo = l => l ? (l['info_' + i18n.lang] || l.info_ka || '') : '';
 function renderLakes() {
   $('#lakesSec').hidden = true; return;   // lakes are internal (staff statistics) — customers never see them

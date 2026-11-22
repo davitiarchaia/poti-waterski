@@ -1383,7 +1383,7 @@ html body *{text-transform:none!important}
 /* hero background = the club logo (no stock photo) */
 .visual{background:radial-gradient(120% 90% at 50% 35%,#1d5a63 0%,var(--navy) 55%,var(--night) 100%)}
 /* the logo sits in the top part, the text and button below it — nothing overlaps */
-.visual img.hero-bg{inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 0;padding:clamp(12px,2.5vh,30px) 14% 66%;box-sizing:border-box;opacity:.95;filter:drop-shadow(0 10px 30px rgba(0,0,0,.35))}
+.visual img.hero-bg{inset:0;width:100%;height:100%;object-fit:contain;object-position:50% 0;padding:clamp(12px,2.5vh,30px) 10% 0;height:40%;box-sizing:border-box;opacity:.95;filter:drop-shadow(0 10px 30px rgba(0,0,0,.35))}
 .visual::after{background:linear-gradient(180deg,transparent 0%,transparent 35%,color-mix(in srgb,var(--night) 55%,transparent) 100%)}
 .visual .visual-text .hero-logo{display:none}
 .visual-text{justify-content:flex-end}
@@ -1479,3 +1479,12 @@ html body *{text-transform:none!important}
 }
 @media (max-width:560px){header .top-right{gap:6px}.brand{gap:.35rem}.brand .logo{height:34px}.brand .wm{font-size:1.05rem}}
 @media (max-width:420px){.lang.open button[aria-pressed=false]{background:#1d3a40!important;border:1px solid rgba(255,255,255,.22)!important;opacity:1!important;padding:.45rem .5rem}}
+
+/* before "Book now": only the hero, nothing to scroll to */
+html.gate main.layout{grid-template-columns:1fr!important}
+html.gate main.layout>:not(.visual),html.gate body>section,html.gate body>footer{display:none!important}
+html.gate .visual{position:relative;top:auto}
+/* place line smaller; header without the brand */
+.visual .eyebrow{font-size:.78rem!important;padding:.35rem .8rem!important;letter-spacing:.02em}
+header.top{justify-content:space-between}
+header.top .top-right{margin-left:auto}

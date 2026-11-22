@@ -71,6 +71,13 @@ function enable(v) {
   on = v; form.classList.toggle('wiz', v); bar.hidden = !v;
   if (v) paint(false); else form.querySelectorAll('.wiz-on').forEach(f => f.classList.remove('wiz-on'));
 }
+// the home page shows only the hero until "Book now" (or any in-page link) is pressed; then step 1
+document.addEventListener('click', e => {
+  const a = e.target.closest && e.target.closest('a[href^="#"]'); if (!a) return;
+  const root = document.documentElement; if (!root.classList.contains('gate')) return;
+  root.classList.remove('gate'); try { sessionStorage.setItem('pw.open', '1'); } catch {}
+  if (a.getAttribute('href') === '#bookingForm') { e.preventDefault(); i = 0; paint(false); requestAnimationFrame(() => { const y = form.getBoundingClientRect().top + window.scrollY - 70; window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' }); }); }
+});
 $('#wizBack').addEventListener('click', () => go(-1));
 $('#wizNext').addEventListener('click', () => go(1));
 form.addEventListener('click', e => {
