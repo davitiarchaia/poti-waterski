@@ -1357,3 +1357,25 @@ html body *{text-transform:none!important}
 @keyframes pw-shake{0%,100%{transform:translateX(0)}15%{transform:translateX(-10px)}30%{transform:translateX(9px)}45%{transform:translateX(-7px)}60%{transform:translateX(5px)}75%{transform:translateX(-3px)}}
 #bookingForm.shake{animation:pw-shake .45s ease}
 @media (prefers-reduced-motion:reduce){#bookingForm.shake{animation:none}}
+
+/* coach / boat picker: info blocks + full-width radio rows */
+.coach-note{background:none;border:0;padding:0;margin:.2rem 0 .9rem;display:grid;gap:.85rem;color:var(--ink)}
+.coach-note .cb{display:grid;gap:.15rem;padding:.1rem 0 .1rem .85rem;border-left:3px solid var(--mint)}
+.coach-note .cb b{font-size:1.05rem;color:var(--lake)}
+.coach-note .cb span{font-size:.9rem;color:var(--muted)}
+.coach-note .cb.adv{border-left-color:#8fb6e0}
+.coach-note .cb.adv b{color:#4f7fb3}
+:root[data-theme="dark"] .coach-note .cb b{color:#3fe0c5}
+:root[data-theme="dark"] .coach-note .cb.adv b{color:#a9c8ee}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .coach-note .cb b{color:#3fe0c5}:root:not([data-theme="light"]) .coach-note .cb.adv b{color:#a9c8ee}}
+#coaches,#boats{grid-template-columns:1fr;gap:.6rem}
+#coaches .coach,#boats .coach{padding:.8rem 1rem;gap:.9rem;border-width:1.5px;border-radius:16px;transition:border-color .15s,box-shadow .15s}
+#coaches .coach .ph,#boats .coach .ph{flex-basis:48px;height:48px;font-size:1.2rem}
+#coaches .coach .cn,#boats .coach .cn{flex:1;gap:.1rem}
+#coaches .coach .cn b,#boats .coach .cn b{font-size:1rem}
+#coaches .coach .cn small,#boats .coach .cn small{font-size:.82rem;white-space:normal}
+.coach .rd{flex:0 0 24px;height:24px;border-radius:50%;border:2px solid var(--mist);display:grid;place-items:center;margin-left:auto}
+.coach[aria-checked=true]{border-color:var(--mint);box-shadow:0 0 0 1px var(--mint),0 0 18px color-mix(in srgb,var(--mint) 35%,transparent)}
+.coach[aria-checked=true] .rd{background:var(--mint);border-color:var(--mint)}
+.coach[aria-checked=true] .rd::after{content:"";width:6px;height:11px;border:solid #0b2a2a;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.coach-note .cb em{font-style:normal;font-weight:700;white-space:nowrap;color:var(--ink)}

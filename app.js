@@ -348,7 +348,10 @@ function renderCoaches() {
   renderBoats();
   const ready = state.day && state.time, box = $('#coaches'), note = $('#coachNote');
   const bf = +state.settings.beginner_coach_fee || 0;
-  note.hidden = !needsCoach(); note.textContent = t('coachAssigned') + (bf > 0 ? ` (+₾${money(bf)} ${t('perHour')})` : '') + (allBeginners() ? '' : ' ' + t('coachMixed'));
+  const blk = (cls, h, p, x) => `<div class="cb ${cls}"><b>${esc(h)}</b><span>${esc(p)}${x ? ` <em>${esc(x)}</em>` : ''}</span></div>`;
+  note.innerHTML = (needsCoach() ? blk('beg', t('cbBegTitle'), t('cbBegText'), bf > 0 ? `+₾${money(bf)} ${t('perHour')}` : '') : '')
+    + (allBeginners() ? '' : blk('adv', t('cbAdvTitle'), t('cbAdvText')));
+  note.hidden = !ready;
   if (allBeginners()) { state.coach = null; box.hidden = true; $('#coachPick').hidden = !(ready && state.coaches.length); return; }
   // shown after the hour is chosen, and only the coaches who are free then
   const list = ready ? state.coaches.filter(coachFits).filter(c => !coachBusy(c.id)) : [];
@@ -357,7 +360,7 @@ function renderCoaches() {
   if (!list.length) return;
   const card = (id, name, sub, photo, busy) => `<button type="button" class="coach${id ? '' : ' none'}" role="radio" aria-checked="${(state.coach || null) === id}" data-coach="${id || ''}" ${busy ? 'disabled' : ''}>
       <span class="ph">${photo ? `<img src="${esc(photo)}" alt="" loading="lazy">` : id ? esc(name.slice(0, 1)) : '–'}</span>
-      <span class="cn"><b>${esc(name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}${busy ? `<small class="busy">${esc(t('coachBusy'))}</small>` : ''}</span></button>`;
+      <span class="cn"><b>${esc(name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}${busy ? `<small class="busy">${esc(t('coachBusy'))}</small>` : ''}</span><span class="rd" aria-hidden="true"></span></button>`;
   box.innerHTML = card(null, t('noCoach'), t('noCoachSub'), '', false) +
     list.map(c => card(c.id, c.name, [+c.price > 0 ? `+₾${money(+c.price)} ${t('perHour')}` : '', c.bio].filter(Boolean).join(' · '), c.photo_url, coachBusy(c.id))).join('');
 }
@@ -369,7 +372,7 @@ function renderBoats() {
   if (state.boat && (boatBusy(state.boat) || !list.some(b => b.id === state.boat))) state.boat = null;
   pick.hidden = false;
   const card = (id, name, sub, busy) => `<button type="button" class="coach boat${id ? '' : ' none'}" role="radio" aria-checked="${(state.boat || null) === id}" data-boat="${id || ''}" ${busy ? 'disabled' : ''}>
-      <span class="ph">${id ? '🚤' : '–'}</span><span class="cn"><b>${esc(name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}${busy ? `<small class="busy">${esc(t('boatBusy'))}</small>` : ''}</span></button>`;
+      <span class="ph">${id ? '🚤' : '–'}</span><span class="cn"><b>${esc(name)}</b>${sub ? `<small>${esc(sub)}</small>` : ''}${busy ? `<small class="busy">${esc(t('boatBusy'))}</small>` : ''}</span><span class="rd" aria-hidden="true"></span></button>`;
   $('#boats').innerHTML = card(null, t('boatAny'), t('boatAnySub'), false) +
     list.map(b => card(b.id, b.name, +b.price > 0 ? `+₾${money(+b.price)} ${t('perHour')}` : '', boatBusy(b.id))).join('');
 }
