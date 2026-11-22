@@ -62,13 +62,15 @@ function gate(msg, showBtn) { $('#dash').hidden = true; $('#gate').hidden = fals
 $('#gateBtn').addEventListener('click', () => ui.open('in', () => start()));
 
 /* ---------- sections ---------- */
-const VIEWS = ['inbox', 'dash', 'all', 'schedule', 'passes', 'offers', 'prices', 'fleet', 'reviews', 'events', 'riders'];
+// 5 tabs; each shows a group of sections (older links like #all or #fleet still open the right tab)
+const VIEWS = ['bookings', 'pricing', 'team', 'dash', 'community'];
+const OLD = { inbox: 'bookings', all: 'bookings', passes: 'pricing', offers: 'pricing', prices: 'pricing', fleet: 'team', lakes: 'team', schedule: 'team', reviews: 'community', events: 'community', riders: 'community' };
 function show(v) {
-  if (v === 'lakes') v = 'fleet';
-  if (!VIEWS.includes(v)) v = 'inbox';
+  v = OLD[v] || v;
+  if (!VIEWS.includes(v)) v = 'bookings';
   state.view = v;
   $$('.o-tabs [role=tab]').forEach(b => b.setAttribute('aria-selected', b.dataset.view === v));
-  $$('.view').forEach(s => s.hidden = s.dataset.view !== v);
+  $$('.view').forEach(s => s.hidden = s.dataset.group !== v);
   history.replaceState(null, '', '#' + v);
 }
 $('.o-tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) show(b.dataset.view); });

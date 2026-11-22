@@ -1429,3 +1429,21 @@ html body *{text-transform:none!important}
   .lake-map .lm-zone.left{background-position:0 0!important}
   .lake-map .lm-zone.right{background-position:100% 0!important}
 }
+/* a closed lake on the photo: greyed, with the reason */
+.lake-map .lm-zone.is-closed{cursor:not-allowed;display:grid;place-items:center;padding:.6rem}
+.lake-map .lm-zone.is-closed::before{content:"";position:absolute;inset:0;border-radius:inherit;background:rgba(6,14,16,.74)}
+.lake-map .lm-closed{position:relative;z-index:1;display:grid;gap:.2rem;text-align:center;color:#fff;max-width:90%}
+.lake-map .lm-closed b{font-size:.95rem}
+.lake-map .lm-closed small{font-size:.8rem;opacity:.85;line-height:1.3}
+/* owner: lake open/closed cards, merged tabs */
+.lk-card .lk-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap}
+.lk-card .lk-title{font-size:1.1rem}
+.lk-card .lk-state button[aria-pressed=true]{font-weight:700}
+.lk-card.off{border-left:4px solid var(--crit)}
+.lk-card:not(.off){border-left:4px solid var(--lake)}
+.lk-card .lk-reason{display:grid;gap:.3rem;margin-top:.7rem}
+.lk-card .lk-status{margin:.5rem 0 0;font-size:.88rem}
+.o-off{display:none!important}
+.view+.view:not([hidden]){margin-top:1.4rem}
+.o-tabs{flex-wrap:wrap}
+[data-view=dash] .panels:not(:has(> .panel:not(.o-off) ~ .panel:not(.o-off))){grid-template-columns:1fr}

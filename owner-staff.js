@@ -15,23 +15,38 @@ const pay = { month: 0 };
 /* ---------- LAKES & PHOTOS ---------- */
 function renderLakes(st) {
   const box = $('#lakeAdmin'); if (!box) return;
-  box.innerHTML = st.lakes.map((l, i) => {
-    const ph = st.photos.filter(p => p.lake_id === l.id);
-    const boats = st.boats.filter(b => b.lake_id === l.id);
-    const inp = (k, max, ph2 = '') => `<input data-lk="${l.id}" data-k="${k}" maxlength="${max}" value="${esc(l[k] || '')}" placeholder="${esc(ph2)}">`;
-    return `<article class="panel lk-card${l.active ? '' : ' off'}">
+  // the lakes are fixed (no adding / deleting): each one is open, or closed with a reason the riders see
+  box.innerHTML = st.lakes.map(l => `<article class="panel lk-card${l.active ? '' : ' off'}" data-lkcard="${l.id}">
       <div class="lk-head">
-        <div class="svc-order"><button type="button" class="btn-small" data-lkmove="${l.id}" data-dir="-1" ${i ? '' : 'disabled'}>↑</button><button type="button" class="btn-small" data-lkmove="${l.id}" data-dir="1" ${i < st.lakes.length - 1 ? '' : 'disabled'}>↓</button></div>
-        <label class="lk-name"><span>${esc(t('svName'))}</span>${inp('name_ka', 60)}</label>
-        <label class="check"><input type="checkbox" data-lk="${l.id}" data-k="active" ${l.active ? 'checked' : ''}> <span>${esc(t('fActive'))}</span></label>
-        <button type="button" class="btn-small primary" data-lksave="${l.id}">${esc(t('save'))}</button>
+        <b class="lk-title">${esc(l.name_ka || l.name_en || '—')}</b>
+        <div class="seg lk-state" role="group">
+          <button type="button" data-lkset="${l.id}" data-on="1" aria-pressed="${!!l.active}">${esc(t('lkOpen'))}</button>
+          <button type="button" data-lkset="${l.id}" data-on="0" aria-pressed="${!l.active}">${esc(t('lkClosed'))}</button>
+        </div>
       </div>
-      <div class="lk-photos">${ph.map(p => `<figure class="lk-ph"><img src="${esc(photoUrl(p.path))}" alt="" loading="lazy"><div class="lk-ph-acts"><button type="button" class="btn-small" data-phdel="${p.id}">✕</button></div></figure>`).join('')}
-        <label class="lk-upload"><input type="file" accept="image/*" multiple hidden data-upload="${l.id}"><span>＋ ${esc(t('lkUpload'))}</span></label></div>
-    </article>`;
-  }).join('') || `<p class="inbox-empty">${esc(t('noData'))}</p>`;
+      <label class="lk-reason" ${l.active ? 'hidden' : ''}><span>${esc(t('lkReason'))}</span>
+        <input data-lkreason="${l.id}" maxlength="200" value="${esc(l.closed_reason || '')}" placeholder="${esc(t('lkReasonPh'))}"></label>
+      <p class="lk-status muted">${l.active ? esc(t('lkOpenNote')) : esc(t('lkClosedNote'))}</p>
+    </article>`).join('') || `<p class="inbox-empty">${esc(t('noData'))}</p>`;
 }
 const lakeVal = (id, k) => { const el = document.querySelector(`[data-lk="${id}"][data-k="${k}"]`); if (!el) return undefined; return el.type === 'checkbox' ? el.checked : (el.value.trim() || null); };
+// open / close a lake; the reason is saved when typed
+async function setLake(id, body) {
+  try { await db(`lakes?id=eq.${id}`, { method: 'PATCH', body, prefer: 'return=minimal' }); ui.toast(t('saved'), 'ok'); } catch { err(); }
+  return reload();
+}
+document.addEventListener('click', e => {
+  const b = e.target.closest('[data-lkset]'); if (!b) return;
+  const on = b.dataset.on === '1', card = b.closest('[data-lkcard]');
+  if (on) return setLake(b.dataset.lkset, { active: true, closed_reason: null });
+  card.querySelector('.lk-reason').hidden = false; card.querySelector('[data-lkreason]').focus();
+  const r = card.querySelector('[data-lkreason]').value.trim() || null;
+  return setLake(b.dataset.lkset, { active: false, closed_reason: r });
+});
+document.addEventListener('change', e => {
+  const r = e.target.closest('[data-lkreason]'); if (!r) return;
+  setLake(r.dataset.lkreason, { closed_reason: r.value.trim() || null });
+});
 document.addEventListener('click', async e => {
   const sv = e.target.closest('[data-lksave]'), mv = e.target.closest('[data-lkmove]'), del = e.target.closest('[data-phdel]'), first = e.target.closest('[data-phfirst]');
   if (sv) {

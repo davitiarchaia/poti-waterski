@@ -31,13 +31,13 @@ async function loadClubData() {
     get('ride_prices?select=*'), get('boats?select=id,name,price,lake_id,sort&active=eq.true&order=sort.asc,created_at.asc'),
     get('coaches?select=id,name,bio,photo_url,rides,price&active=eq.true&order=sort.asc,created_at.asc'),
     get('offers?select=*&order=sort.asc,created_at.desc'), get('pass_plans?select=*&active=eq.true&order=sort.asc,price.asc'),
-    get('lakes?select=*&active=eq.true&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc').catch(() => []),
+    get('lakes?select=*&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc').catch(() => []),
     get('equipment?select=*&active=eq.true&order=sort.asc,created_at.asc'),
   ]);
   const st = (await get('club_settings?select=beginner_coach_fee,cancel_hours,min_lead_minutes&id=eq.1'))[0];
   if (st) { state.settings = st; C.cancelHours = st.cancel_hours; C.leadMinutes = st.min_lead_minutes; }
   state.periods = await get(`closed_periods?select=date_from,reopen_on,reason&reopen_on=gt.${todayIso()}&order=date_from.asc`);
-  state.lakes = lakes; state.photos = photos; state.allBoats = boats; state.gear = gear;
+  state.allLakes = lakes; state.lakes = lakes.filter(l => l.active); state.photos = photos;   // closed lakes are shown (with the reason) but can't be picked state.allBoats = boats; state.gear = gear;
   for (const id of Object.keys(state.eqSel)) if (!gear.some(g => g.id === id)) delete state.eqSel[id];
   window.PW.applyServices(pr);
   if (!RIDES.some(r => r.id === state.ride.id)) state.ride = RIDES[0];
@@ -310,16 +310,19 @@ $('#slots').addEventListener('click', e => {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); }); }
 /* the customer may pick a lake; "any lake" leaves it to the staff */
 function renderLakePick() {
-  const box = $('#lakePick'); box.hidden = state.lakes.length < 2; if (box.hidden) { if (state.loaded) state.lake = null; return; }
+  const all = state.allLakes || state.lakes;
+  const box = $('#lakePick'); box.hidden = all.length < 2 || !state.lakes.length; if (box.hidden) { if (state.loaded) state.lake = null; return; }
   if (state.loaded && state.lake && !state.lakes.some(l => l.id === state.lake)) state.lake = null;
   const stock = { 'Lake 1': 'img/lake1.jpg', 'Lake 2': 'img/lake2.jpg' };   // default aerial crops; an uploaded photo (Owner page) replaces them
   const bg = l => { const p = state.photos.find(x => x.lake_id === l.id), u = p ? photoUrl(p.path) : stock[l.name_en]; return u ? ` style="background-image:url('${esc(u)}')"` : ''; };
   const tick = '<span class="lm-tick" aria-hidden="true"></span>';
   const any = `<button type="button" class="lk-any" role="radio" aria-checked="${!state.lake}" data-lk=""><svg viewBox="0 0 32 24" aria-hidden="true"><path d="M2 5c4.5-3 8.5 3 13 0s8.5-3 13 0M2 12c4.5-3 8.5 3 13 0s8.5-3 13 0M2 19c4.5-3 8.5 3 13 0s8.5-3 13 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><b>${esc(t('lakeAny'))}</b>${tick}</button>`;
   // two lakes: one big aerial photo — tap the left part for Lake 2, the right part for Lake 1
-  if (state.lakes.length === 2) {
-    const [l1, l2] = [...state.lakes].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100));
-    const zone = (l, side) => `<button type="button" class="lm-zone ${side}" role="radio" aria-checked="${state.lake === l.id}" data-lk="${l.id}" aria-label="${esc(lakeName(l))}"><span class="lm-name">${esc(lakeName(l))}</span>${tick}</button>`;
+  if (all.length === 2) {
+    const [l1, l2] = [...all].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100));
+    const zone = (l, side) => l.active
+      ? `<button type="button" class="lm-zone ${side}" role="radio" aria-checked="${state.lake === l.id}" data-lk="${l.id}" aria-label="${esc(lakeName(l))}"><span class="lm-name">${esc(lakeName(l))}</span>${tick}</button>`
+      : `<div class="lm-zone ${side} is-closed" aria-label="${esc(lakeName(l))}: ${esc(t('lakeClosedLbl'))}"><span class="lm-closed"><b>🔒 ${esc(lakeName(l))} · ${esc(t('lakeClosedLbl'))}</b>${l.closed_reason ? `<small>${esc(l.closed_reason)}</small>` : ''}</span></div>`;
     $('#lakeOpts').innerHTML = `<div class="lake-map${state.lake ? ' has-pick' : ''}"><img src="img/lakes-map.jpg" alt="" loading="lazy" width="1520" height="416">${zone(l2, 'left')}${zone(l1, 'right')}</div>${any}`;
     $('#lakeOpts').classList.add('as-map');
     return;
