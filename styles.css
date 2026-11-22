@@ -1447,3 +1447,18 @@ html body *{text-transform:none!important}
 .view+.view:not([hidden]){margin-top:1.4rem}
 .o-tabs{flex-wrap:wrap}
 [data-view=dash] .panels:not(:has(> .panel:not(.o-off) ~ .panel:not(.o-off))){grid-template-columns:1fr}
+
+/* "No equipment selected" dialog: icon tile, centred text, teal Continue */
+.eq-dlg{text-align:center;padding:1.6rem 1.4rem 1.3rem;max-width:min(420px,calc(100vw - 32px))}
+.eq-dlg .dlg-x{position:absolute;top:.7rem;right:.8rem;width:36px;height:36px;border:0;border-radius:50%;background:transparent;color:var(--ink);font-size:1.15rem;cursor:pointer}
+.eq-dlg .dlg-x:hover{background:var(--tint)}
+.dlg-ico{width:84px;height:84px;margin:.2rem auto .9rem;border-radius:22px;background:color-mix(in srgb,var(--mint) 28%,var(--card));color:#145e57;display:grid;place-items:center}
+.dlg-ico svg{width:56px;height:56px}
+.eq-dlg h3{font-size:1.4rem;margin:0 0 .35rem}
+.eq-dlg p{color:var(--muted);font-size:1.02rem;margin:0}
+.eq-dlg .cf-btns{margin-top:1.3rem;justify-content:center}
+.eq-dlg .cf-btns .btn{border-radius:999px;letter-spacing:0;text-transform:none}
+.eq-dlg #eqGo{background:linear-gradient(180deg,#1b8a80,#126b63);color:#fff;box-shadow:0 6px 16px rgba(18,107,99,.3)}
+:root[data-theme="dark"] .dlg-ico{color:#7fe0d2}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dlg-ico{color:#7fe0d2}}
+.eq-dlg .cf-btns .btn.ghost{box-shadow:none}

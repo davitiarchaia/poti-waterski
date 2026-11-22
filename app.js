@@ -37,7 +37,8 @@ async function loadClubData() {
   const st = (await get('club_settings?select=beginner_coach_fee,cancel_hours,min_lead_minutes&id=eq.1'))[0];
   if (st) { state.settings = st; C.cancelHours = st.cancel_hours; C.leadMinutes = st.min_lead_minutes; }
   state.periods = await get(`closed_periods?select=date_from,reopen_on,reason&reopen_on=gt.${todayIso()}&order=date_from.asc`);
-  state.allLakes = lakes; state.lakes = lakes.filter(l => l.active); state.photos = photos;   // closed lakes are shown (with the reason) but can't be picked state.allBoats = boats; state.gear = gear;
+  // closed lakes are shown (with the reason) but can't be picked
+  state.allLakes = lakes; state.lakes = lakes.filter(l => l.active); state.photos = photos; state.allBoats = boats; state.gear = gear;
   for (const id of Object.keys(state.eqSel)) if (!gear.some(g => g.id === id)) delete state.eqSel[id];
   window.PW.applyServices(pr);
   if (!RIDES.some(r => r.id === state.ride.id)) state.ride = RIDES[0];

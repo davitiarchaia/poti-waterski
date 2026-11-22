@@ -51,6 +51,7 @@ function go(d, force) {
   if (d > 0 && !force && noGear()) return warnNoGear();
   i += d; paint(true);
 }
+$('#eqX') && $('#eqX').addEventListener('click', () => $('#eqDlg').close());
 $('#eqBack') && $('#eqBack').addEventListener('click', () => { $('#eqDlg').close(); const x = document.querySelector('#equipBox .eq-items'); if (x) x.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
 $('#eqGo') && $('#eqGo').addEventListener('click', () => { $('#eqDlg').close(); go(1, true); });
 function enable(v) {

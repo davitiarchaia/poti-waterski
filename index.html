@@ -15,8 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Display:wght@400;600;700;800&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
   <meta name="color-scheme" content="light dark">
-  <script src="theme.js?v=20261122d"></script>
-  <link rel="stylesheet" href="styles.css?v=20261122d">
+  <script src="theme.js?v=20261122e"></script>
+  <link rel="stylesheet" href="styles.css?v=20261122e">
 <script>document.documentElement.classList.add("boot");setTimeout(function(){document.documentElement.classList.remove("boot")},4000)</script>
 <style>html.boot body{visibility:hidden}</style>
 </head>
@@ -142,7 +142,9 @@
       <label class="check agree"><input type="checkbox" id="agree"> <span><span data-i18n="agree1"></span> <a href="terms.html" target="_blank" data-i18n="agreeLink"></a></span></label>
       <p class="form-error" id="formError" role="alert"></p>
       <button class="btn" type="submit" id="submitBtn"></button>
-      <dialog class="cf-dlg" id="eqDlg" aria-labelledby="eqNoneTitle">
+      <dialog class="cf-dlg eq-dlg" id="eqDlg" aria-labelledby="eqNoneTitle">
+        <button type="button" class="dlg-x" id="eqX" aria-label="Close">✕</button>
+        <div class="dlg-ico"><svg viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(22 22 32)"><rect x="12" y="6" width="8" height="50" rx="4" fill="currentColor"/><rect x="24" y="6" width="8" height="50" rx="4" fill="currentColor"/><rect x="13.5" y="24" width="5" height="6" rx="1.5" fill="#cfeae5"/><rect x="13.5" y="32" width="5" height="5" rx="1.5" fill="#cfeae5"/><rect x="25.5" y="24" width="5" height="6" rx="1.5" fill="#cfeae5"/><rect x="25.5" y="32" width="5" height="5" rx="1.5" fill="#cfeae5"/></g><path d="M31 50c7 5 13 2 15-5l1-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><path d="M47 40l-8-12 19-2z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/></svg></div>
         <h3 id="eqNoneTitle" data-i18n="eqNoneTitle"></h3>
         <p data-i18n="eqNoneText"></p>
         <div class="cf-btns"><button type="button" class="btn ghost" id="eqBack" data-i18n="eqNoneBack"></button><button type="button" class="btn" id="eqGo" data-i18n="eqNoneGo"></button></div>
@@ -337,13 +339,13 @@
 </dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="config.js?v=20261122d"></script>
-<script src="demo.js?v=20261122d" defer></script>
-<script src="i18n.js?v=20261122d"></script>
-<script src="community-i18n.js?v=20261122d"></script>
-<script src="lib.js?v=20261122d"></script>
-<script src="auth-ui.js?v=20261122d"></script>
-<script src="app.js?v=20261122d"></script>
-<script src="wizard.js?v=20261122d"></script>
+<script src="config.js?v=20261122e"></script>
+<script src="demo.js?v=20261122e" defer></script>
+<script src="i18n.js?v=20261122e"></script>
+<script src="community-i18n.js?v=20261122e"></script>
+<script src="lib.js?v=20261122e"></script>
+<script src="auth-ui.js?v=20261122e"></script>
+<script src="app.js?v=20261122e"></script>
+<script src="wizard.js?v=20261122e"></script>
 </body>
 </html>
