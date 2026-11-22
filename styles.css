@@ -1388,3 +1388,44 @@ html body *{text-transform:none!important}
 .visual .visual-text .hero-logo{display:none}
 .visual-text{justify-content:flex-end}
 @media (max-width:900px){.visual img.hero-bg{padding:12px 24% 0;height:24%;object-position:50% 0}.visual .visual-text{justify-content:flex-end;padding-top:21svh}}
+
+/* lake picker: one big aerial photo, tap a lake on it; "Any lake" below */
+.lake-opts.as-map{display:grid;grid-template-columns:1fr;gap:.7rem}
+.lake-map{position:relative;border-radius:18px;overflow:hidden;aspect-ratio:1520/416;background:#0b2226;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--mint) 55%,transparent),0 8px 26px rgba(0,0,0,.25)}
+.lake-map img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.lake-map .lm-zone{position:absolute;top:0;bottom:0;border:0;padding:0;margin:0;background:transparent;cursor:pointer;transition:background .2s,box-shadow .2s}
+.lake-map .lm-zone.left{left:0;width:50.5%}
+.lake-map .lm-zone.right{right:0;width:49.5%}
+.lake-map .lm-zone:hover{background:rgba(255,255,255,.08)}
+.lake-map .lm-zone:focus-visible{outline:3px solid var(--sun);outline-offset:-3px}
+.lake-map.has-pick .lm-zone[aria-checked=false]{background:rgba(4,14,16,.55)}
+.lake-map .lm-zone[aria-checked=true]{box-shadow:inset 0 0 0 3px var(--mint),inset 0 0 28px color-mix(in srgb,var(--mint) 45%,transparent)}
+.lake-map .lm-name{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.lm-tick{display:none}
+.lake-map .lm-zone[aria-checked=true] .lm-tick,.lk-any[aria-checked=true] .lm-tick{display:grid}
+.lm-tick{place-items:center;width:26px;height:26px;border-radius:50%;background:var(--mint);box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.lm-tick::after{content:"";width:6px;height:11px;border:solid #0b2a2a;border-width:0 2.5px 2.5px 0;transform:translateY(-1px) rotate(45deg)}
+.lake-map .lm-tick{position:absolute;top:10px;right:10px}
+.lk-any{position:relative;display:flex;align-items:center;gap:.8rem;width:100%;padding:.85rem 1rem;border-radius:16px;border:1.5px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.lk-any svg{width:34px;height:26px;color:var(--lake);flex:0 0 auto}
+.lk-any b{font-size:1.05rem}
+.lk-any .lm-tick{position:absolute;top:-9px;right:-9px}
+.lk-any[aria-checked=true]{border-color:var(--mint);background:color-mix(in srgb,var(--mint) 14%,var(--card));box-shadow:0 0 0 1px var(--mint)}
+@media (max-width:560px){.lake-map .lm-tick{top:6px;right:6px;width:22px;height:22px}}
+.lk-any .lm-tick{top:50%;right:14px;transform:translateY(-50%)}
+/* phones: the two halves of the photo stacked, each one big (Lake 1 on top) */
+@media (max-width:560px){
+  .lake-map{aspect-ratio:auto;display:grid;gap:8px;background:transparent;box-shadow:none;overflow:visible}
+  .lake-map img{display:none}
+  .lake-map .lm-zone{position:relative;inset:auto;width:100%!important;aspect-ratio:768/416;border-radius:16px;background-image:url(img/lakes-map.jpg);background-size:200% 100%;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--mint) 45%,transparent)}
+  .lake-map .lm-zone.left{background-position:0 0;order:2}
+  .lake-map .lm-zone.right{background-position:100% 0;order:1}
+  .lake-map .lm-zone:hover{background-color:transparent}
+  .lake-map.has-pick .lm-zone[aria-checked=false]{background-color:transparent;filter:brightness(.5) saturate(.7)}
+  .lake-map .lm-zone[aria-checked=true]{box-shadow:0 0 0 3px var(--mint),0 0 22px color-mix(in srgb,var(--mint) 45%,transparent)}
+}
+@media (max-width:560px){
+  .lake-map .lm-zone{background-image:url(img/lakes-map.jpg)!important;background-size:200% 100%!important;background-repeat:no-repeat!important}
+  .lake-map .lm-zone.left{background-position:0 0!important}
+  .lake-map .lm-zone.right{background-position:100% 0!important}
+}

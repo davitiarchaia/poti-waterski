@@ -314,6 +314,17 @@ function renderLakePick() {
   if (state.loaded && state.lake && !state.lakes.some(l => l.id === state.lake)) state.lake = null;
   const stock = { 'Lake 1': 'img/lake1.jpg', 'Lake 2': 'img/lake2.jpg' };   // default aerial crops; an uploaded photo (Owner page) replaces them
   const bg = l => { const p = state.photos.find(x => x.lake_id === l.id), u = p ? photoUrl(p.path) : stock[l.name_en]; return u ? ` style="background-image:url('${esc(u)}')"` : ''; };
+  const tick = '<span class="lm-tick" aria-hidden="true"></span>';
+  const any = `<button type="button" class="lk-any" role="radio" aria-checked="${!state.lake}" data-lk=""><svg viewBox="0 0 32 24" aria-hidden="true"><path d="M2 5c4.5-3 8.5 3 13 0s8.5-3 13 0M2 12c4.5-3 8.5 3 13 0s8.5-3 13 0M2 19c4.5-3 8.5 3 13 0s8.5-3 13 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg><b>${esc(t('lakeAny'))}</b>${tick}</button>`;
+  // two lakes: one big aerial photo — tap the left part for Lake 2, the right part for Lake 1
+  if (state.lakes.length === 2) {
+    const [l1, l2] = [...state.lakes].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100));
+    const zone = (l, side) => `<button type="button" class="lm-zone ${side}" role="radio" aria-checked="${state.lake === l.id}" data-lk="${l.id}" aria-label="${esc(lakeName(l))}"><span class="lm-name">${esc(lakeName(l))}</span>${tick}</button>`;
+    $('#lakeOpts').innerHTML = `<div class="lake-map${state.lake ? ' has-pick' : ''}"><img src="img/lakes-map.jpg" alt="" loading="lazy" width="1520" height="416">${zone(l2, 'left')}${zone(l1, 'right')}</div>${any}`;
+    $('#lakeOpts').classList.add('as-map');
+    return;
+  }
+  $('#lakeOpts').classList.remove('as-map');
   const opts = [...state.lakes.map(l => ({ id: l.id, n: lakeName(l), st: bg(l) })), { id: '', n: t('lakeAny'), st: '' }];
   $('#lakeOpts').innerHTML = opts.map(o => `<button type="button" class="lk${o.st ? ' has-ph' : ''}" role="radio" aria-checked="${(state.lake || '') === o.id}" data-lk="${o.id}"${o.st}><span>${esc(o.n)}</span></button>`).join('');
 }
