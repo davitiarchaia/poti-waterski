@@ -1631,3 +1631,28 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 .pay-table td,.pay-table th,.pay-table td:nth-child(3){text-align:left!important}
 .panels>.panel:has(#revChart){max-width:640px;justify-self:start}
 #revChart{max-width:600px}
+/* owner: "All bookings" fits the width — no side scrolling */
+@media (min-width:900px){
+  #bkTable{table-layout:fixed;font-size:.82rem}
+  #bkTable th{white-space:normal;padding:.6rem .5rem;font-size:.66rem;letter-spacing:.04em}
+  #bkTable td{padding:.6rem .5rem;overflow-wrap:anywhere;word-break:normal}
+  #bkTable th:nth-child(1){width:15%}#bkTable th:nth-child(2){width:12%}#bkTable th:nth-child(3){width:17%}#bkTable th:nth-child(4){width:8%}
+  #bkTable th:nth-child(5){width:11%}#bkTable th:nth-child(6){width:9%}#bkTable th:nth-child(7){width:11%}#bkTable th:nth-child(8){width:8%}#bkTable th:nth-child(9){width:9%}
+  #bkTable td.when b{white-space:normal}
+  #bkTable td.notes{max-width:none}
+  #bkTable td.act{white-space:normal;text-align:left}
+  #bkTable td.act .btn-small{display:block;width:100%;margin:0 0 .3rem!important;padding-left:.4rem;padding-right:.4rem;white-space:normal}
+  #bkTable select{max-width:100%;font-size:.78rem}
+  #bkTable .badge{white-space:normal}
+}
+@media (min-width:900px){
+  #bkTable th:nth-child(1){width:14%}#bkTable th:nth-child(2){width:11%}#bkTable th:nth-child(3){width:16%}#bkTable th:nth-child(4){width:7%}
+  #bkTable th:nth-child(5){width:10%}#bkTable th:nth-child(6){width:11%}#bkTable th:nth-child(7){width:10%}#bkTable th:nth-child(8){width:10%}#bkTable th:nth-child(9){width:11%}
+  #bkTable td:nth-child(6) > *{display:inline-block;max-width:100%;white-space:normal;line-height:1.25;box-sizing:border-box}
+  #bkTable .badge{overflow-wrap:normal;word-break:keep-all;max-width:100%;box-sizing:border-box;font-size:.72rem;padding:.25rem .5rem;border-radius:10px}
+  #bkTable td.act .btn-small{font-size:.76rem;line-height:1.2;padding-top:.35rem;padding-bottom:.35rem}
+}
+@media (min-width:900px){
+  #bkTable th:nth-child(7){width:9%}#bkTable th:nth-child(8){width:12%}#bkTable th:nth-child(9){width:10%}
+  #bkTable .badge{font-size:.68rem;padding:.25rem .45rem;gap:.25rem}
+}
