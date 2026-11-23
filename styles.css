@@ -1629,8 +1629,6 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 @media (min-width:901px){ html.gate .visual .visual-text .hero-sub{margin-bottom:clamp(2.6rem,7vh,5rem)!important} html.gate .visual .visual-text .wx-now{margin-top:clamp(1.2rem,2.6vh,2rem)!important} }
 .reviews-sec[hidden]{display:none!important}
 .pay-table td,.pay-table th,.pay-table td:nth-child(3){text-align:left!important}
-.panels>.panel:has(#revChart){max-width:640px;justify-self:start}
-#revChart{max-width:600px}
 /* owner: "All bookings" fits the width — no side scrolling */
 @media (min-width:900px){
   #bkTable{table-layout:fixed;font-size:.82rem}
@@ -1656,3 +1654,5 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
   #bkTable th:nth-child(7){width:9%}#bkTable th:nth-child(8){width:12%}#bkTable th:nth-child(9){width:10%}
   #bkTable .badge{font-size:.68rem;padding:.25rem .45rem;gap:.25rem}
 }
+/* dashboard: "Revenue by month" and "Booked hours per day" are the same, medium size (the 2/3 column) */
+[data-view=dash] .panels:has(#revChart){grid-template-columns:2fr 1fr!important}
