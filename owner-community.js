@@ -78,10 +78,10 @@ function renderDetail(pane) {
       <p class="muted">${esc(fmt(e.start_date, 'long'))}${e.start_time ? ' · ' + esc(e.start_time) : ''} · ${+e.price ? money(e.price) : esc(t('eFree'))}${e.capacity ? ` · ${live(e.id).length}/${e.capacity}` : ''}</p></div>
       <button type="button" class="btn-small${e.results_published ? '' : ' primary'}" id="evPub">${esc(t(e.results_published ? 'evHideRes' : 'evPublishRes'))}</button></div>
     <h3 class="sub-h first">${esc(t('evSignups'))}</h3>
-    ${rows.length ? `<div class="tbl-wrap"><table class="sg-table"><thead><tr><th>${esc(t('name'))}</th><th>${esc(t('levelLabel'))}</th><th></th><th>${esc(t('evPaid'))}</th><th>${esc(t('evPlace'))}</th><th>${esc(t('evResult'))}</th><th></th></tr></thead><tbody>
+    ${rows.length ? `<div class="tbl-wrap"><table class="sg-table"><thead><tr><th>${esc(t('name'))}</th><th>${esc(t('levelLabel'))}</th><th>${esc(t('evPaid'))}</th><th>${esc(t('evPlace'))}</th><th>${esc(t('evResult'))}</th><th></th></tr></thead><tbody>
       ${rows.map(s => { const p = prof(s.user_id); return `<tr data-sid="${s.id}">
         <td><b>${esc(s.name)}</b>${p && !s.by_owner ? ` <small class="muted">@${esc(p.username)}</small>` : ''}<br><a href="tel:${esc(s.phone.replace(/\s/g, ''))}">${esc(s.phone)}</a>${s.notes ? `<br><small class="muted">${esc(s.notes)}</small>` : ''}</td>
-        <td>${s.level ? CM.levelBadge(s.level) : '—'}</td><td>${badge(s)}</td>
+        <td class="sg-st">${s.level ? CM.levelBadge(s.level) : ''}${badge(s)}</td>
         <td><input type="checkbox" data-paid="${s.id}"${s.paid ? ' checked' : ''}${s.status === 'cancelled' ? ' disabled' : ''} aria-label="${esc(t('evPaid'))}"></td>
         <td><input class="mini place" type="number" min="1" max="999" data-place="${s.id}" value="${s.place || ''}"${s.status !== 'confirmed' ? ' disabled' : ''}></td>
         <td><input class="mini result" maxlength="80" data-result="${s.id}" value="${esc(s.result || '')}" placeholder="${esc(t('evResultPh'))}"${s.status !== 'confirmed' ? ' disabled' : ''}></td>
