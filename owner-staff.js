@@ -227,5 +227,6 @@ document.addEventListener('change', async e => {
   reload();
 });
 
+window.ownerShrink = shrink;
 window.ownerExtra = { render(st) { renderLakes(st); renderDrivers(st); renderStaff(st); renderPayroll(st); } };
 })();

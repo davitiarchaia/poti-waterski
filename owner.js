@@ -63,8 +63,8 @@ $('#gateBtn').addEventListener('click', () => ui.open('in', () => start()));
 
 /* ---------- sections ---------- */
 // 5 tabs; each shows a group of sections (older links like #all or #fleet still open the right tab)
-const VIEWS = ['bookings', 'pricing', 'team', 'dash', 'community'];
-const OLD = { inbox: 'bookings', all: 'bookings', passes: 'pricing', offers: 'pricing', prices: 'pricing', fleet: 'team', lakes: 'team', schedule: 'team', reviews: 'community', events: 'community', riders: 'community' };
+const VIEWS = ['bookings', 'pricing', 'tariffs', 'team', 'staff', 'dash', 'community'];
+const OLD = { inbox: 'bookings', all: 'bookings', passes: 'tariffs', offers: 'tariffs', plans: 'tariffs', prices: 'pricing', fleet: 'team', lakes: 'team', schedule: 'team', reviews: 'community', events: 'community', riders: 'community' };
 function show(v) {
   v = OLD[v] || v;
   if (!VIEWS.includes(v)) v = 'bookings';
@@ -86,7 +86,7 @@ async function load(auto) {
       db('offers?select=*&order=sort.asc,created_at.desc'),
       db('ride_prices?select=*'),
       db('boats?select=*&order=sort.asc,created_at.asc'),
-      db('coaches?select=id,created_at,name,bio,photo_url,rides,active,sort,user_id,price&order=sort.asc,created_at.asc'),
+      db('coaches?select=id,created_at,name,bio,photo_url,rides,active,sort,user_id,price,lake_id&order=sort.asc,created_at.asc'),
       db('pass_plans?select=*&order=sort.asc,price.asc'),
       db('passes?select=*&order=created_at.desc&limit=2000'),
       db('reviews?select=*&order=created_at.desc&limit=1000'),
@@ -519,12 +519,14 @@ function renderFleet() {
       <button type="button" class="btn-small" data-bdel="${b.id}">${esc(t('del'))}</button></li>`).join('') || `<li class="muted">${esc(t('noData'))}</li>`;
   $('#coachRides').innerHTML = window.RIDES.map(r => `<label class="check"><input type="checkbox" value="${r.id}" data-cride ${state.editCoach && (coachById(state.editCoach).rides || []).includes(r.id) ? 'checked' : ''}> <span>${esc(rideName(r.id))}</span></label>`).join('');
   $('#coachFormTitle').textContent = t(state.editCoach ? 'coEdit' : 'coNew'); $('#coachCancel').hidden = !state.editCoach;
+  const ls = $('#coachLake'), lv = state.editCoach ? (coachById(state.editCoach).lake_id || '') : ls.value;
+  ls.innerHTML = `<option value="">${esc(t('coAnyLake'))}</option>` + state.lakes.map(l => `<option value="${l.id}">${esc(lakeName(l))}</option>`).join(''); ls.value = lv || '';
   $('#coachList').innerHTML = state.coaches.length ? state.coaches.map(c => {
     const upcoming = uniq(state.bookings.filter(b => b.coach_id === c.id && b.status !== 'cancelled' && b.date >= todayIso()));
     return `<article class="offer-card coach-card ${c.active ? 'oLive' : 'oHidden'}${state.editCoach === c.id ? ' editing' : ''}">
       <div class="cc-top"><span class="ph">${c.photo_url ? `<img src="${esc(c.photo_url)}" alt="">` : esc(c.name.slice(0, 1))}</span><div><h3>${esc(c.name)}</h3><span class="ostate ${c.active ? 'oLive' : 'oHidden'}">${esc(t(c.active ? 'oLive' : 'oHidden'))}</span></div></div>
       ${c.bio ? `<p>${esc(c.bio)}</p>` : ''}
-      <ul class="oc-meta"><li>${esc(c.rides && c.rides.length ? c.rides.map(rideName).join(', ') : t('fAny'))}</li><li><label class="oc-fee">${esc(t('coFee'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-cprice="${c.id}" value="${+c.price || 0}" aria-label="${esc(t('coFee'))}"></label></li><li><label class="oc-fee">${esc(t('coPay'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-cpay="${c.id}" value="${c.pay_rate ?? ''}" placeholder="—" aria-label="${esc(t('coPay'))}"></label></li><li>${esc(t('coachUpcoming')(upcoming))}</li></ul>
+      <ul class="oc-meta"><li>${esc(c.rides && c.rides.length ? c.rides.map(rideName).join(', ') : t('fAny'))}</li><li>🌊 ${esc(c.lake_id ? lakeName(state.lakes.find(l => l.id === c.lake_id)) : t('coAnyLake'))}</li><li><label class="oc-fee">${esc(t('coFee'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-cprice="${c.id}" value="${+c.price || 0}" aria-label="${esc(t('coFee'))}"></label></li><li><label class="oc-fee">${esc(t('coPay'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-cpay="${c.id}" value="${c.pay_rate ?? ''}" placeholder="—" aria-label="${esc(t('coPay'))}"></label></li><li>${esc(t('coachUpcoming')(upcoming))}</li></ul>
       ${window.staffLinkUI ? window.staffLinkUI('coach', c) : ''}
       <div class="oc-actions"><button type="button" class="btn-small" data-cact="edit" data-id="${c.id}">${esc(t('edit'))}</button>
         <button type="button" class="btn-small" data-cact="toggle" data-id="${c.id}">${esc(t(c.active ? 'hide' : 'show'))}</button>
@@ -549,14 +551,32 @@ $('#boatList').addEventListener('click', async e => {
   if (dl) { if (!dl.dataset.sure) { dl.dataset.sure = 1; dl.textContent = t('delQ'); dl.classList.add('danger'); return; }
     try { await db(`boats?id=eq.${dl.dataset.bdel}`, { method: 'DELETE', prefer: 'return=minimal' }); } catch { $('#tblError').textContent = t('errNet'); } load(); }
 });
+$('#goNewSvc') && $('#goNewSvc').addEventListener('click', () => { const f = $('#svcForm'); f.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => f.name_ka.focus({ preventScroll: true }), 450); });
 const cform = $('#coachForm');
-function fillCoach(c) { cform.name.value = c ? c.name : ''; cform.bio.value = c ? c.bio || '' : ''; cform.photo_url.value = c ? c.photo_url || '' : ''; cform.price.value = c && +c.price ? c.price : ''; cform.active.checked = c ? c.active : true; $('#coachError').textContent = ''; }
+function fillCoach(c) {
+  cform.name.value = c ? c.name : ''; cform.bio.value = c ? c.bio || '' : ''; cform.photo_url.value = c ? c.photo_url || '' : ''; cform.price.value = c && +c.price ? c.price : ''; cform.active.checked = c ? c.active : true;
+  cform.lake_id.value = c ? c.lake_id || '' : ''; coachPhoto = null; $('#coachPhotoFile').value = ''; showCoachPhoto(c ? c.photo_url : ''); $('#coachError').textContent = '';
+}
+// coach photo: picked file is shown at once and uploaded on save
+let coachPhoto = null;
+function showCoachPhoto(src) { const im = $('#coachPhotoPrev'); im.hidden = !src; if (src) im.src = src; $('#coachPhotoDel').hidden = !src; }
+$('#coachPhotoFile').addEventListener('change', e => { const f = e.target.files[0]; if (!f) return; coachPhoto = f; showCoachPhoto(URL.createObjectURL(f)); });
+$('#coachPhotoDel').addEventListener('click', () => { coachPhoto = null; cform.photo_url.value = ''; $('#coachPhotoFile').value = ''; showCoachPhoto(''); });
+async function uploadCoachPhoto(f0) {
+  const f = window.ownerShrink ? await window.ownerShrink(f0) : f0;
+  if (f.size > 6 * 1024 * 1024) throw new Error('big');
+  const ext = (f.type.split('/')[1] || 'jpg').replace('jpeg', 'jpg'), path = `coaches/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  const tk = await window.PW.token();
+  const r = await fetch(`${window.SUPABASE.url}/storage/v1/object/lake-photos/${path}`, { method: 'POST', headers: { apikey: window.SUPABASE.key, Authorization: `Bearer ${tk}`, 'Content-Type': f.type, 'x-upsert': 'false' }, body: f });
+  if (!r.ok) throw new Error('upload ' + r.status);
+  return `${window.SUPABASE.url}/storage/v1/object/public/lake-photos/${path}`;
+}
 cform.addEventListener('submit', async e => {
   e.preventDefault();
-  const name = cform.name.value.trim(), photo = cform.photo_url.value.trim();
+  const name = cform.name.value.trim(); let photo = cform.photo_url.value.trim();
   if (!name) return $('#coachError').textContent = t('errTitle');
-  if (photo && !/^https:\/\//.test(photo)) return $('#coachError').textContent = t('errPhoto');
-  const body = { name, bio: cform.bio.value.trim() || null, photo_url: photo || null, price: Math.max(0, +cform.price.value || 0), rides: $$('[data-cride]:checked').map(x => x.value), active: cform.active.checked };
+  try { if (coachPhoto) photo = await uploadCoachPhoto(coachPhoto); } catch (x) { return $('#coachError').textContent = t(x.message === 'big' ? 'coPhotoBig' : 'errNet'); }
+  const body = { name, bio: cform.bio.value.trim() || null, photo_url: photo || null, price: Math.max(0, +cform.price.value || 0), rides: $$('[data-cride]:checked').map(x => x.value), active: cform.active.checked, lake_id: cform.lake_id.value || null };
   try {
     if (state.editCoach) await db(`coaches?id=eq.${state.editCoach}`, { method: 'PATCH', body, prefer: 'return=minimal' });
     else await db('coaches', { method: 'POST', body: { ...body, sort: state.coaches.length }, prefer: 'return=minimal' });

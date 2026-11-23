@@ -1498,3 +1498,36 @@ header.top .top-right{margin-left:auto}
 .drv .oc-fee{display:inline-flex;align-items:center;gap:.3rem;font-size:.85rem;color:var(--muted)}
 .drv .oc-fee input{width:5.5rem}
 .drv{display:flex!important;flex-wrap:wrap;align-items:center;gap:.5rem}.drv>input[data-k=name]{flex:1 1 10rem}
+
+/* owner: panel header with a button on the right */
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;margin-bottom:.4rem}
+.panel-head h2{margin:0}
+/* owner: staff */
+.em-list{display:grid;gap:.55rem}
+.em-card{display:flex;align-items:center;gap:.8rem;padding:.7rem .9rem;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.em-card.off{opacity:.6}
+.em-card.editing{border-color:var(--lake);box-shadow:0 0 0 1px var(--lake)}
+.em-av{flex:0 0 40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--tint);font-weight:800;color:var(--lake)}
+.em-main{flex:1;min-width:0;display:grid;gap:.1rem}
+.em-main small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.em-docs{font-size:.85rem;white-space:nowrap}
+.em-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.8rem;margin-bottom:.8rem}
+.em-grid .wide{grid-column:1/-1}
+.em-grid label:not(.check),.em-form>label:not(.check){display:grid;gap:.3rem;min-width:0}
+.em-form input,.em-form select,.em-form textarea{width:100%;box-sizing:border-box;min-width:0}
+.em-form .check input{width:auto}
+#emPreview{padding:.6rem .8rem;border-radius:12px;background:var(--tint);font-weight:600}
+.em-flist{list-style:none;padding:0;margin:.3rem 0 .7rem;display:grid;gap:.35rem}
+.em-flist li{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.em-flist li .btn-link{text-align:left}
+.em-up.busy,.co-up.busy{opacity:.6;pointer-events:none}
+.em-calc td,.em-calc th{white-space:nowrap}
+/* owner: coach photo upload */
+.co-photo{display:flex;align-items:center;gap:.8rem;flex-wrap:wrap;margin:.2rem 0 .6rem}
+.co-photo img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--line)}
+.co-up{cursor:pointer}
+#emMonth{display:inline-flex;align-items:center;gap:.4rem;padding:.25rem}
+#emMonth .pm-cur{min-width:9.5rem;text-align:center;font-size:1rem}
+#emMonth .pm-nav{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--card);color:var(--ink);font-size:1.3rem;line-height:1;cursor:pointer}
+#emMonth .pm-nav:disabled{opacity:.35;cursor:default}
+.em-up{justify-self:start;width:auto;display:inline-flex;cursor:pointer}

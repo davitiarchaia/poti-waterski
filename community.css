@@ -248,3 +248,8 @@
 .sg-table td:first-child{min-width:128px}
 .sg-table th{font-size:.66rem;letter-spacing:.03em}
 .sg-table td,.sg-table th{padding:.5rem .4rem}
+/* riders page: same look as the home page's first screen (deep teal glow + club logo) */
+.riders-hero{background:radial-gradient(120% 90% at 50% 35%,#1d5a63 0%,var(--navy) 55%,var(--night) 100%)}
+.riders-hero::before{content:"";position:absolute;inset:clamp(10px,2vw,24px) 0 auto;height:min(62%,320px);background:url(img/logo-light.png) center top/contain no-repeat;opacity:.95;filter:drop-shadow(0 10px 30px rgba(0,0,0,.35));pointer-events:none}
+.riders-hero .cm-hero-in{padding-top:clamp(200px,30vw,330px)}
+@media (max-width:560px){.riders-hero::before{height:180px}.riders-hero .cm-hero-in{padding-top:205px}}
