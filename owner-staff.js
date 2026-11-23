@@ -146,6 +146,7 @@ function renderDrivers(st) {
       <span class="boat-ic" aria-hidden="true">🧑‍✈️</span>
       <input class="mini" data-drv="${d.id}" data-k="name" maxlength="60" value="${esc(d.name)}" aria-label="${esc(t('coName'))}">
       <input class="mini" data-drv="${d.id}" data-k="phone" maxlength="30" value="${esc(d.phone || '')}" placeholder="+995…" aria-label="${esc(t('phone'))}">
+      <label class="oc-fee">${esc(t('payRate'))} <input class="mini" type="number" min="0" step="0.5" data-drv="${d.id}" data-k="pay_rate" value="${d.pay_rate ?? ''}" placeholder="—" aria-label="${esc(t('payRate'))}"></label>
       <span class="muted small">${lakes.length ? '🌊 ' + esc(lakes.join(', ')) : esc(t('drNoLake'))}</span>
       <button type="button" class="btn-small" data-drvtoggle="${d.id}">${esc(t(d.active ? 'hide' : 'show'))}</button>
       <button type="button" class="btn-small" data-drvdel="${d.id}">${esc(t('del'))}</button>
@@ -155,7 +156,8 @@ function renderDrivers(st) {
 document.addEventListener('change', async e => {
   const d = e.target.closest('[data-drv]'); if (!d) return;
   const v = e.target.value.trim(); if (d.dataset.k === 'name' && !v) return;
-  try { await db(`drivers?id=eq.${d.dataset.drv}`, { method: 'PATCH', body: { [d.dataset.k]: v || null }, prefer: 'return=minimal' }); } catch { err(); }
+  const val = d.dataset.k === 'pay_rate' ? (v === '' ? null : Math.max(0, +v)) : (v || null);
+  try { await db(`drivers?id=eq.${d.dataset.drv}`, { method: 'PATCH', body: { [d.dataset.k]: val }, prefer: 'return=minimal' }); } catch { err(); }
   reload();
 });
 document.addEventListener('click', async e => {
@@ -198,16 +200,17 @@ window.staffLinkUI = (kind, c) => {
 /* ---------- PAYROLL: confirmed hours per coach and driver ---------- */
 function renderPayroll(st) {
   const box = $('#payroll'); if (!box) return;
-  const now = new Date(), months = [0, -1, -2].map(o => new Date(now.getFullYear(), now.getMonth() + o, 1));
-  $('#payMonth').innerHTML = months.map((m, i) => `<button type="button" data-paym="${i}" aria-pressed="${pay.month === i}">${esc(fmt(m, 'month'))}</button>`).join('');
-  const m0 = months[pay.month], a = iso(m0), z = iso(new Date(m0.getFullYear(), m0.getMonth() + 1, 0)), today = todayIso();
+  // one month at a time, with ‹ › to move (no further than the current month)
+  const now = new Date(), m0 = new Date(now.getFullYear(), now.getMonth() - pay.month, 1);
+  $('#payMonth').innerHTML = `<button type="button" class="pm-nav" data-paystep="1" aria-label="‹">‹</button><b class="pm-cur">${esc(fmt(m0, 'month'))}</b><button type="button" class="pm-nav" data-paystep="-1" aria-label="›" ${pay.month === 0 ? 'disabled' : ''}>›</button>`;
+  const a = iso(m0), z = iso(new Date(m0.getFullYear(), m0.getMonth() + 1, 0)), today = todayIso();
   const done = st.bookings.filter(b => b.status === 'confirmed' && b.date >= a && b.date <= z);
   const row = (kind, x, list) => {
     const past = list.filter(b => b.date <= today), hrs = past.length / 4, plan = list.length / 4;
     const rate = x.pay_rate != null ? +x.pay_rate : null;
     return `<tr><td><b>${esc(x.name)}</b><small class="muted"> ${esc(t(kind === 'coach' ? 'stCoach1' : 'stDriver1'))}</small></td>
       <td>${H().uniq(past)}</td><td>${hrs.toLocaleString('ka-GE')}</td><td class="muted">${plan > hrs ? '+' + (plan - hrs).toLocaleString('ka-GE') : ''}</td>
-      <td><input class="mini rate" type="number" min="0" step="0.5" data-rate="${kind}:${x.id}" value="${rate ?? ''}" placeholder="—" aria-label="${esc(t('payRate'))}"></td>
+      <td>${kind === 'driver' ? `<span title="${esc(t('payFromDrivers'))}">${rate != null ? money(rate) : '—'}</span>` : `<input class="mini rate" type="number" min="0" step="0.5" data-rate="${kind}:${x.id}" value="${rate ?? ''}" placeholder="—" aria-label="${esc(t('payRate'))}">`}</td>
       <td><b>${rate != null ? money(rate * hrs) : '—'}</b></td></tr>`;
   };
   const coaches = st.coaches.map(c => row('coach', c, done.filter(b => b.coach_id === c.id)));
@@ -216,7 +219,7 @@ function renderPayroll(st) {
     <tbody>${coaches.length ? `<tr class="pay-sec"><td colspan="6">${esc(t('stCoaches'))}</td></tr>${coaches.join('')}` : ''}${drivers.length ? `<tr class="pay-sec"><td colspan="6">${esc(t('stDrivers'))}</td></tr>${drivers.join('')}` : ''}</tbody></table></div>`
     : `<p class="empty">${esc(t('noData'))}</p>`;
 }
-document.addEventListener('click', e => { const b = e.target.closest('[data-paym]'); if (b) { pay.month = +b.dataset.paym; renderPayroll(S()); } });
+document.addEventListener('click', e => { const b = e.target.closest('[data-paystep]'); if (b && !b.disabled) { pay.month = Math.max(0, Math.min(36, pay.month + +b.dataset.paystep)); renderPayroll(S()); } });
 document.addEventListener('change', async e => {
   const r = e.target.closest('[data-rate]'); if (!r) return;
   const [kind, id] = r.dataset.rate.split(':'), v = r.value === '' ? null : Math.max(0, +r.value);
