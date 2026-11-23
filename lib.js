@@ -232,3 +232,11 @@ document.addEventListener('click', e => {
 }, true);
 window.PW = { applyServices, equipName, equipInfo, equipText, token, auth, db, rpc, fn, myProfile, store, iso, fromIso, todayIso, tbNow, tbMs, hours, inSeason, openSlots, pad, i18n, fmt, weekdayHeaders, weather, wxInfo, rideScore, esc, waLink, statusKey, phoneWa };
 })();
+
+// home screen on phones: the hero is exactly the visible height under the header (address bars, banners and notches differ per phone)
+(function () {
+  const fit = () => { const v = document.querySelector('.visual'); if (!v) return; const top = v.getBoundingClientRect().top + window.scrollY;
+    document.documentElement.style.setProperty('--hero-h', Math.max(240, window.innerHeight - top) + 'px'); };
+  addEventListener('DOMContentLoaded', fit); addEventListener('load', fit); addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 300));
+  setTimeout(fit, 600);
+})();

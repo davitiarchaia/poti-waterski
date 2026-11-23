@@ -1604,3 +1604,22 @@ button.em-main:hover b{color:var(--lake);text-decoration:underline}
 /* home: hero text a bit higher, more room between the location pill and the headline */
 html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 @media (min-width:901px){ html.gate .visual .visual-text{padding-bottom:clamp(60px,12vh,150px)!important} }
+/* ===== phones/tablets (home screen): everything fits one screen on every phone; the logo takes what is left, nothing overlaps ===== */
+@media (max-width:900px){
+  html.gate .visual{display:flex!important;flex-direction:column;height:var(--hero-h,calc(100svh - 110px))!important;min-height:0!important;max-height:none}
+  html.gate .visual img.hero-bg{position:relative!important;inset:auto!important;transform:none!important;flex:1 1 0;min-height:0;width:100%!important;height:auto!important;max-height:none;padding:min(3svh,22px) 12% min(1.5svh,10px)!important;box-sizing:border-box;object-fit:contain!important;object-position:50% 50%!important}
+  html.gate .visual .visual-text{position:relative!important;inset:auto!important;flex:0 0 auto;min-height:0!important;height:auto;padding:0 20px min(3svh,24px)!important;justify-content:flex-start!important;transform:none!important;overflow:visible}
+  html.gate .visual .eyebrow{font-size:min(.9rem,1.9svh)!important;padding:min(.5rem,.9svh) .9rem!important;margin:0 0 min(1.6rem,2.6svh)!important}
+  html.gate .visual .visual-text h1{font-size:min(11.5vw,6.4svh)!important;line-height:1.05;margin:0 0 min(.8rem,1.4svh)!important}
+  html.gate .visual .h-bar{height:min(5px,.7svh);margin:0 0 min(.9rem,1.5svh)}
+  html.gate .visual .hero-sub{font-size:min(1rem,2.1svh)!important;margin:0 0 min(1.2rem,2svh)!important}
+  html.gate .visual .hero-cta{padding:min(1rem,1.9svh) 1.4rem!important;font-size:min(1.05rem,2.2svh)!important}
+  /* weather: one compact row */
+  html.gate .visual .wx-now{margin-top:min(1rem,1.8svh)!important;padding:min(.7rem,1.3svh) .9rem!important;flex-wrap:nowrap!important;gap:.6rem;font-size:min(.95rem,2svh)}
+  html.gate .visual .wx-now>.wn-lab{display:none!important}
+  html.gate .visual .wx-now>.wn-wind{border-left:1px solid color-mix(in srgb,#fff 25%,transparent)!important;padding-left:.7rem!important}
+}
+/* very short screens (small phones, landscape): drop the subline, then the weather */
+@media (max-width:900px) and (max-height:640px){ html.gate .visual .hero-sub{display:none} }
+@media (max-width:900px) and (max-height:540px){ html.gate .visual .wx-now{display:none!important} }
+@media (max-width:900px){ html.gate .visual .wx-now>.wn-main>span:last-child{display:none!important} }
