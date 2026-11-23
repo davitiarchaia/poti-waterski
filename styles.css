@@ -1626,3 +1626,4 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 /* desktop: more space between the location pill and the headline */
 @media (min-width:901px){ html.gate .visual .visual-text .eyebrow{margin-bottom:clamp(3rem,7.5vh,5rem)!important} html:not(.gate) .visual .visual-text .eyebrow{margin-bottom:clamp(1.4rem,3vh,2.4rem)!important} }
 @media (min-width:901px){ html.gate .visual .wx-now>.wn-lab{display:none!important} html.gate .visual .wx-now>.wn-main{padding-left:0;border-left:0!important} }
+@media (min-width:901px){ html.gate .visual .visual-text .hero-sub{margin-bottom:clamp(2.6rem,7vh,5rem)!important} html.gate .visual .visual-text .wx-now{margin-top:clamp(1.2rem,2.6vh,2rem)!important} }
