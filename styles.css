@@ -1629,3 +1629,5 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 @media (min-width:901px){ html.gate .visual .visual-text .hero-sub{margin-bottom:clamp(2.6rem,7vh,5rem)!important} html.gate .visual .visual-text .wx-now{margin-top:clamp(1.2rem,2.6vh,2rem)!important} }
 .reviews-sec[hidden]{display:none!important}
 .pay-table td,.pay-table th,.pay-table td:nth-child(3){text-align:left!important}
+.panels>.panel:has(#revChart){max-width:640px;justify-self:start}
+#revChart{max-width:600px}
