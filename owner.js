@@ -228,7 +228,7 @@ async function settleHold(id, charge) {
 function monthBounds(offset = 0) { const n = new Date(); return [new Date(n.getFullYear(), n.getMonth() + offset, 1), new Date(n.getFullYear(), n.getMonth() + offset + 1, 0)]; }
 function revenueIn(d0, d1) {
   const a = iso(d0), z = iso(d1), inR = ts => ts && ts.slice(0, 10) >= a && ts.slice(0, 10) <= z;
-  const bk = state.bookings.filter(b => b.paid && !b.pass_id && b.price > 0 && inR(b.paid_at)).reduce((s, b) => s + +b.price, 0);
+  const bk = state.bookings.filter(b => b.paid && b.status !== 'cancelled' && !b.pass_id && b.price > 0 && inR(b.paid_at)).reduce((s, b) => s + +b.price, 0);   // a cancelled booking is no income
   const ps = state.passes.filter(p => p.paid && p.price > 0 && inR(p.paid_at)).reduce((s, p) => s + +p.price, 0);
   return bk + ps;
 }
