@@ -353,3 +353,7 @@ Object.assign(window.DICT.en, { tabCommunity: 'Events', scQSeason: 'End of seaso
 Object.assign(window.DICT.ru, { tabCommunity: 'События', scQSeason: 'Конец сезона', bkInvoice: 'Отправить счёт (почта + WhatsApp)', bkNoTime: 'На этот день с такой длительностью свободного времени нет',
   invMailed: 'Счёт отправлен на почту', invMailFail: 'Не удалось отправить счёт на почту',
   inv: { title: 'Счёт', hi: 'Здравствуйте', place: 'Золотое озеро, Малтаква, Поти', total: 'Итого', paid: 'оплачено', due: 'оплата на месте', thanks: 'Спасибо! Ждём вас на Золотом озере 🌊' } });
+// booking: details come from the account; phone asked only when missing
+Object.assign(window.DICT.ka, { phoneNeed: 'შენი ტელეფონი / WhatsApp (ერთხელ, ანგარიშზე შეინახება)', errPhoneNeed: 'ჩაწერე ტელეფონის ნომერი, რომ დაგიკავშირდეთ.', socOr: 'ან ელ-ფოსტით' });
+Object.assign(window.DICT.en, { phoneNeed: 'Your phone / WhatsApp (asked once, saved to your account)', errPhoneNeed: 'Please add a phone number so we can reach you.', socOr: 'or with email' });
+Object.assign(window.DICT.ru, { phoneNeed: 'Ваш телефон / WhatsApp (один раз, сохранится в аккаунте)', errPhoneNeed: 'Укажите номер телефона, чтобы мы могли связаться.', socOr: 'или по почте' });

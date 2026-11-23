@@ -15,8 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Display:wght@400;600;700;800&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
   <meta name="color-scheme" content="light dark">
-  <script src="theme.js?v=20261123i"></script>
-  <link rel="stylesheet" href="styles.css?v=20261123i">
+  <script src="theme.js?v=20261123j"></script>
+  <link rel="stylesheet" href="styles.css?v=20261123j">
 <script>(function(){var o=0;try{o=sessionStorage.getItem("pw.open")||+sessionStorage.getItem("pw.step")>0}catch(e){}if(!o&&!location.hash&&!/[?&]pay=/.test(location.search))document.documentElement.classList.add("gate")})();</script>
 <script>document.documentElement.classList.add("boot");setTimeout(function(){document.documentElement.classList.remove("boot")},4000)</script>
 <style>html.boot body{visibility:hidden}</style>
@@ -118,12 +118,9 @@
           <label class="pm"><input type="radio" name="paym" value="apple_pay"><b>Apple Pay</b><small data-i18n="pmWallet"></small></label>
         </div>
         <p class="pay-secure" id="paySecure"></p>
-        <h4 class="det-title" data-i18n="detailsTitle"></h4>
-        <div class="row">
-          <label><span data-i18n="name"></span><input name="name" required autocomplete="name" maxlength="80" data-i18n-ph="namePh"></label>
-          <label><span data-i18n="phone"></span><input name="phone" type="tel" required autocomplete="tel" inputmode="tel" maxlength="30" placeholder="+995 5XX XX XX XX"></label>
-        </div>
-        <label><span data-i18n="emailReq"></span><input name="email" type="email" required autocomplete="email" maxlength="120" placeholder="name@example.com"></label>
+        <!-- name / e-mail come from the signed-in account; the phone is asked only when the account has none -->
+        <input name="name" type="hidden"><input name="email" type="hidden">
+        <label id="phoneAsk" hidden><span data-i18n="phoneNeed"></span><input name="phone" type="tel" autocomplete="tel" inputmode="tel" maxlength="30" placeholder="+995 5XX XX XX XX"></label>
         <label><span><span data-i18n="notes"></span> <span class="opt" data-i18n="optional"></span></span><textarea name="notes" rows="2" maxlength="500" data-i18n-ph="notesPh"></textarea></label>
       </fieldset>
 
@@ -343,13 +340,13 @@
 </dialog>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script src="config.js?v=20261123i"></script>
-<script src="demo.js?v=20261123i" defer></script>
-<script src="i18n.js?v=20261123i"></script>
-<script src="community-i18n.js?v=20261123i"></script>
-<script src="lib.js?v=20261123i"></script>
-<script src="auth-ui.js?v=20261123i"></script>
-<script src="app.js?v=20261123i"></script>
-<script src="wizard.js?v=20261123i"></script>
+<script src="config.js?v=20261123j"></script>
+<script src="demo.js?v=20261123j" defer></script>
+<script src="i18n.js?v=20261123j"></script>
+<script src="community-i18n.js?v=20261123j"></script>
+<script src="lib.js?v=20261123j"></script>
+<script src="auth-ui.js?v=20261123j"></script>
+<script src="app.js?v=20261123j"></script>
+<script src="wizard.js?v=20261123j"></script>
 </body>
 </html>

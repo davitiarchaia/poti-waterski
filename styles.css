@@ -1595,3 +1595,9 @@ button.em-main:hover b{color:var(--lake);text-decoration:underline}
 .svc-new.drop[hidden]{display:none}
 #goNewSvc.on{background:var(--lake);color:#fff}
 @keyframes svcDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+/* auth window: social sign-in above the main button, "or with email" divider under them */
+.social{margin:.2rem 0 .9rem}
+.social .social-or{margin:.9rem 0 0}
+.social.none{display:none}
+.social-btns .soc[hidden]{display:none}

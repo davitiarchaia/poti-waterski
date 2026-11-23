@@ -484,11 +484,14 @@ function update() {
 
 /* ---------- submit ---------- */
 const form = $('#bookingForm');
+// name / e-mail / phone are taken from the signed-in account (no "Your details" fields); the phone is asked only if the account has none
 function prefill(p) {
-  if (!p) return;
-  if (!form.name.value && p.full_name) form.name.value = p.full_name;
-  if (!form.phone.value && p.phone) form.phone.value = p.phone;
-  if (!form.email.value && auth.session && auth.session.user && auth.session.user.email) form.email.value = auth.session.user.email;
+  p = p || ui.state.profile || {};
+  const u = auth.session && auth.session.user, md = (u && u.user_metadata) || {};
+  form.name.value = (p.full_name || md.full_name || md.name || p.username || (u && u.email ? u.email.split('@')[0] : '') || '').slice(0, 80);
+  form.email.value = (u && u.email) || '';
+  if (p.phone && !form.phone.value) form.phone.value = p.phone;
+  $('#phoneAsk').hidden = !auth.session || !!p.phone;
 }
 form.addEventListener('submit', e => { e.preventDefault(); askConfirm(); });
 // "Book now" first asks the rider to check the booking
@@ -500,9 +503,8 @@ function askConfirm() {
   if (!state.time) return err.textContent = t('errTime');
   if (!$('#agree').checked) { $('#agree').focus(); return err.textContent = t('errAgree'); }
   if (auth.session) {
-    const name = form.name.value.trim(), phone = form.phone.value.trim(), email = form.email.value.trim();
-    if (!name || phone.replace(/\D/g, '').length < 9) { form.name.value ? form.phone.focus() : form.name.focus(); return err.textContent = t('errContact'); }
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { form.email.focus(); return err.textContent = t('errEmail'); }
+    prefill();
+    if (form.phone.value.replace(/\D/g, '').length < 9) { $('#phoneAsk').hidden = false; form.phone.focus(); return err.textContent = t('errPhoneNeed'); }
   }
   const dlg = $('#confirmDlg');
   $('#cfSummary').textContent = [rideName(state.ride.id), whenText(state.day, state.time, state.dur), $('#sumTotal').textContent].filter(Boolean).join(' · ');
@@ -517,14 +519,21 @@ async function submit() {
   if (!state.time) return err.textContent = t('errTime');
   if (state.offer && !offerOk(state.offer, state.day)) return err.textContent = t('errOfferDate');
   if (!$('#agree').checked) { $('#agree').focus(); return err.textContent = t('errAgree'); }
-  if (!auth.session) return ui.open('in', p => { prefill(p); afterAuth().then(submitIfReady); });
+  if (!auth.session) {
+    // everything chosen so far is kept; after signing in (also via Google / Facebook / X, which leave the page) the booking continues
+    saveBooking(); try { sessionStorage.setItem(RESUME, JSON.stringify({ notes: form.notes.value, agree: true, step: sessionStorage.getItem('pw.step') })); } catch {}
+    return ui.open('in', p => { try { sessionStorage.removeItem(RESUME); } catch {} prefill(p); afterAuth().then(submitIfReady); });
+  }
+  prefill();
   const name = form.name.value.trim(), phone = form.phone.value.trim(), email = form.email.value.trim();
-  if (!name || phone.replace(/\D/g, '').length < 9) { form.name.value ? form.phone.focus() : form.name.focus(); return err.textContent = t('errContact'); }
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { form.email.focus(); return err.textContent = t('errEmail'); }
+  if (phone.replace(/\D/g, '').length < 9) { $('#phoneAsk').hidden = false; form.phone.focus(); return err.textContent = t('errPhoneNeed'); }
+  if (!name) return err.textContent = t('errContact');
+  // remember a newly typed phone on the account, so it isn't asked again
+  if (ui.state.profile && !ui.state.profile.phone && auth.session) db(`profiles?id=eq.${auth.session.user.id}`, { method: 'PATCH', body: { phone }, prefer: 'return=minimal' }).then(() => { ui.state.profile.phone = phone; }).catch(() => {});
   const group = crypto.randomUUID ? crypto.randomUUID() : '10000000-1000-4000-8000-100000000000'.replace(/[018]/g, c => (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16));
   const levelSum = state.groups.length === 1 ? window.DICT.en.levels[state.groups[0].l] : 'Mixed';
   const booking = { ride: state.ride.id, date: state.day, time: state.time, riders: state.riders, rider_groups: state.groups.map(g => ({ l: g.l, n: g.n })),
-    level: levelSum, name, phone, email, notes: form.notes.value.trim() || null, lang: i18n.lang, equip_items: equipItems().length ? equipItems() : null,
+    level: levelSum, name, phone, email: /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) ? email : null, notes: form.notes.value.trim() || null, lang: i18n.lang, equip_items: equipItems().length ? equipItems() : null,
     offer_id: state.offer && !state.pass ? state.offer.id : null, coach_id: allBeginners() ? null : state.coach, pass_id: state.pass, lake_id: state.lake || null, no_coach: !allBeginners() && !state.coach, boat_id: allPro() ? state.boat : null };
   const btn = $('#submitBtn'); btn.disabled = true; btn.textContent = t('sending');
   let res = 'error', row = null;
@@ -551,6 +560,18 @@ async function submit() {
   if (C.onlinePayment && row && row.id && row.price > 0 && !row.paid) startPay('booking', row.id, $('#payBtn'), state.payMethod);
 }
 function submitIfReady() { if (state.day && state.time) submit(); }
+const RESUME = 'pw.resume';
+// back from signing in on another page (Google / Facebook / X): restore the notes + agreement and send the booking
+function resumeBooking() {
+  let r = null; try { r = JSON.parse(sessionStorage.getItem(RESUME) || 'null'); } catch {}
+  if (!r) return;
+  if (!auth.session) return;                 // sign-in was cancelled — the choices stay, nothing is sent
+  try { sessionStorage.removeItem(RESUME); } catch {}
+  if (r.notes) form.notes.value = r.notes;
+  if (r.agree) $('#agree').checked = true;
+  prefill(); update();
+  if (state.picked && state.day && state.time) { form.scrollIntoView({ block: 'end' }); submit(); }
+}
 const lastWhen = b => whenText(b.date, b.time, b.dur || 1);
 function showDone() {
   window.PW.clearBooking();
@@ -871,10 +892,12 @@ try {
 form.addEventListener('input', () => setTimeout(saveBooking, 100)); form.addEventListener('click', () => setTimeout(saveBooking, 150)); form.addEventListener('change', () => setTimeout(saveBooking, 100));
 applyLang(i18n.lang);
 // "Your details" always start empty after a page load (also when the browser tries to restore typed values)
-const clearDetails = () => { for (const k of ['name', 'phone', 'email', 'notes']) form[k].value = ''; };
+const clearDetails = () => { for (const k of ['name', 'phone', 'email', 'notes']) form[k].value = ''; prefill(); };
 clearDetails(); window.addEventListener('pageshow', clearDetails);
-ui.init({ onSignIn: p => { prefill(p); afterAuth(); }, onSignOut: () => { afterAuth(); } }).then(() => afterAuth()).then(handleReviewLink).then(handlePayReturn);
-loadClub().catch(() => {}).then(() => requestAnimationFrame(() => { document.documentElement.classList.remove('boot'); try { if (+sessionStorage.getItem('pw.step') > 0 && state.picked) window.scrollTo(0, Math.max(0, form.getBoundingClientRect().top + window.scrollY - 76)); } catch {} }));   // the page stays hidden until the club's own services/prices are in — no flash of built-in defaults
+const clubReady = loadClub().catch(() => {});
+ui.init({ onSignIn: p => { prefill(p); afterAuth().then(resumeBooking); }, onSignOut: () => { prefill(); afterAuth(); } }).then(p => { prefill(p); return afterAuth(); }).then(handleReviewLink).then(handlePayReturn)
+  .then(() => clubReady).then(() => loadMonth()).then(resumeBooking).catch(() => {});
+clubReady.then(() => requestAnimationFrame(() => { document.documentElement.classList.remove('boot'); try { if (+sessionStorage.getItem('pw.step') > 0 && state.picked) window.scrollTo(0, Math.max(0, form.getBoundingClientRect().top + window.scrollY - 76)); } catch {} }));   // the page stays hidden until the club's own services/prices are in — no flash of built-in defaults
 loadMonth(); loadWeather(); loadReviews();
 if (location.hash === '#mine') setTimeout(() => $('#mine').scrollIntoView(), 700);
 })();

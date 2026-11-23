@@ -25,8 +25,14 @@ const SOCIAL = [['google', 'withGoogle', '<svg viewBox="0 0 24 24" aria-hidden="
   ['x', 'withX', '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.2 2h3.4l-7.4 8.5L23 22h-6.8l-5.3-7-6.1 7H1.4l7.9-9L1 2h7l4.8 6.4L18.2 2Zm-1.2 18h1.9L7.1 4H5.1l11.9 16Z"/></svg>']];
 const social = document.createElement('div');
 social.className = 'social';
-social.innerHTML = `<p class="social-or"><span></span></p><div class="social-btns">${SOCIAL.map(([p, k, ic]) => `<button type="button" class="soc soc-${p}" data-prov="${p}">${ic}<span data-k="${k}"></span></button>`).join('')}</div>`;
-form.querySelector('#authBtn').after(social);
+social.innerHTML = `<div class="social-btns">${SOCIAL.map(([p, k, ic]) => `<button type="button" class="soc soc-${p}" data-prov="${p}">${ic}<span data-k="${k}"></span></button>`).join('')}</div><p class="social-or"><span></span></p>`;
+form.querySelector('#authTitle').after(social);   // Google / Facebook / X first, then e-mail + password
+// show only the providers that are switched on in Supabase (e.g. X stays hidden until it is set up)
+fetch(`${window.SUPABASE.url}/auth/v1/settings`, { headers: { apikey: window.SUPABASE.key } }).then(r => r.ok ? r.json() : null).then(j => {
+  const ext = j && j.external; if (!ext) return;
+  social.querySelectorAll('[data-prov]').forEach(b => { b.hidden = !ext[b.dataset.prov]; });
+  social.classList.toggle('none', ![...social.querySelectorAll('[data-prov]')].some(b => !b.hidden));
+}).catch(() => {});
 social.addEventListener('click', e => {
   const b = e.target.closest('[data-prov]'); if (!b) return;
   try { sessionStorage.setItem('pw_oauth', b.dataset.prov); } catch {}
@@ -51,7 +57,7 @@ function setMode(m) {
   head.hidden = m === 'in' || m === 'up'; head.textContent = t(titles[m]);
   document.getElementById('authError').textContent = '';
   social.hidden = m === 'reset' || m === 'newpw';
-  social.querySelector('.social-or span').textContent = t('orWith');
+  social.querySelector('.social-or span').textContent = t('socOr');
   social.querySelectorAll('[data-k]').forEach(x => x.textContent = t(x.dataset.k));
 }
 modal.querySelectorAll('[role=tab]').forEach(b => b.addEventListener('click', () => setMode(b.dataset.tab)));
