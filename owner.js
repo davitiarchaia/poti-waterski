@@ -244,7 +244,7 @@ function renderKpis() {
   const livePasses = state.passes.filter(p => p.status === 'active' && p.expires_at >= today).length;
   const k = [
     ['kNew', fresh, fresh > 0], ['kRevenue', money(revenueIn(m0, m1))], ['kExpected', money(expected)],
-    ['kMonth', inMonth], ['kOcc', cap ? Math.round(monthRows.length / 4 / cap * 100) + '%' : '—'], ['kRating', avg === '—' ? '—' : `${avg} ★`],
+    ['kMonth', inMonth], ['kOcc', cap ? Math.round(monthRows.length / 4 / cap * 100) + '%' : '—'],
     ['kPasses', livePasses], ['kCust', new Set(active.map(b => b.user_id).filter(Boolean)).size],
   ];
   $('#kpis').innerHTML = k.map(([key, v, alert]) => `<div class="kpi${alert ? ' alert' : ''}"><small>${esc(t(key))}</small><b>${esc(v)}</b></div>`).join('');
