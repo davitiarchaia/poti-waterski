@@ -1601,3 +1601,6 @@ button.em-main:hover b{color:var(--lake);text-decoration:underline}
 .social .social-or{margin:.9rem 0 0}
 .social.none{display:none}
 .social-btns .soc[hidden]{display:none}
+/* home: hero text a bit higher, more room between the location pill and the headline */
+html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
+@media (min-width:901px){ html.gate .visual .visual-text{padding-bottom:clamp(60px,12vh,150px)!important} }
