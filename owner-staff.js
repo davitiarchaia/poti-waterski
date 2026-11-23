@@ -206,17 +206,16 @@ function renderPayroll(st) {
   const a = iso(m0), z = iso(new Date(m0.getFullYear(), m0.getMonth() + 1, 0)), today = todayIso();
   const done = st.bookings.filter(b => b.status === 'confirmed' && b.date >= a && b.date <= z);
   const row = (kind, x, list) => {
-    const past = list.filter(b => b.date <= today), hrs = past.length / 4, plan = list.length / 4;
+    const past = list.filter(b => b.date <= today), hrs = past.length / 4;
     const rate = x.pay_rate != null ? +x.pay_rate : null;
     return `<tr><td><b>${esc(x.name)}</b><small class="muted"> ${esc(t(kind === 'coach' ? 'stCoach1' : 'stDriver1'))}</small></td>
-      <td>${H().uniq(past)}</td><td>${hrs.toLocaleString('ka-GE')}</td><td class="muted">${plan > hrs ? '+' + (plan - hrs).toLocaleString('ka-GE') : ''}</td>
-      <td><span title="${esc(t('payFromDrivers'))}">${rate != null ? money(rate) : '—'}</span></td>
+      <td>${H().uniq(past)}</td><td>${hrs.toLocaleString('ka-GE')}</td><td><span title="${esc(t('payFromDrivers'))}">${rate != null ? money(rate) : '—'}</span></td>
       <td><b>${rate != null ? money(rate * hrs) : '—'}</b></td></tr>`;
   };
   const coaches = st.coaches.map(c => row('coach', c, done.filter(b => b.coach_id === c.id)));
   const drivers = st.drivers.map(d => row('driver', d, done.filter(b => b.driver_id === d.id)));
-  box.innerHTML = (coaches.length || drivers.length) ? `<div class="tbl-wrap"><table class="sg-table pay-table"><thead><tr><th></th><th>${esc(t('payBookings'))}</th><th>${esc(t('payHours'))}</th><th>${esc(t('payPlanned'))}</th><th>${esc(t('payRate'))}</th><th>${esc(t('payTotal'))}</th></tr></thead>
-    <tbody>${coaches.length ? `<tr class="pay-sec"><td colspan="6">${esc(t('stCoaches'))}</td></tr>${coaches.join('')}` : ''}${drivers.length ? `<tr class="pay-sec"><td colspan="6">${esc(t('stDrivers'))}</td></tr>${drivers.join('')}` : ''}</tbody></table></div>`
+  box.innerHTML = (coaches.length || drivers.length) ? `<div class="tbl-wrap"><table class="sg-table pay-table"><thead><tr><th></th><th>${esc(t('payBookings'))}</th><th>${esc(t('payHours'))}</th><th>${esc(t('payRate'))}</th><th>${esc(t('payTotal'))}</th></tr></thead>
+    <tbody>${coaches.length ? `<tr class="pay-sec"><td colspan="5">${esc(t('stCoaches'))}</td></tr>${coaches.join('')}` : ''}${drivers.length ? `<tr class="pay-sec"><td colspan="5">${esc(t('stDrivers'))}</td></tr>${drivers.join('')}` : ''}</tbody></table></div>`
     : `<p class="empty">${esc(t('noData'))}</p>`;
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-paystep]'); if (b && !b.disabled) { pay.month = Math.max(0, Math.min(36, pay.month + +b.dataset.paystep)); renderPayroll(S()); } });
