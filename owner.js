@@ -1,6 +1,6 @@
 /* Owner page — data is only readable/changeable by accounts with role = owner (enforced by the database). */
 (() => {
-const { auth, db, rpc, fn, equipText, i18n, fmt, iso, fromIso, todayIso, hours, inSeason, weather, wxInfo, rideScore, esc, waLink, pad, statusKey, phoneWa } = window.PW;
+const { auth, db, rpc, fn, equipText, i18n, fmt, iso, fromIso, todayIso, hours, inSeason, weather, wxInfo, rideScore, esc, waLink, pad, statusKey, phoneWa, tbNow } = window.PW;
 const ui = window.PW.ui;
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
 const t = k => i18n.t(k);
@@ -449,7 +449,7 @@ $('#svcForm').addEventListener('submit', async e => {
     active: true, sort: Math.max(0, ...state.prices.map(r => r.sort || 0)) + 1 };
   const gear = [...document.querySelectorAll('#svcGearRows .sg-row')].map((r, i) => ({ ride: body.ride, name_ka: r.querySelector('[name=gn]').value.trim(), price: Math.min(10000, Math.max(0, +r.querySelector('[name=gp]').value || 0)), per_rider: true, active: true, sort: i + 1 })).filter(g => g.name_ka);
   const btn = f.querySelector('[type=submit]'); btn.disabled = true;
-  try { await db('ride_prices', { method: 'POST', body, prefer: 'return=minimal' }); if (gear.length) await db('equipment', { method: 'POST', body: gear, prefer: 'return=minimal' }); f.reset(); $('#svcGearRows').innerHTML = ''; toastOk(t('svAdded')); await load(); }
+  try { await db('ride_prices', { method: 'POST', body, prefer: 'return=minimal' }); if (gear.length) await db('equipment', { method: 'POST', body: gear, prefer: 'return=minimal' }); f.reset(); $('#svcGearRows').innerHTML = ''; svcToggle(false); toastOk(t('svAdded')); await load(); }
   catch { err.textContent = t('errNet'); }
   btn.disabled = false;
 });
@@ -551,7 +551,9 @@ $('#boatList').addEventListener('click', async e => {
   if (dl) { if (!dl.dataset.sure) { dl.dataset.sure = 1; dl.textContent = t('delQ'); dl.classList.add('danger'); return; }
     try { await db(`boats?id=eq.${dl.dataset.bdel}`, { method: 'DELETE', prefer: 'return=minimal' }); } catch { $('#tblError').textContent = t('errNet'); } load(); }
 });
-$('#goNewSvc') && $('#goNewSvc').addEventListener('click', () => { const f = $('#svcForm'); f.scrollIntoView({ behavior: 'smooth', block: 'start' }); setTimeout(() => f.name_ka.focus({ preventScroll: true }), 450); });
+// "+ Add service" opens the form right under the button (no scrolling); pressing it again closes it
+const svcToggle = open => { const f = $('#svcForm'), b = $('#goNewSvc'); if (!f || !b) return; f.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.classList.toggle('on', open); if (open) f.name_ka.focus({ preventScroll: true }); };
+$('#goNewSvc') && $('#goNewSvc').addEventListener('click', () => svcToggle($('#svcForm').hidden));
 const cform = $('#coachForm');
 function fillCoach(c) {
   cform.name.value = c ? c.name : ''; cform.bio.value = c ? c.bio || '' : ''; cform.photo_url.value = c ? c.photo_url || '' : ''; cform.price.value = c && +c.price ? c.price : ''; cform.active.checked = c ? c.active : true;
@@ -736,8 +738,7 @@ const cform2 = $('#closeForm');
 function renderSchedule() {
   const sel = $('#closeTime'), v = sel.value;
   sel.innerHTML = `<option value="">${esc(t('scWholeDay'))}</option>` + hours().map(h => `<option value="${h}">${h}–${addQ(h, 4)}</option>`).join(''); sel.value = v;
-  $('#closeQuick').innerHTML = ['scQRest', 'scQWeather', 'scQEvent', 'scQRepair', 'scQPrivate'].map(k => `<button type="button" class="chip" data-creason="${k}">${esc(t(k))}</button>`).join('');
-  renderPeriods();
+  $('#closeQuick').innerHTML = ['scQRest', 'scQWeather', 'scQEvent', 'scQRepair', 'scQPrivate', 'scQSeason'].map(k => `<button type="button" class="chip" data-creason="${k}">${esc(t(k))}</button>`).join('');
   const today = todayIso(), list = state.closures.filter(c => c.date >= today);
   $('#closeList').innerHTML = list.length ? list.map(c => {
     const clash = uniq(state.bookings.filter(b => b.date === c.date && b.status !== 'cancelled' && (!c.time || hourOf(b.time) === c.time)));
@@ -746,34 +747,6 @@ function renderSchedule() {
       <div class="ps-acts"><button type="button" class="btn-small" data-copen="${c.id}">${esc(t('scOpen'))}</button></div></article>`;
   }).join('') : `<p class="inbox-empty">${esc(t('scNone'))}</p>`;
 }
-/* club closed from a date until the owner's chosen reopening date (winter break, repairs …) */
-function renderPeriods() {
-  const today = todayIso(), list = (state.periods || []).filter(p => p.reopen_on > today);
-  $('#periodList').innerHTML = list.length ? list.map(p => {
-    const clash = uniq(state.bookings.filter(b => b.status !== 'cancelled' && b.date >= p.date_from && b.date < p.reopen_on && b.date >= today));
-    return `<article class="ps-card${p.date_from <= today ? ' now' : ''}"><div class="ps-main"><b>🔒 ${esc(fmt(p.date_from, 'long'))} → ${esc(t('peOpens'))} ${esc(fmt(p.reopen_on, 'long'))}</b>
-      <small class="muted">${p.date_from <= today ? esc(t('peNow')) + ' · ' : ''}${esc(t('peDays')(Math.round((fromIso(p.reopen_on) - fromIso(p.date_from)) / 864e5)))}${p.reason ? ' · ' + esc(p.reason) : ''}</small>
-      ${clash ? `<small class="warn-txt">⚠ ${esc(t('scClash')(clash))}</small>` : ''}</div>
-      <div class="ps-acts"><button type="button" class="btn-small" data-pdel="${p.id}">${esc(t('peOpenNow'))}</button></div></article>`;
-  }).join('') : `<p class="inbox-empty">${esc(t('peNone'))}</p>`;
-}
-$('#periodForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const f = e.target, err = $('#periodError'); err.textContent = '';
-  if (!f.date_from.value || !f.reopen_on.value) return err.textContent = t('peErrDates');
-  if (f.reopen_on.value <= f.date_from.value) return err.textContent = t('peErrOrder');
-  const btn = f.querySelector('[type=submit]'); btn.disabled = true;
-  try { await db('closed_periods', { method: 'POST', body: { date_from: f.date_from.value, reopen_on: f.reopen_on.value, reason: f.reason.value.trim() || null }, prefer: 'return=minimal' }); f.reset(); }
-  catch { err.textContent = t('errNet'); }
-  btn.disabled = false; load();
-});
-$('#periodList').addEventListener('click', async e => {
-  const b = e.target.closest('[data-pdel]'); if (!b) return;
-  if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('delQ'); b.classList.add('danger'); return; }
-  b.disabled = true;
-  try { await db(`closed_periods?id=eq.${b.dataset.pdel}`, { method: 'DELETE', prefer: 'return=minimal' }); } catch { $('#tblError').textContent = t('errNet'); }
-  load();
-});
 $('#closeQuick').addEventListener('click', e => { const b = e.target.closest('[data-creason]'); if (b) cform2.reason.value = t(b.dataset.creason); });
 cform2.addEventListener('submit', async e => {
   e.preventDefault();
@@ -798,23 +771,31 @@ $('#closeList').addEventListener('click', async e => {
 
 /* ---------- add a booking by hand (phone / walk-in) ---------- */
 const bm = $('#bookModal'), bf = $('#bookForm');
-function freeQuarters(date, lake) {
+const live = b => b.status !== 'cancelled' && b.status !== 'rejected';
+function freeQuarters(date, lake, coach) {
   const closedDay = state.closures.some(c => c.date === date && !c.time) || (state.periods || []).some(p => date >= p.date_from && date < p.reopen_on);
   const cap = state.lakes.filter(l => l.active).length;
   return hours().flatMap(h => ['00', '15', '30', '45'].map(m => h.slice(0, 3) + m)).map(q => {
-    const at = state.bookings.filter(b => b.date === date && b.time === q && b.status !== 'cancelled');
+    const at = state.bookings.filter(b => b.date === date && b.time === q && live(b));
     const left = Math.min(cap - at.length, lake ? 1 - at.filter(b => b.lake_id === lake).length : cap);
     const closed = closedDay || state.closures.some(c => c.date === date && c.time === hourOf(q));
-    return { q, left, closed };
+    const coachBusy = !!coach && at.some(b => b.coach_id === coach);
+    return { q, left, closed, coachBusy };
   });
 }
 function fillBookTimes() {
   const sel = $('#bkTime'), d = bf.date.value, n = +bf.dur.value || 4;
   if (!d) { sel.innerHTML = `<option value="">${esc(t('pickDayFirst'))}</option>`; return; }
-  const fq = freeQuarters(d, bf.lake_id.value || null), okAt = i => fq.slice(i, i + n).length === n && fq.slice(i, i + n).every(x => x.left > 0 && !x.closed);
+  const fq = freeQuarters(d, bf.lake_id.value || null, bf.coach_id.value || null), now = d === todayIso() ? tbNow() : null;
+  const past = x => now && x.q < `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  const free = x => x.left > 0 && !x.closed && !x.coachBusy && !past(x);
+  const okAt = i => fq.slice(i, i + n).length === n && fq.slice(i, i + n).every(free);
   const keep = sel.value;
-  sel.innerHTML = fq.map((x, i) => `<option value="${x.q}" ${!okAt(i) ? 'disabled' : ''}>${x.q}–${addQ(x.q, n)} · ${esc(x.closed ? t('closed') : x.left <= 0 ? t('full') : !okAt(i) ? t('noFitD')(durText(n)) : t('boatsLeft')(x.left))}</option>`).join('');
-  const first = [...sel.options].find(o => o.value === keep && !o.disabled) || [...sel.options].find(o => !o.disabled); if (first) sel.value = first.value;
+  // only start times where every 15 minutes of the chosen duration is still free are offered
+  const opts = fq.map((x, i) => ({ x, i })).filter(({ i }) => okAt(i));
+  sel.innerHTML = opts.length ? opts.map(({ x }) => `<option value="${x.q}">${x.q}–${addQ(x.q, n)} · ${esc(t('boatsLeft')(x.left))}</option>`).join('')
+    : `<option value="">${esc(t('bkNoTime'))}</option>`;
+  const first = [...sel.options].find(o => o.value === keep) || sel.options[0]; if (first) sel.value = first.value;
 }
 $('#addBooking').addEventListener('click', () => {
   bf.reset(); $('#bkError').textContent = '';
@@ -824,10 +805,12 @@ $('#addBooking').addEventListener('click', () => {
   $('#bkLevel').innerHTML = t('levels').map((x, i) => `<option value="${i}">${esc(x)}</option>`).join('');
   $('#bkDur').innerHTML = [...Array(40)].map((_, i) => `<option value="${i + 1}" ${i + 1 === 4 ? 'selected' : ''}>${esc(durText(i + 1))}</option>`).join('');
   bf.date.value = todayIso(); fillBookTimes(); i18n.apply(bm); bm.showModal();
+  load().then(() => { if (bm.open) fillBookTimes(); });   // fresh bookings, so taken hours can't be picked
 });
 bf.date.addEventListener('change', fillBookTimes);
 bf.dur.addEventListener('change', fillBookTimes);
 bf.lake_id.addEventListener('change', fillBookTimes);
+bf.coach_id.addEventListener('change', fillBookTimes);
 bf.addEventListener('submit', async e => {
   e.preventDefault();
   const err = $('#bkError'); err.textContent = '';
@@ -846,9 +829,26 @@ bf.addEventListener('submit', async e => {
     const r = await db('bookings?select=id,price', { method: 'POST', body: rows, prefer: 'return=representation' });
     if (bf.paid.checked && r && r.length) await db(`bookings?group_id=eq.${group}`, { method: 'PATCH', body: { paid: true, paid_at: now, payment_method: 'cash' }, prefer: 'return=minimal' });
     bm.close(); window.PW.ui.toast(t('bkSaved'), 'ok');
+    if (bf.invoice.checked && r && r.length) sendInvoice({ ...body, dur: n, total: r.some(x => x.price == null) ? null : r.reduce((s, x) => s + +x.price, 0), paid: bf.paid.checked }, r[0].id);
   } catch (x) { err.textContent = x.code === '23505' ? t('errTaken') : x.code === 'PW001' ? t('errCoach') : x.code === 'PW005' ? t('closedHour') : t('errNet'); }
   btn.disabled = false; load();
 });
+
+/* ---------- invoice: e-mail (through the notify function) + WhatsApp message with the same details ---------- */
+function invoiceText(b) {
+  const L = window.DICT[i18n.lang] || window.DICT.en, I = L.inv || window.DICT.en.inv;
+  return [`🧾 ${I.title} — Poti Lake Club`, `${I.hi} ${b.name},`, '',
+    `📅 ${fmt(b.date, 'long')} · ${b.time}–${addQ(b.time, b.dur)} (${durText(b.dur)})`, `🏄 ${rideName(b.ride)} · ${t('rider')(b.riders)}`,
+    b.lake_id ? `📍 ${lakeName(lakeById(b.lake_id))}` : `📍 ${I.place}`, b.coach_id && coachById(b.coach_id) ? `👤 ${coachById(b.coach_id).name}` : false,
+    b.total != null ? `💳 ${I.total}: ₾${(+b.total).toFixed(2)} · ${b.paid ? I.paid : I.due}` : false, '', I.thanks].filter(x => x !== false).join('\n');
+}
+async function sendInvoice(b, id) {
+  const ph = phoneWa(b.phone);
+  if (ph) window.open(waLink(ph, invoiceText(b)), '_blank', 'noopener');
+  if (!b.email) return;
+  const r = await fn('notify', { event: 'invoice', id, lang: i18n.lang }).catch(() => null);
+  ui.toast(r && r.sent ? t('invMailed') : t('invMailFail'), r && r.sent ? 'ok' : 'bad');
+}
 
 /* ---------- CSV ---------- */
 $('#csv').addEventListener('click', () => {

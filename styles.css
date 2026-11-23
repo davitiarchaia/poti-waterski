@@ -1590,3 +1590,8 @@ button.em-main:hover b{color:var(--lake);text-decoration:underline}
 .em-detail dd{margin:0;overflow-wrap:anywhere}
 .em-detail .sub-h{margin:.9rem 0 .4rem;font-size:.95rem}
 @media (max-width:560px){.em-detail dl{grid-template-columns:1fr}.em-detail dd{margin-bottom:.3rem}.em-row{flex-wrap:wrap}}
+/* owner: "+ Add service" drop-down form right under the header */
+.svc-new.drop{margin:.2rem 0 1.2rem;padding:1rem;border:1px solid var(--lake);border-radius:14px;background:var(--card);animation:svcDrop .18s ease-out}
+.svc-new.drop[hidden]{display:none}
+#goNewSvc.on{background:var(--lake);color:#fff}
+@keyframes svcDrop{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}

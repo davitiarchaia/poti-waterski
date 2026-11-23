@@ -12,9 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Display:wght@400;600;700;800&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
   <meta name="color-scheme" content="light dark">
-  <script src="theme.js?v=20261123h"></script>
-  <link rel="stylesheet" href="styles.css?v=20261123h">
-  <link rel="stylesheet" href="community.css?v=20261123h">
+  <script src="theme.js?v=20261123i"></script>
+  <link rel="stylesheet" href="styles.css?v=20261123i">
+  <link rel="stylesheet" href="community.css?v=20261123i">
 <script>document.documentElement.classList.add("boot");setTimeout(function(){document.documentElement.classList.remove("boot")},3000)</script>
 <style>html.boot body{visibility:hidden}</style>
 </head>
@@ -50,11 +50,11 @@
   <nav class="o-tabs" role="tablist" aria-label="Sections">
     <button type="button" role="tab" data-view="bookings" id="tab-inbox"><span data-i18n="tabBookings"></span><span class="count" id="cntInbox"></span></button>
     <button type="button" role="tab" data-view="pricing" data-i18n="tabPricing"></button>
-    <button type="button" role="tab" data-view="tariffs"><span data-i18n="tabTariffs"></span><span class="count" id="cntPasses"></span></button>
     <button type="button" role="tab" data-view="team" data-i18n="tabTeam"></button>
+    <button type="button" role="tab" data-view="tariffs"><span data-i18n="tabTariffs"></span><span class="count" id="cntPasses"></span></button>
+    <button type="button" role="tab" data-view="community"><span data-i18n="tabCommunity"></span><span class="count" id="cntEvents"></span></button>
     <button type="button" role="tab" data-view="staff" data-i18n="tabStaff"></button>
     <button type="button" role="tab" data-view="dash" data-i18n="tabStats"></button>
-    <button type="button" role="tab" data-view="community"><span data-i18n="tabCommunity"></span><span class="count" id="cntEvents"></span></button>
   </nav>
   <p class="form-error" id="tblError" role="alert"></p>
 
@@ -62,8 +62,6 @@
   <section class="view" data-view="inbox" data-group="bookings" role="tabpanel">
     <p class="muted view-hint" data-i18n="inboxHint"></p>
     <div class="inbox" id="inbox"></div>
-    <h2 class="sub-h" id="recentH" data-i18n="recent" hidden></h2>
-    <ul class="recent" id="recent"></ul>
   </section>
   <!-- ALL BOOKINGS -->
   <section class="view" data-view="all" data-group="bookings" role="tabpanel" hidden>
@@ -94,6 +92,8 @@
         </table>
       </div>
     </div>
+    <h2 class="sub-h" id="recentH" data-i18n="recent" hidden></h2>
+    <ul class="recent" id="recent"></ul>
   </section>
   <!-- DASHBOARD -->
   <section class="view" data-view="dash" data-group="dash" role="tabpanel" hidden>
@@ -123,12 +123,8 @@
   <!-- PRICES & PASS PLANS -->
   <section class="view" data-view="prices" data-group="pricing" role="tabpanel" hidden>
     <div class="panel">
-      <div class="panel-head"><h2 data-i18n="prTitle"></h2><button type="button" class="btn-small primary" id="goNewSvc" data-i18n="svNewBtn"></button></div>
-      <p class="muted view-hint" data-i18n="prHint"></p>
-      <div class="price-rows" id="priceRows"></div>
-      <p class="form-error" id="priceError" role="alert"></p>
-      <button class="btn-small primary big" type="button" id="savePrices" data-i18n="save"></button>
-      <form class="svc-new" id="svcForm" novalidate>
+      <div class="panel-head"><h2 data-i18n="prTitle"></h2><button type="button" class="btn-small primary" id="goNewSvc" data-i18n="svNewBtn" aria-expanded="false" aria-controls="svcForm"></button></div>
+      <form class="svc-new drop" id="svcForm" novalidate hidden>
         <h3 data-i18n="svNew"></h3>
         <div class="svc-grid">
           <label><span data-i18n="svNameKa"></span><input name="name_ka" maxlength="60" required data-i18n-ph="svNamePh"></label>
@@ -142,6 +138,10 @@
         <p class="form-error" id="svcError" role="alert"></p>
         <button class="btn-small primary big" type="submit" data-i18n="svAdd"></button>
       </form>
+      <p class="muted view-hint" data-i18n="prHint"></p>
+      <div class="price-rows" id="priceRows"></div>
+      <p class="form-error" id="priceError" role="alert"></p>
+      <button class="btn-small primary big" type="button" id="savePrices" data-i18n="save"></button>
     </div>
   </section>
   <!-- OFFERS -->
@@ -238,12 +238,6 @@
       <p class="muted view-hint" data-i18n="stgHint"></p>
     </form>
     <div class="offer-list mt" id="coachList"></div>
-    <div class="panel mt">
-      <h2 data-i18n="drTitle"></h2>
-      <p class="muted view-hint" data-i18n="drHint"></p>
-      <div class="drv-list" id="driverList"></div>
-      <form class="inline-add" id="driverForm"><input name="name" maxlength="60" data-i18n-ph="drNamePh" required><input name="phone" type="tel" maxlength="30" placeholder="+995…"><button class="btn-small primary" type="submit" data-i18n="add"></button></form>
-    </div>
   </section>
   <section class="view" data-view="staff" data-group="staff" role="tabpanel" hidden>
     <div class="panel">
@@ -284,31 +278,9 @@
       <p class="muted view-hint" data-i18n="emCalcHint"></p>
       <div id="emCalc"></div>
     </div>
-    <div class="panel mt">
-      <h2 data-i18n="stTitle"></h2>
-      <p class="muted view-hint" data-i18n="stHint"></p>
-      <div class="staff-list" id="staffList"></div>
-    </div>
   </section>
   <!-- SCHEDULE: closed days / hours -->
   <section class="view" data-view="schedule" data-group="team" role="tabpanel" hidden>
-    <div class="offers-layout period-layout">
-      <form class="panel offer-form" id="periodForm" novalidate>
-        <h2>🔒 <span data-i18n="peTitle"></span></h2>
-        <p class="muted view-hint" data-i18n="peHint"></p>
-        <div class="row">
-          <label><span data-i18n="peFrom"></span><input name="date_from" type="date" required></label>
-          <label><span data-i18n="peTo"></span><input name="reopen_on" type="date" required></label>
-        </div>
-        <label><span data-i18n="scReason"></span><input name="reason" maxlength="120" data-i18n-ph="pePh"></label>
-        <p class="form-error" id="periodError" role="alert"></p>
-        <button class="btn" type="submit" data-i18n="peSave"></button>
-      </form>
-      <div>
-        <h2 class="sub-h first" data-i18n="peList"></h2>
-        <div class="ps-list" id="periodList"></div>
-      </div>
-    </div>
     <div class="offers-layout">
       <form class="panel offer-form" id="closeForm" novalidate>
         <h2 data-i18n="scTitle"></h2>
@@ -386,9 +358,9 @@
     <label><span data-i18n="coachTitle"></span><select name="coach_id" id="bkCoach"></select></label>
     <div class="row">
       <label><span data-i18n="scDate"></span><input name="date" type="date" required></label>
-      <label><span data-i18n="s3"></span><select name="time" id="bkTime"></select></label>
+      <label><span data-i18n="durLabel"></span><select name="dur" id="bkDur"></select></label>
     </div>
-    <label><span data-i18n="durLabel"></span><select name="dur" id="bkDur"></select></label>
+    <label><span data-i18n="s3"></span><select name="time" id="bkTime"></select></label>
     <div class="row">
       <label><span data-i18n="name"></span><input name="name" maxlength="80" required></label>
       <label><span data-i18n="phone"></span><input name="phone" type="tel" maxlength="30" required placeholder="+995 5XX XX XX XX"></label>
@@ -403,6 +375,7 @@
       <label class="check"><input type="checkbox" name="confirmed" checked> <span data-i18n="bkConfirmed"></span></label>
       <label class="check"><input type="checkbox" name="paid"> <span data-i18n="bkPaid"></span></label>
     </div>
+    <label class="check"><input type="checkbox" name="invoice" checked> <span data-i18n="bkInvoice"></span></label>
     <p class="form-error" id="bkError" role="alert"></p>
     <button class="btn" type="submit" data-i18n="save"></button>
   </form>
@@ -433,18 +406,18 @@
   </form>
 </dialog>
 
-<script src="config.js?v=20261123h"></script>
-<script src="demo.js?v=20261123h" defer></script>
-<script src="i18n.js?v=20261123h"></script>
-<script src="community-i18n.js?v=20261123h"></script>
-<script src="lib.js?v=20261123h"></script>
-<script src="auth-ui.js?v=20261123h"></script>
-<script src="owner.js?v=20261123h"></script>
-<script src="community.js?v=20261123h"></script>
-<script src="owner-community.js?v=20261123h"></script>
-<script src="owner-staff.js?v=20261123h"></script>
-<script src="owner-gear.js?v=20261123h"></script>
-<script src="owner-employees.js?v=20261123h"></script>
+<script src="config.js?v=20261123i"></script>
+<script src="demo.js?v=20261123i" defer></script>
+<script src="i18n.js?v=20261123i"></script>
+<script src="community-i18n.js?v=20261123i"></script>
+<script src="lib.js?v=20261123i"></script>
+<script src="auth-ui.js?v=20261123i"></script>
+<script src="owner.js?v=20261123i"></script>
+<script src="community.js?v=20261123i"></script>
+<script src="owner-community.js?v=20261123i"></script>
+<script src="owner-staff.js?v=20261123i"></script>
+<script src="owner-gear.js?v=20261123i"></script>
+<script src="owner-employees.js?v=20261123i"></script>
 <script>document.addEventListener("DOMContentLoaded",function(){requestAnimationFrame(function(){document.documentElement.classList.remove("boot")})})</script>
 </body>
 </html>

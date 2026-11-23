@@ -343,3 +343,13 @@ ru: {
   footTag: 'Водные лыжи и вейкборд на Золотом озере — Малтаква, Поти.', footNav: 'Сайт', footContact: 'Контакты', cEmail: 'Почта',
 },
 };
+// owner page: Events tab, end-of-season closing, manual-booking invoice
+Object.assign(window.DICT.ka, { tabCommunity: 'ღონისძიებები', scQSeason: 'სეზონის დასრულება', bkInvoice: 'ინვოისის გაგზავნა (ელ-ფოსტა + WhatsApp)', bkNoTime: 'ამ დღეს ამ ხანგრძლივობით თავისუფალი დრო აღარ არის',
+  invMailed: 'ინვოისი ელ-ფოსტით გაიგზავნა', invMailFail: 'ინვოისი ელ-ფოსტით ვერ გაიგზავნა',
+  inv: { title: 'ინვოისი', hi: 'გამარჯობა', place: 'ოქროს ტბა, მალთაყვა, ფოთი', total: 'ჯამი', paid: 'გადახდილია', due: 'გადასახდელია ადგილზე', thanks: 'გმადლობთ! გელოდებით ოქროს ტბაზე 🌊' } });
+Object.assign(window.DICT.en, { tabCommunity: 'Events', scQSeason: 'End of season', bkInvoice: 'Send invoice (email + WhatsApp)', bkNoTime: 'No free time left that day for this duration',
+  invMailed: 'Invoice emailed', invMailFail: 'Could not email the invoice',
+  inv: { title: 'Invoice', hi: 'Hello', place: 'Golden Lake, Maltakva, Poti', total: 'Total', paid: 'paid', due: 'to pay at the lake', thanks: 'Thank you! See you at Golden Lake 🌊' } });
+Object.assign(window.DICT.ru, { tabCommunity: 'События', scQSeason: 'Конец сезона', bkInvoice: 'Отправить счёт (почта + WhatsApp)', bkNoTime: 'На этот день с такой длительностью свободного времени нет',
+  invMailed: 'Счёт отправлен на почту', invMailFail: 'Не удалось отправить счёт на почту',
+  inv: { title: 'Счёт', hi: 'Здравствуйте', place: 'Золотое озеро, Малтаква, Поти', total: 'Итого', paid: 'оплачено', due: 'оплата на месте', thanks: 'Спасибо! Ждём вас на Золотом озере 🌊' } });
