@@ -524,7 +524,7 @@ function renderFleet() {
     return `<article class="offer-card coach-card ${c.active ? 'oLive' : 'oHidden'}${state.editCoach === c.id ? ' editing' : ''}">
       <div class="cc-top"><span class="ph">${c.photo_url ? `<img src="${esc(c.photo_url)}" alt="">` : esc(c.name.slice(0, 1))}</span><div><h3>${esc(c.name)}</h3><span class="ostate ${c.active ? 'oLive' : 'oHidden'}">${esc(t(c.active ? 'oLive' : 'oHidden'))}</span></div></div>
       ${c.bio ? `<p>${esc(c.bio)}</p>` : ''}
-      <ul class="oc-meta"><li>${esc(c.rides && c.rides.length ? c.rides.map(rideName).join(', ') : t('fAny'))}</li><li><label class="oc-fee">${esc(t('coFee'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-cprice="${c.id}" value="${+c.price || 0}" aria-label="${esc(t('coFee'))}"></label></li><li>${esc(t('coachUpcoming')(upcoming))}</li></ul>
+      <ul class="oc-meta"><li>${esc(c.rides && c.rides.length ? c.rides.map(rideName).join(', ') : t('fAny'))}</li><li><label class="oc-fee">${esc(t('coFee'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-cprice="${c.id}" value="${+c.price || 0}" aria-label="${esc(t('coFee'))}"></label></li><li><label class="oc-fee">${esc(t('coPay'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-cpay="${c.id}" value="${c.pay_rate ?? ''}" placeholder="—" aria-label="${esc(t('coPay'))}"></label></li><li>${esc(t('coachUpcoming')(upcoming))}</li></ul>
       ${window.staffLinkUI ? window.staffLinkUI('coach', c) : ''}
       <div class="oc-actions"><button type="button" class="btn-small" data-cact="edit" data-id="${c.id}">${esc(t('edit'))}</button>
         <button type="button" class="btn-small" data-cact="toggle" data-id="${c.id}">${esc(t(c.active ? 'hide' : 'show'))}</button>
@@ -868,6 +868,12 @@ document.addEventListener('change', async e => {
   const f = e.target.closest('#settingsForm'); if (!f || !e.target.name) return;
   const body = { beginner_coach_fee: Math.max(0, +f.beginner_coach_fee.value || 0), cancel_hours: Math.min(168, Math.max(0, Math.round(+f.cancel_hours.value || 0))), updated_at: new Date().toISOString() };
   try { await db('club_settings?id=eq.1', { method: 'PATCH', body, prefer: 'return=minimal' }); state.settings = { ...state.settings, ...body }; ui.toast(t('saved'), 'ok'); } catch { ui.toast(t('errNet'), 'bad'); }
+});
+// inline change of a coach's pay rate (₾ per hour, private — the payroll table reads it from here)
+document.addEventListener('change', async e => {
+  const f = e.target.closest('[data-cpay]'); if (!f) return;
+  const v = f.value === '' ? null : Math.max(0, +f.value);
+  try { await db(`coaches?id=eq.${f.dataset.cpay}`, { method: 'PATCH', body: { pay_rate: v }, prefer: 'return=minimal' }); const c = state.coaches.find(x => x.id === f.dataset.cpay); if (c) c.pay_rate = v; ui.toast(t('saved'), 'ok'); } catch { ui.toast(t('errNet'), 'bad'); }
 });
 // inline change of a coach's fee (charged to the customer per hour when the coach is chosen)
 document.addEventListener('change', async e => {

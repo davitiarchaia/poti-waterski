@@ -210,7 +210,7 @@ function renderPayroll(st) {
     const rate = x.pay_rate != null ? +x.pay_rate : null;
     return `<tr><td><b>${esc(x.name)}</b><small class="muted"> ${esc(t(kind === 'coach' ? 'stCoach1' : 'stDriver1'))}</small></td>
       <td>${H().uniq(past)}</td><td>${hrs.toLocaleString('ka-GE')}</td><td class="muted">${plan > hrs ? '+' + (plan - hrs).toLocaleString('ka-GE') : ''}</td>
-      <td>${kind === 'driver' ? `<span title="${esc(t('payFromDrivers'))}">${rate != null ? money(rate) : '—'}</span>` : `<input class="mini rate" type="number" min="0" step="0.5" data-rate="${kind}:${x.id}" value="${rate ?? ''}" placeholder="—" aria-label="${esc(t('payRate'))}">`}</td>
+      <td><span title="${esc(t('payFromDrivers'))}">${rate != null ? money(rate) : '—'}</span></td>
       <td><b>${rate != null ? money(rate * hrs) : '—'}</b></td></tr>`;
   };
   const coaches = st.coaches.map(c => row('coach', c, done.filter(b => b.coach_id === c.id)));
