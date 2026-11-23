@@ -219,11 +219,31 @@ function applyServices(rows) {
     window.RIDES.push({ id: r.ride, tag: !!(r.tag_ka || r.tag_en || r.tag_ru) });
   }
 }
+// header: account icon | divider | ☰ menu holding the theme switch and the languages
+document.addEventListener('DOMContentLoaded', () => {
+  const right = document.querySelector('.top-right'); if (!right || right.querySelector('.menu-btn')) return;
+  const lang = right.querySelector('.lang'), theme = right.querySelector('.theme-toggle');
+  const L = k => (i18n.t(k) || k);
+  const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'menu-btn'; btn.setAttribute('aria-haspopup', 'true'); btn.setAttribute('aria-expanded', 'false');
+  btn.innerHTML = '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>';
+  const menu = document.createElement('div'); menu.className = 'top-menu'; menu.hidden = true;
+  const row = (cls, el) => { const d = document.createElement('div'); d.className = 'tm-row ' + cls; const s = document.createElement('span'); d.append(s, el); return d; };
+  if (theme) menu.append(row('tm-theme', theme));
+  if (lang) menu.append(row('tm-lang', lang));
+  const label = () => { btn.setAttribute('aria-label', L('menuLbl')); const a2 = menu.querySelector('.tm-theme span'), b2 = menu.querySelector('.tm-lang span'); if (a2) a2.textContent = L('themeLbl'); if (b2) b2.textContent = L('langLbl'); };
+  const sep = document.createElement('span'); sep.className = 'top-sep'; sep.setAttribute('aria-hidden', 'true');
+  right.append(sep, btn, menu); label();
+  const set = open => { menu.hidden = !open; btn.setAttribute('aria-expanded', String(open)); };
+  btn.addEventListener('click', e => { e.stopPropagation(); set(menu.hidden); });
+  document.addEventListener('click', e => { if (!menu.hidden && !menu.contains(e.target)) set(false); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') set(false); });
+  new MutationObserver(label).observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+});
 // phones: the language switch shows only the current language; tapping it opens the other two
 document.addEventListener('click', e => {
   const lg = e.target.closest && e.target.closest('.lang');
   document.querySelectorAll('.lang.open').forEach(x => { if (x !== lg) x.classList.remove('open'); });
-  if (!lg || !matchMedia('(max-width:420px)').matches) return;
+  if (!lg || lg.closest('.top-menu') || !matchMedia('(max-width:420px)').matches) return;
   const btn = e.target.closest('button');
   if (!lg.classList.contains('open')) { e.stopPropagation(); e.preventDefault(); lg.classList.add('open'); [...lg.querySelectorAll('button[aria-pressed=false]')].forEach((x, k) => { x.style.top = `calc(${(k + 1) * 100}% + ${(k + 1) * 4}px)`; }); return; }
   if (btn && btn.getAttribute('aria-pressed') === 'true') { e.stopPropagation(); e.preventDefault(); }

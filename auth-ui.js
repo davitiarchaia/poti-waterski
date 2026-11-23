@@ -165,7 +165,7 @@ function renderAccount() {
   if (!box) return;
   const p = state.profile;
   if (!auth.session) {
-    box.innerHTML = `<button type="button" class="acc-btn" id="accIn">${esc(t('signIn'))}</button>`;
+    box.innerHTML = `<button type="button" class="acc-btn acc-icon" id="accIn" aria-label="${esc(t('signIn'))}" title="${esc(t('signIn'))}"><svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M4 21c.8-4.2 4-6.5 8-6.5s7.2 2.3 8 6.5"/></svg></button>`;
     box.querySelector('#accIn').onclick = () => open('in', opts.onSignIn, false);
     return;
   }
