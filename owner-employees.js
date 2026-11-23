@@ -1,5 +1,5 @@
 /* Owner page — STAFF: employee records, their documents (private files) and a monthly salary calculation
-   (gross → pension 2% → income tax → net, plus the employer's 2%). Loaded after owner-staff.js. */
+   (gross → pension 2% → income tax → net). Loaded after owner-staff.js. */
 (() => {
 const { db, token, i18n, fmt, iso, todayIso, esc } = window.PW;
 const ui = window.PW.ui;
@@ -37,8 +37,8 @@ function calc(e, m0) {
   const hours = hoursOf(e, m0), amount = (+e.monthly_salary || 0) + hours * rateOf(e);
   const p = e.pension ? 0.02 : 0, tx = (+e.income_tax_pct || 0) / 100;
   const gross = e.salary_is_net ? amount / ((1 - p) * (1 - tx) || 1) : amount;
-  const pension = gross * p, tax = (gross - pension) * tx, net = gross - pension - tax, er = gross * p;
-  return { hours, gross, pension, tax, net, er, cost: gross + er };
+  const pension = gross * p, tax = (gross - pension) * tx, net = gross - pension - tax;
+  return { hours, gross, pension, tax, net, cost: gross };
 }
 
 /* ---------- list ---------- */
@@ -48,19 +48,55 @@ const linkName = e => {
   if (e.driver_id) { const d = st.drivers.find(x => x.id === e.driver_id); return d ? `🚤 ${d.name}` : ''; }
   return '';
 };
+function detailHtml(e) {
+  const st = S(), c = calc(e, new Date(new Date().getFullYear(), new Date().getMonth(), 1));
+  const row = (k, v) => v ? `<dt>${esc(t(k))}</dt><dd>${esc(v)}</dd>` : '';
+  const files = em.files.filter(f => f.employee_id === e.id);
+  return `<div class="em-detail"><dl>
+    ${row('emPosition', e.position)}${row('phone', e.phone)}${row('email', e.email)}${row('emPid', e.personal_id)}
+    ${row('birthDate', e.birth_date && fmt(e.birth_date, 'short'))}${row('emStart', e.start_date && fmt(e.start_date, 'short'))}
+    ${row('emAddress', e.address)}${row('emBank', e.bank_account)}${row('emLink', linkName(e))}
+    ${row('emSalary', +e.monthly_salary ? money(e.monthly_salary) + (e.salary_is_net ? ` (${t('emNet').toLowerCase()})` : '') : '')}
+    ${row('emTax', e.income_tax_pct != null ? e.income_tax_pct + '%' : '')}${row('emPensionEmp', e.pension ? '✓' : '✗')}
+    ${row('emNet', money(c.net))}${row('emNotes', e.notes)}</dl>
+    <h4 class="sub-h">${esc(t('emFiles'))}</h4>
+    ${files.length ? `<ul class="em-flist">${files.map(f => `<li><button type="button" class="btn-link" data-emopen="${f.id}">📄 ${esc(f.name)}</button><small class="muted">${f.size ? sizeTxt(f.size) : ''}</small></li>`).join('')}</ul>` : '<p class="muted">—</p>'}
+  </div>`;
+}
 function renderList() {
   const box = $('#emList'); if (!box) return;
   box.innerHTML = em.list.length ? em.list.map(e => {
-    const n = em.files.filter(f => f.employee_id === e.id).length;
-    return `<article class="em-card${e.active ? '' : ' off'}${em.edit === e.id ? ' editing' : ''}">
-      <div class="em-av">${esc((e.full_name || '?').slice(0, 1))}</div>
-      <div class="em-main"><b>${esc(e.full_name)}</b>${e.active ? '' : ` <small class="badge">${esc(t('emInactive'))}</small>`}
-        <small class="muted">${[e.position, e.phone, linkName(e)].filter(Boolean).map(esc).join(' · ')}</small></div>
-      <span class="em-docs muted" title="${esc(t('emFiles'))}">📎 ${n}</span>
-      <button type="button" class="btn-small" data-emedit="${e.id}">${esc(t('edit'))}</button>
+    const n = em.files.filter(f => f.employee_id === e.id).length, open = em.view === e.id;
+    return `<article class="em-card${e.active ? '' : ' off'}${em.edit === e.id ? ' editing' : ''}${open ? ' open' : ''}">
+      <div class="em-row">
+        <div class="em-av">${esc((e.full_name || '?').slice(0, 1))}</div>
+        <button type="button" class="em-main" data-emview="${e.id}" aria-expanded="${open}"><b>${esc(e.full_name)}</b>${e.active ? '' : ` <small class="badge">${esc(t('emInactive'))}</small>`}
+          <small class="muted">${[e.position, e.phone, linkName(e)].filter(Boolean).map(esc).join(' · ')}</small></button>
+        <span class="em-docs muted" title="${esc(t('emFiles'))}">📎 ${n}</span>
+        <button type="button" class="btn-small" data-emedit="${e.id}">${esc(t('edit'))}</button>
+        <button type="button" class="btn-small em-del" data-emdel="${e.id}" title="${esc(t('del'))}" aria-label="${esc(t('del'))}">🗑</button>
+      </div>
+      ${open ? detailHtml(e) : ''}
     </article>`;
   }).join('') : `<p class="inbox-empty">${esc(t('emNone'))}</p>`;
 }
+document.addEventListener('click', async ev => {
+  const v = ev.target.closest('[data-emview]'), d = ev.target.closest('[data-emdel]');
+  if (v) { em.view = em.view === v.dataset.emview ? null : v.dataset.emview; renderList(); }
+  if (d) {
+    if (!d.dataset.sure) { d.dataset.sure = 1; d.textContent = t('delQ'); d.classList.add('danger'); setTimeout(() => { if (d.isConnected) { delete d.dataset.sure; d.textContent = '🗑'; d.classList.remove('danger'); } }, 4000); return; }
+    const id = d.dataset.emdel, paths = em.files.filter(f => f.employee_id === id).map(f => f.path);
+    try {
+      if (paths.length) await fetch(`${window.SUPABASE.url}/storage/v1/object/${BUCKET}`, { method: 'DELETE', headers: { ...(await authHeaders()), 'Content-Type': 'application/json' }, body: JSON.stringify({ prefixes: paths }) });
+      await db(`employee_files?employee_id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
+      await db(`employees?id=eq.${id}`, { method: 'DELETE', prefer: 'return=minimal' });
+      if (em.edit === id) closeForm();
+      if (em.view === id) em.view = null;
+      ui.toast(t('emDeleted'), 'ok');
+    } catch { ui.toast(t('errNet'), 'bad'); }
+    await loadEmployees();
+  }
+});
 
 /* ---------- form ---------- */
 function linkOptions(sel) {
@@ -180,9 +216,9 @@ function renderCalc() {
   const rows = em.list.filter(e => e.active).map(e => ({ e, c: calc(e, m0) }));
   if (!rows.length) { box.innerHTML = `<p class="empty">${esc(t('emNone'))}</p>`; return; }
   const sum = k => rows.reduce((s, r) => s + r.c[k], 0);
-  box.innerHTML = `<div class="tbl-wrap"><table class="sg-table pay-table em-calc"><thead><tr><th></th><th>${esc(t('emHours'))}</th><th>${esc(t('emGross'))}</th><th>${esc(t('emPensionEmp'))}</th><th>${esc(t('emTaxAmt'))}</th><th>${esc(t('emNet'))}</th><th>${esc(t('emPensionEr'))}</th><th>${esc(t('emCost'))}</th></tr></thead>
-    <tbody>${rows.map(({ e, c }) => `<tr><td><b>${esc(e.full_name)}</b>${e.position ? `<small class="muted"> ${esc(e.position)}</small>` : ''}</td><td>${c.hours ? c.hours.toLocaleString('ka-GE') : '—'}</td><td>${money(c.gross)}</td><td>${money(c.pension)}</td><td>${money(c.tax)}</td><td><b>${money(c.net)}</b></td><td>${money(c.er)}</td><td>${money(c.cost)}</td></tr>`).join('')}
-    <tr class="pay-sec"><td>${esc(t('emTotal'))}</td><td>${sum('hours').toLocaleString('ka-GE')}</td><td>${money(sum('gross'))}</td><td>${money(sum('pension'))}</td><td>${money(sum('tax'))}</td><td>${money(sum('net'))}</td><td>${money(sum('er'))}</td><td>${money(sum('cost'))}</td></tr></tbody></table></div>`;
+  box.innerHTML = `<div class="tbl-wrap"><table class="sg-table pay-table em-calc"><thead><tr><th></th><th>${esc(t('emHours'))}</th><th>${esc(t('emGross'))}</th><th>${esc(t('emPensionEmp'))}</th><th>${esc(t('emTaxAmt'))}</th><th>${esc(t('emNet'))}</th><th>${esc(t('emCost'))}</th></tr></thead>
+    <tbody>${rows.map(({ e, c }) => `<tr><td><b>${esc(e.full_name)}</b>${e.position ? `<small class="muted"> ${esc(e.position)}</small>` : ''}</td><td>${c.hours ? c.hours.toLocaleString('ka-GE') : '—'}</td><td>${money(c.gross)}</td><td>${money(c.pension)}</td><td>${money(c.tax)}</td><td><b>${money(c.net)}</b></td><td>${money(c.cost)}</td></tr>`).join('')}
+    <tr class="pay-sec"><td>${esc(t('emTotal'))}</td><td>${sum('hours').toLocaleString('ka-GE')}</td><td>${money(sum('gross'))}</td><td>${money(sum('pension'))}</td><td>${money(sum('tax'))}</td><td>${money(sum('net'))}</td><td>${money(sum('cost'))}</td></tr></tbody></table></div>`;
 }
 document.addEventListener('click', e => { const b = e.target.closest('[data-emstep]'); if (b && !b.disabled) { em.month = Math.max(0, Math.min(36, em.month + +b.dataset.emstep)); renderCalc(); } });
 

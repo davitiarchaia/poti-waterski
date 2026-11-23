@@ -1577,3 +1577,16 @@ header.top .top-right{display:flex;align-items:center;gap:.6rem;position:relativ
   html:not(.gate) .visual .hero-sub{font-size:1rem;margin:.6rem 0 1rem}
   html:not(.gate) .visual .eyebrow{font-size:.85rem!important}
 }
+/* staff list: name opens details, delete button */
+.em-card{flex-direction:column;align-items:stretch}
+.em-row{display:flex;align-items:center;gap:.8rem;min-width:0}
+button.em-main{background:none;border:0;padding:0;text-align:left;cursor:pointer;color:inherit;font:inherit}
+button.em-main:hover b{color:var(--lake);text-decoration:underline}
+.em-card.open{border-color:var(--lake)}
+.em-del.danger{background:#d64545;color:#fff;border-color:#d64545}
+.em-detail{border-top:1px solid var(--line);margin-top:.7rem;padding-top:.7rem}
+.em-detail dl{display:grid;grid-template-columns:minmax(120px,auto) 1fr;gap:.35rem 1rem;margin:0}
+.em-detail dt{color:var(--muted);font-size:.88rem}
+.em-detail dd{margin:0;overflow-wrap:anywhere}
+.em-detail .sub-h{margin:.9rem 0 .4rem;font-size:.95rem}
+@media (max-width:560px){.em-detail dl{grid-template-columns:1fr}.em-detail dd{margin-bottom:.3rem}.em-row{flex-wrap:wrap}}
