@@ -1655,7 +1655,6 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
   #bkTable .badge{font-size:.68rem;padding:.25rem .45rem;gap:.25rem}
 }
 /* dashboard: "Revenue by month" and "Booked hours per day" are the same, medium size (the 2/3 column) */
-[data-view=dash] .panels:has(#revChart){grid-template-columns:2fr 1fr!important}
 /* owner: equipment in the manual booking window */
 .bk-gear{border:1px solid var(--line);border-radius:12px;padding:.6rem .9rem .8rem;margin:0 0 .8rem}
 .bk-gear legend{font-size:.85rem;font-weight:700;padding:0 .3rem}
@@ -1666,3 +1665,22 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 .svc-save .form-error{margin:0;flex:1}
 .svc-save .btn-small{min-width:120px}
 .ib-chose{font-size:.85rem;color:var(--muted);margin:.2rem 0 .4rem}
+/* ===== statistics (redesigned): month switcher, 4 KPIs with change vs last month, 2 charts, service table ===== */
+.st-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin:0 0 .8rem}
+.st-head .sub-h{margin:0}
+.st-kpis{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.st-kpis .kpi{display:flex;flex-direction:column;gap:.15rem}
+.st-kpis .kpi b{font-size:clamp(1.5rem,2.4vw,2rem)}
+.kpi-sub{display:flex;flex-wrap:wrap;gap:.2rem .5rem;font-size:.78rem;margin-top:.15rem}
+.dl{font-weight:700}.dl.up{color:var(--ok,#1f8a5b)}.dl.down{color:#c0392b}.dl.flat{color:var(--muted)}
+[data-view=dash] .panels.st-row{grid-template-columns:1fr 1fr!important}
+.st-sub{font-size:.8rem;margin:-.2rem 0 .6rem}
+.st-svc{margin-top:.8rem}
+.st-table{width:100%;border-collapse:collapse;font-size:.9rem}
+.st-table th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:.5rem .6rem;border-bottom:1px solid var(--line)}
+.st-table td{padding:.6rem;border-bottom:1px solid var(--line);vertical-align:middle}
+.st-table tr:last-child td{border-bottom:0}
+.st-barcol{width:30%}
+.st-table .track{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.st-table .fill{height:100%;border-radius:4px;background:var(--lake)}
+@media (max-width:900px){ .st-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important} [data-view=dash] .panels.st-row{grid-template-columns:1fr!important} .st-barcol{display:none} }

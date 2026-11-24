@@ -56,7 +56,7 @@ async function start() {
   await load();
   if (!state.view) show(location.hash.slice(1) || 'inbox');
   state.timer = setInterval(() => { if (!state.dirty) load(true); }, 60000);   // never redraw while something is being typed
-  if (!state.wx) weather().then(w => { state.wx = w; render(); }).catch(() => { $('#oWx').innerHTML = `<p class="muted">${esc(t('wxNa'))}</p>`; });
+  if (!state.wx) weather().then(w => { state.wx = w; render(); }).catch(() => {});
 }
 function gate(msg, showBtn) { $('#dash').hidden = true; $('#gate').hidden = false; $('#gateMsg').textContent = msg; $('#gateBtn').hidden = !showBtn; }
 $('#gateBtn').addEventListener('click', () => ui.open('in', () => start()));
@@ -241,22 +241,35 @@ function revenueIn(d0, d1) {
   const ps = state.passes.filter(p => p.paid && p.price > 0 && inR(p.paid_at)).reduce((s, p) => s + +p.price, 0);
   return bk + ps;
 }
-function renderKpis() {
-  const today = todayIso();
-  const active = state.bookings.filter(b => b.status !== 'cancelled');
-  const [m0, m1] = monthBounds();
-  const monthRows = active.filter(b => b.date >= iso(m0) && b.date <= iso(m1)), inMonth = uniq(monthRows);
+// statistics: one month at a time (‹ › arrows), compared with the month before
+let stOff = 0;
+document.addEventListener('click', e => { const b = e.target.closest('[data-ststep]'); if (!b) return; stOff = Math.min(0, Math.max(-36, stOff + +b.dataset.ststep)); renderKpis(); renderBreakdowns(); });
+function monthStats(off) {
+  const [m0, m1] = monthBounds(off), a = iso(m0), z = iso(m1);
+  const rows = state.bookings.filter(b => b.status !== 'cancelled' && b.date >= a && b.date <= z);
   let cap = 0; for (let d = new Date(m0); d <= m1; d.setDate(d.getDate() + 1)) if (inSeason(d)) cap += CAP();
-  const fresh = uniq(state.bookings.filter(b => b.status !== 'cancelled' && b.date >= today && b.user_id && b.created_at && Date.now() - new Date(b.created_at).getTime() < 48 * 3600e3));
-  const expected = active.filter(b => b.date >= today && !b.paid && b.price > 0).reduce((s, b) => s + +b.price, 0);
-  const vis = state.reviews.filter(r => !r.hidden), avg = vis.length ? (vis.reduce((s, r) => s + r.rating, 0) / vis.length).toFixed(1) : '—';
-  const livePasses = state.passes.filter(p => p.status === 'active' && p.expires_at >= today).length;
+  const n = uniq(rows), rev = revenueIn(m0, m1), value = rows.reduce((s, b) => s + (+b.price || 0), 0);
+  return { m0, rows, n, hours: rows.length / 4, occ: cap ? rows.length / 4 / cap * 100 : null, rev, avg: n ? value / n : 0 };
+}
+function delta(cur, prev) {
+  if (!prev) return '';
+  const p = Math.round((cur - prev) / prev * 100); if (!isFinite(p) || p === 0) return `<span class="dl flat">±0% ${esc(t('vsPrev'))}</span>`;
+  return `<span class="dl ${p > 0 ? 'up' : 'down'}">${p > 0 ? '▲' : '▼'} ${Math.abs(p)}% ${esc(t('vsPrev'))}</span>`;
+}
+function renderKpis() {
+  const today = todayIso(), cur = monthStats(stOff), prev = monthStats(stOff - 1);
+  $('#stMonth').textContent = fmt(cur.m0, 'month');
+  $$('[data-ststep="1"]').forEach(b => b.disabled = stOff >= 0);
+  const unpaid = merge(state.bookings.filter(b => b.status !== 'cancelled' && b.date >= today && !b.paid && b.price > 0));
+  const due = unpaid.reduce((s, b) => s + +b.price, 0);
+  const hrs = v => (Math.round(v * 4) / 4).toLocaleString('ka-GE');
   const k = [
-    ['kNew', fresh, fresh > 0], ['kRevenue', money(revenueIn(m0, m1))], ['kExpected', money(expected)],
-    ['kMonth', inMonth], ['kOcc', cap ? Math.round(monthRows.length / 4 / cap * 100) + '%' : '—'],
-    ['kPasses', livePasses], ['kCust', new Set(active.map(b => b.user_id).filter(Boolean)).size],
+    ['kRevenue', money(cur.rev), delta(cur.rev, prev.rev), t('kRevenueSub')],
+    ['kHours', hrs(cur.hours), delta(cur.hours, prev.hours), cur.occ == null ? t('offSeason') : t('kOccSub')(Math.round(cur.occ))],
+    ['kBookings', cur.n, delta(cur.n, prev.n), cur.n ? t('kAvgSub')(money(cur.avg)) : '—'],
+    ['kDue', money(due), '', t('kDueSub')(unpaid.length)],
   ];
-  $('#kpis').innerHTML = k.map(([key, v, alert]) => `<div class="kpi${alert ? ' alert' : ''}"><small>${esc(t(key))}</small><b>${esc(v)}</b></div>`).join('');
+  $('#kpis').innerHTML = k.map(([key, v, d, sub]) => `<div class="kpi"><small>${esc(t(key))}</small><b>${esc(v)}</b><span class="kpi-sub">${d}<span class="muted">${esc(sub)}</span></span></div>`).join('');
 }
 // generic bar chart (one series) with hover tooltips
 function barChart(box, items, { max, label, tip, yFmt = v => v, ref }) {
@@ -290,10 +303,10 @@ function renderRevenue() {
 }
 function renderPerDay() {
   const s0 = new Date(); s0.setHours(0, 0, 0, 0);
-  const days = [...Array(30)].map((_, i) => iso(addDays(s0, i)));
+  const days = [...Array(14)].map((_, i) => iso(addDays(s0, i)));
   const counts = Object.fromEntries(days.map(d => [d, 0]));
   state.bookings.forEach(b => { if (b.status !== 'cancelled' && b.date in counts) counts[b.date] += 0.25; });   // boat-hours
-  barChart($('#perDay'), days.map((d, i) => ({ d, v: counts[d], closed: !inSeason(fromIso(d)), label: i % 5 === 0 || i === 29 ? fmt(d, 'short') : '' })),
+  barChart($('#perDay'), days.map((d, i) => ({ d, v: counts[d], closed: !inSeason(fromIso(d)), label: i % 2 === 0 ? fmt(d, 'short') : '' })),
     { max: CAP(), ref: CAP(), label: t('cPerDay'), tip: it => `<b>${esc(fmt(it.d, 'long'))}</b>${it.closed ? esc(t('closed')) : esc(t('cOfCap')(it.v, CAP()))}` });
 }
 function hbars(box, rows) {
@@ -303,23 +316,16 @@ function hbars(box, rows) {
     <div class="track"><div class="fill" style="width:${n / max * 100}%"></div></div></div>`).join('');
 }
 function renderBreakdowns() {
-  const active = state.bookings.filter(b => b.status !== 'cancelled');
-  hbars($('#byRide'), window.RIDES.map(r => [rideName(r.id), uniq(active.filter(b => b.ride === r.id))]).sort((a, b) => b[1] - a[1]));
-  const s0 = todayIso(), s30 = iso(addDays(new Date(), 30));
-  hbars($('#byCoach'), state.coaches.map(c => [c.name, uniq(active.filter(b => b.coach_id === c.id)), t('next30')(uniq(active.filter(b => b.coach_id === c.id && b.date >= s0 && b.date <= s30)))]).sort((a, b) => b[1] - a[1]));
-  hbars($('#byOffer'), state.offers.map(o => [o.title, uniq(active.filter(b => b.offer_id === o.id))]).filter(r => r[1]).sort((a, b) => b[1] - a[1]));
-  if ($('#byLake')) hbars($('#byLake'), [...state.lakes.map(l => [lakeName(l), uniq(active.filter(b => b.lake_id === l.id)), t('hoursShort')(active.filter(b => b.lake_id === l.id).length / 4)]),
-    ...(active.some(b => !b.lake_id) ? [[t('lakeUnset'), uniq(active.filter(b => !b.lake_id)), t('hoursShort')(active.filter(b => !b.lake_id).length / 4)]] : [])]);
-  // outcomes of decided requests (counted per booking, not per 15-minute row)
-  const all = merge(state.bookings), n = all.length || 1;
-  const cnt = k => all.filter(b => statusKey(b) === k).length;
-  const byCust = all.filter(b => b.status === 'cancelled' && b.cancelled_by === 'customer').length;
-  const custs = {}; all.filter(b => b.user_id && b.status !== 'cancelled').forEach(b => custs[b.user_id] = (custs[b.user_id] || 0) + 1);
-  const ids = Object.keys(custs), repeat = ids.length ? Math.round(ids.filter(i => custs[i] > 1).length / ids.length * 100) : 0;
-  const paidShare = (() => { const pr = all.filter(b => b.status !== 'cancelled' && b.price > 0); return pr.length ? Math.round(pr.filter(b => b.paid).length / pr.length * 100) : 0; })();
-  const tiles = [['oConfirmed', cnt('confirmed'), 'good'], ['oPending', cnt('new'), 'warn'], ['oRejected', cnt('rejected'), 'crit'], ['oCustCancel', byCust, 'muted'],
-    ['oRepeat', repeat + '%', ''], ['oPaidShare', paidShare + '%', '']];
-  $('#outcome').innerHTML = all.length ? tiles.map(([k, v, c]) => `<div class="oc ${c}"><b>${esc(v)}</b><small>${esc(t(k))}</small>${typeof v === 'number' ? `<i style="width:${v / n * 100}%"></i>` : ''}</div>`).join('') : `<p class="empty">${esc(t('noData'))}</p>`;
+  const box = $('#bySvc'); if (!box) return;
+  const cur = monthStats(stOff), rides = state.prices.filter(r => !r.archived).map(r => r.ride);
+  const ids = [...new Set([...rides, ...cur.rows.map(b => b.ride)])];
+  const rows = ids.map(id => { const r = cur.rows.filter(b => b.ride === id);
+    return { id, n: uniq(r), h: r.length / 4, v: r.reduce((s, b) => s + (+b.price || 0), 0) }; }).filter(x => x.n).sort((a, b) => b.h - a.h);
+  if (!rows.length) return box.innerHTML = `<p class="empty">${esc(t('noDataMonth'))}</p>`;
+  const max = Math.max(...rows.map(r => r.h), 1), tot = rows.reduce((s, r) => s + r.h, 0);
+  box.innerHTML = `<div class="tbl-wrap"><table class="st-table"><thead><tr><th>${esc(t('thRide'))}</th><th>${esc(t('kBookings'))}</th><th>${esc(t('kHours'))}</th><th class="st-barcol"></th><th>${esc(t('stValue'))}</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td><b>${esc(rideName(r.id))}</b></td><td>${r.n}</td><td>${(Math.round(r.h * 4) / 4).toLocaleString('ka-GE')} <small class="muted">${Math.round(r.h / tot * 100)}%</small></td>
+      <td class="st-barcol"><div class="track"><div class="fill" style="width:${r.h / max * 100}%"></div></div></td><td>${money(r.v)}</td></tr>`).join('')}</tbody></table></div>`;
 }
 function renderHeat() {
   const active = state.bookings.filter(b => b.status !== 'cancelled');
@@ -895,7 +901,7 @@ $('#csv').addEventListener('click', () => {
 });
 
 function render() {
-  renderInbox(); renderKpis(); renderRevenue(); renderPerDay(); renderBreakdowns(); renderHeat(); renderWeather();
+  renderInbox(); renderKpis(); renderRevenue(); renderPerDay(); renderBreakdowns();
   renderPasses(); renderOffers(); renderPrices(); renderPlans(); renderFleet(); renderReviewsAdmin(); renderTable(); renderSchedule();
   if (window.ownerExtra) window.ownerExtra.render(state);
 }

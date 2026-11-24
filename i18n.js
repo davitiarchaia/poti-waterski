@@ -377,3 +377,13 @@ Object.assign(window.DICT.en, { fine: 'Your booking is confirmed right away.', d
   custChose: 'Customer chose', lakeAnyCust: 'Any lake', coachClub: 'Club assigns (beginner)', cancelBk: 'Cancel booking', kNew: 'New bookings · 48 h', inboxEmpty: 'No new bookings in the last 48 hours.' });
 Object.assign(window.DICT.ru, { fine: 'Бронь подтверждается сразу.', doneTitle: 'Бронь подтверждена! ✅', doneText: (r, w, n) => `${r}, ${w}, ${n}. Ждём на Золотом озере — бронь в «Мои брони».`,
   custChose: 'Клиент выбрал', lakeAnyCust: 'Любое озеро', coachClub: 'Назначит клуб (новичок)', cancelBk: 'Отменить бронь', kNew: 'Новые брони · 48 ч', inboxEmpty: 'За последние 48 часов новых броней нет.' });
+// statistics (redesigned)
+Object.assign(window.DICT.ka, { kRevenue: 'შემოსავალი', kRevenueSub: 'გადახდილი თანხა', kHours: 'დაჯავშნილი საათი', kOccSub: p => `დატვირთვა ${p}%`, kBookings: 'ჯავშნები', kAvgSub: v => `საშუალოდ ${v}`, kDue: 'მისაღები თანხა', kDueSub: n => `${n} მომავალი გადაუხდელი ჯავშანი`,
+  vsPrev: 'წინა თვესთან', offSeason: 'სეზონგარეშე', cRevenue: 'შემოსავალი თვეების მიხედვით', cRevenueSub: 'ბოლო 6 თვე · ჯავშნები + აბონემენტები', cNext14: 'დატვირთვა · მომდევნო 14 დღე', cNext14Sub: 'დაჯავშნილი საათები დღეში · წყვეტილი ხაზი — მაქსიმუმი',
+  cBySvc: 'სერვისების მიხედვით · არჩეული თვე', stValue: 'ღირებულება', noDataMonth: 'ამ თვეში ჯავშანი არ არის.' });
+Object.assign(window.DICT.en, { kRevenue: 'Revenue', kRevenueSub: 'money received', kHours: 'Booked hours', kOccSub: p => `${p}% occupancy`, kBookings: 'Bookings', kAvgSub: v => `avg ${v}`, kDue: 'To collect', kDueSub: n => `${n} upcoming unpaid`,
+  vsPrev: 'vs last month', offSeason: 'off season', cRevenue: 'Revenue by month', cRevenueSub: 'Last 6 months · bookings + passes', cNext14: 'Load · next 14 days', cNext14Sub: 'Booked hours per day · dashed line = capacity',
+  cBySvc: 'By service · selected month', stValue: 'Value', noDataMonth: 'No bookings this month.' });
+Object.assign(window.DICT.ru, { kRevenue: 'Доход', kRevenueSub: 'получено', kHours: 'Забронировано часов', kOccSub: p => `загрузка ${p}%`, kBookings: 'Брони', kAvgSub: v => `в среднем ${v}`, kDue: 'К получению', kDueSub: n => `${n} предстоящих неоплаченных`,
+  vsPrev: 'к прошлому месяцу', offSeason: 'не сезон', cRevenue: 'Доход по месяцам', cRevenueSub: 'Последние 6 месяцев · брони + абонементы', cNext14: 'Загрузка · следующие 14 дней', cNext14Sub: 'Часы в день · пунктир — максимум',
+  cBySvc: 'По услугам · выбранный месяц', stValue: 'Сумма', noDataMonth: 'В этом месяце броней нет.' });
