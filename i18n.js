@@ -357,3 +357,6 @@ Object.assign(window.DICT.ru, { tabCommunity: 'События', scQSeason: 'Ко
 Object.assign(window.DICT.ka, { phoneNeed: 'შენი ტელეფონი / WhatsApp (ერთხელ, ანგარიშზე შეინახება)', errPhoneNeed: 'ჩაწერე ტელეფონის ნომერი, რომ დაგიკავშირდეთ.', socOr: 'ან ელ-ფოსტით' });
 Object.assign(window.DICT.en, { phoneNeed: 'Your phone / WhatsApp (asked once, saved to your account)', errPhoneNeed: 'Please add a phone number so we can reach you.', socOr: 'or with email' });
 Object.assign(window.DICT.ru, { phoneNeed: 'Ваш телефон / WhatsApp (один раз, сохранится в аккаунте)', errPhoneNeed: 'Укажите номер телефона, чтобы мы могли связаться.', socOr: 'или по почте' });
+Object.assign(window.DICT.ka, { bkGear: 'აღჭურვილობის ქირა (რაოდენობა)', gearPerH: 'სთ' });
+Object.assign(window.DICT.en, { bkGear: 'Equipment rental (how many)', gearPerH: 'h' });
+Object.assign(window.DICT.ru, { bkGear: 'Прокат снаряжения (кол-во)', gearPerH: 'ч' });

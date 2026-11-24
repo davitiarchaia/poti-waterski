@@ -1656,3 +1656,8 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 }
 /* dashboard: "Revenue by month" and "Booked hours per day" are the same, medium size (the 2/3 column) */
 [data-view=dash] .panels:has(#revChart){grid-template-columns:2fr 1fr!important}
+/* owner: equipment in the manual booking window */
+.bk-gear{border:1px solid var(--line);border-radius:12px;padding:.6rem .9rem .8rem;margin:0 0 .8rem}
+.bk-gear legend{font-size:.85rem;font-weight:700;padding:0 .3rem}
+.bk-gear-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin:.35rem 0 0}
+.bk-gear-row input{width:74px;flex:none}

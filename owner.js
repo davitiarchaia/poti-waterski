@@ -377,7 +377,7 @@ function renderPrices() {
       <div class="svc-main">
         <div class="svc-order"><button type="button" class="btn-small" data-svmove="${r.ride}" data-dir="-1" ${i ? '' : 'disabled'} aria-label="up">↑</button><button type="button" class="btn-small" data-svmove="${r.ride}" data-dir="1" ${i < rows.length - 1 ? '' : 'disabled'} aria-label="down">↓</button></div>
         <label class="svc-name"><span>${esc(t('svName'))} (ქარ)</span>${inp(r, 'name_ka', 60)}</label>
-        <label class="money-in"><span>₾</span><input type="number" min="0" step="0.5" inputmode="decimal" data-sv="${r.ride}" data-k="price" value="${r.price ?? ''}" placeholder="${esc(t('noPrice'))}"><small>${esc(t('perHour'))}</small></label>
+        <label class="money-in"><span>₾</span><input type="number" min="0" step="0.5" inputmode="decimal" data-sv="${r.ride}" data-k="price" value="${r.price ?? ''}" placeholder="${esc(t('noPrice'))}"><small>${esc(t('gearPerH'))}</small></label>
         <label class="check"><input type="checkbox" data-sv="${r.ride}" data-k="active" ${r.active !== false ? 'checked' : ''}> <span>${esc(t('fActive'))}</span></label>
       </div>
       <label class="svc-info"><span>${esc(t('svInfo'))} (ქარ)</span>${inp(r, 'info_ka', 140, t('svInfoPh'))}</label>
@@ -512,7 +512,7 @@ $('#planList').addEventListener('click', async e => {
 function renderFleet() {
   $('#boatList').innerHTML = state.boats.map(b => `<li class="${b.active ? '' : 'off'}">
       <span class="boat-ic" aria-hidden="true">🚤</span><input class="boat-name" value="${esc(b.name)}" maxlength="60" data-bname="${b.id}" aria-label="${esc(t('boat'))}">
-      <label class="oc-fee">${esc(t('boatPrice'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-bprice="${b.id}" value="${+b.price || 0}" aria-label="${esc(t('boatPrice'))}"> <small>${esc(t('perHour'))}</small></label>
+      <label class="oc-fee">${esc(t('boatPrice'))}: ₾ <input class="mini" type="number" min="0" step="0.5" data-bprice="${b.id}" value="${+b.price || 0}" aria-label="${esc(t('boatPrice'))}"> <small>${esc(t('gearPerH'))}</small></label>
       <select class="mini" data-blake="${b.id}" aria-label="${esc(t('lakeLabel'))}"><option value="">—</option>${state.lakes.map(l => `<option value="${l.id}" ${l.id === b.lake_id ? 'selected' : ''}>${esc(lakeName(l))}</option>`).join('')}</select>
       <span class="muted">${esc(t('boatUse')(uniq(state.bookings.filter(x => x.boat_id === b.id && x.status !== 'cancelled' && x.date >= todayIso()))))}</span>
       <button type="button" class="btn-small" data-btoggle="${b.id}">${esc(t(b.active ? 'hide' : 'show'))}</button>
@@ -797,6 +797,19 @@ function fillBookTimes() {
     : `<option value="">${esc(t('bkNoTime'))}</option>`;
   const first = [...sel.options].find(o => o.value === keep) || sel.options[0]; if (first) sel.value = first.value;
 }
+/* rental equipment for the chosen service (same items the customers can rent) */
+let gearCache = null;
+const gearName = g => (i18n.lang !== 'ka' && g['name_' + i18n.lang]) || g.name_ka;
+async function loadGear() { if (!gearCache) gearCache = await db('equipment?active=eq.true&select=id,ride,name_ka,name_en,name_ru,price,sort,active&order=sort').then(l => (l || []).filter(g => g.active !== false)).catch(() => []); return gearCache; }
+function renderBookGear() {
+  const list = (gearCache || []).filter(g => g.ride === bf.ride.value), box = $('#bkGearBox'), max = Math.min(12, Math.max(1, +bf.riders.value || 1));
+  box.hidden = !list.length;
+  const keep = Object.fromEntries([...document.querySelectorAll('#bkGear [data-gear]')].map(i => [i.dataset.gear, +i.value || 0]));
+  $('#bkGear').innerHTML = list.map(g => `<label class="bk-gear-row"><span>${esc(gearName(g))} <small class="muted">₾${+g.price} / ${esc(t('gearPerH'))}</small></span>
+    <input type="number" min="0" max="${max}" value="${Math.min(max, keep[g.id] || 0)}" data-gear="${g.id}" aria-label="${esc(gearName(g))}"></label>`).join('');
+}
+bf.ride.addEventListener('change', renderBookGear);
+bf.riders.addEventListener('input', renderBookGear);
 $('#addBooking').addEventListener('click', () => {
   bf.reset(); $('#bkError').textContent = '';
   $('#bkRide').innerHTML = window.RIDES.map(r => `<option value="${r.id}">${esc(rideName(r.id))}</option>`).join('');
@@ -804,7 +817,8 @@ $('#addBooking').addEventListener('click', () => {
   $('#bkCoach').innerHTML = `<option value="">${esc(t('noCoach'))}</option>` + state.coaches.filter(c => c.active).map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
   $('#bkLevel').innerHTML = t('levels').map((x, i) => `<option value="${i}">${esc(x)}</option>`).join('');
   $('#bkDur').innerHTML = [...Array(40)].map((_, i) => `<option value="${i + 1}" ${i + 1 === 4 ? 'selected' : ''}>${esc(durText(i + 1))}</option>`).join('');
-  bf.date.value = todayIso(); fillBookTimes(); i18n.apply(bm); bm.showModal();
+  bf.date.value = todayIso(); fillBookTimes(); $('#bkGear').innerHTML = ''; i18n.apply(bm); bm.showModal();
+  loadGear().then(renderBookGear);
   load().then(() => { if (bm.open) fillBookTimes(); });   // fresh bookings, so taken hours can't be picked
 });
 bf.date.addEventListener('change', fillBookTimes);
@@ -821,7 +835,9 @@ bf.addEventListener('submit', async e => {
   const now = new Date().toISOString(), conf = bf.confirmed.checked, riders = Math.min(12, Math.max(1, +bf.riders.value || 1));
   const body = { ride: bf.ride.value, date: bf.date.value, time: bf.time.value, riders, rider_groups: [{ l: +bf.level.value, n: riders }],
     level: window.DICT.en.levels[bf.level.value], name: bf.name.value.trim(), phone: bf.phone.value.trim(), email: em || null, notes: bf.notes.value.trim() || null,
-    lang: i18n.lang, lake_id: bf.lake_id.value || null, coach_id: bf.coach_id.value || null, status: conf ? 'confirmed' : 'new', confirmed_at: conf ? now : null, decided_at: conf ? now : null };
+    lang: i18n.lang, lake_id: bf.lake_id.value || null, coach_id: bf.coach_id.value || null,
+    equip_items: (() => { const it = [...document.querySelectorAll('#bkGear [data-gear]')].map(i => ({ id: i.dataset.gear, n: Math.min(12, Math.max(0, Math.round(+i.value || 0))) })).filter(x => x.n > 0); return it.length ? it : null; })(),
+    status: conf ? 'confirmed' : 'new', confirmed_at: conf ? now : null, decided_at: conf ? now : null };
   const btn = bf.querySelector('[type=submit]'); btn.disabled = true;
   try {
     const n = +bf.dur.value || 4, group = crypto.randomUUID();
