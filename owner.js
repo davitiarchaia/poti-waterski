@@ -25,9 +25,9 @@ function merge(rows) {
   const out = [], by = {};
   rows.forEach(b => {
     const k = b.group_id || b.id;
-    if (!by[k]) { by[k] = { ...b, ids: [b.id], dur: 1, end: addQ(b.time, 1), price: b.price == null ? null : +b.price, paid: b.paid }; out.push(by[k]); }
+    if (!by[k]) { by[k] = { ...b, ids: [b.id], dur: 1, end: addQ(b.time, 1), price: b.price == null ? null : +b.price, paid: b.paid, cancel_fee: +(b.cancel_fee || 0) }; out.push(by[k]); }
     else { const g = by[k]; g.ids.push(b.id); g.dur++; if (b.time < g.time) g.time = b.time; const e = addQ(b.time, 1); if (e > g.end) g.end = e;
-      g.price = g.price == null || b.price == null ? null : g.price + +b.price; g.paid = g.paid && b.paid; }
+      g.price = g.price == null || b.price == null ? null : g.price + +b.price; g.paid = g.paid && b.paid; g.cancel_fee += +(b.cancel_fee || 0); }
   });
   return out;
 }
@@ -130,6 +130,8 @@ function replyLink(b) {
 function payTag(b) {
   if (b.pass_id) return `<span class="pay-tag ok">🎟️ ${esc(t('byPass'))}</span>`;
   if (b.price == null) return `<span class="muted">—</span>`;
+  // customer cancelled less than the free-cancel time before: the fee stays, the rest is refunded
+  if (b.status === 'cancelled' && +b.cancel_fee > 0) return `<span class="pay-tag held">⚠ ${esc(t('oLateFee')(money(b.cancel_fee), b.paid ? money(b.price - b.cancel_fee) : ''))}</span>`;
   if (b.paid) return `<span class="pay-tag ok">✓ ${money(b.price)} · ${esc(t('pm_' + (b.payment_method || 'cash')))}</span>`;
   if (b.payment_status === 'held') return `<span class="pay-tag held">🔒 ${money(b.price)} · ${esc(t('oHeld'))}</span>`;
   return `<span class="pay-tag">${money(b.price)} · ${esc(t(b.payment_status === 'voided' ? 'oVoided' : b.payment_status === 'failed' ? 'oPayFailed' : 'unpaid'))}</span>`;
@@ -228,7 +230,7 @@ async function settleHold(id, charge) {
 function monthBounds(offset = 0) { const n = new Date(); return [new Date(n.getFullYear(), n.getMonth() + offset, 1), new Date(n.getFullYear(), n.getMonth() + offset + 1, 0)]; }
 function revenueIn(d0, d1) {
   const a = iso(d0), z = iso(d1), inR = ts => ts && ts.slice(0, 10) >= a && ts.slice(0, 10) <= z;
-  const bk = state.bookings.filter(b => b.paid && b.status !== 'cancelled' && !b.pass_id && b.price > 0 && inR(b.paid_at)).reduce((s, b) => s + +b.price, 0);   // a cancelled booking is no income
+  const bk = state.bookings.filter(b => b.paid && !b.pass_id && b.price > 0 && inR(b.paid_at)).reduce((s, b) => s + (b.status === 'cancelled' ? +(b.cancel_fee || 0) : +b.price), 0);   // cancelled: only the late-cancel fee stays
   const ps = state.passes.filter(p => p.paid && p.price > 0 && inR(p.paid_at)).reduce((s, p) => s + +p.price, 0);
   return bk + ps;
 }
@@ -903,11 +905,11 @@ start();
 function fillSettings() {
   const f = $('#settingsForm'); if (!f || !state.settings) return;
   if (document.activeElement && f.contains(document.activeElement)) return;
-  f.beginner_coach_fee.value = +state.settings.beginner_coach_fee || 0; f.cancel_hours.value = state.settings.cancel_hours ?? 24;
+  f.beginner_coach_fee.value = +state.settings.beginner_coach_fee || 0; f.cancel_hours.value = state.settings.cancel_hours ?? 1; f.late_cancel_fee_pct.value = state.settings.late_cancel_fee_pct ?? 10;
 }
 document.addEventListener('change', async e => {
   const f = e.target.closest('#settingsForm'); if (!f || !e.target.name) return;
-  const body = { beginner_coach_fee: Math.max(0, +f.beginner_coach_fee.value || 0), cancel_hours: Math.min(168, Math.max(0, Math.round(+f.cancel_hours.value || 0))), updated_at: new Date().toISOString() };
+  const body = { beginner_coach_fee: Math.max(0, +f.beginner_coach_fee.value || 0), cancel_hours: Math.min(168, Math.max(0, Math.round(+f.cancel_hours.value || 0))), late_cancel_fee_pct: Math.min(100, Math.max(0, Math.round(+f.late_cancel_fee_pct.value || 0))), updated_at: new Date().toISOString() };
   try { await db('club_settings?id=eq.1', { method: 'PATCH', body, prefer: 'return=minimal' }); state.settings = { ...state.settings, ...body }; ui.toast(t('saved'), 'ok'); } catch { ui.toast(t('errNet'), 'bad'); }
 });
 // inline change of a coach's pay rate (₾ per hour, private — the payroll table reads it from here)

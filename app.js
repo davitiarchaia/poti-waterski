@@ -9,7 +9,7 @@ i18n.init(window.DICT, ['ka', 'en', 'ru']);
 const state = {
   ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 1, riders: 1, load: {}, lakeLoad: {}, boatLoad: {}, boat: null, wx: null, mine: [], myPasses: [], myReviews: new Set(),
   busyMonth: false, offers: [], offer: null, prices: {}, boats: 1, allBoats: [], coaches: [], coach: null, plans: [], pass: null, reviews: [],
-  lakes: [], photos: [], lake: null, settings: { beginner_coach_fee: 0, cancel_hours: C.cancelHours ?? 24, min_lead_minutes: 60 }, payMethod: 'card', groups: [], equip: 'own', gear: [], eqSel: {},
+  lakes: [], photos: [], lake: null, settings: { beginner_coach_fee: 0, cancel_hours: C.cancelHours ?? 1, late_cancel_fee_pct: 10, min_lead_minutes: 60 }, payMethod: 'card', groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
 };
 const money = v => (Math.round(v * 100) / 100).toLocaleString(i18n.lang === 'en' ? 'en-GB' : 'ka-GE', { maximumFractionDigits: 2 });
 const toast = (msg, kind = '') => { const el = $('#toast'); el.textContent = msg; el.className = 'toast ' + kind; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 5000); };
@@ -34,7 +34,7 @@ async function loadClubData() {
     get('lakes?select=*&order=sort.asc,created_at.asc'), get('lake_photos?select=*&order=sort.asc,created_at.asc').catch(() => []),
     get('equipment?select=*&active=eq.true&order=sort.asc,created_at.asc'),
   ]);
-  const st = (await get('club_settings?select=beginner_coach_fee,cancel_hours,min_lead_minutes&id=eq.1'))[0];
+  const st = (await get('club_settings?select=beginner_coach_fee,cancel_hours,late_cancel_fee_pct,min_lead_minutes&id=eq.1'))[0];
   if (st) { state.settings = st; C.cancelHours = st.cancel_hours; C.leadMinutes = st.min_lead_minutes; }
   state.periods = await get(`closed_periods?select=date_from,reopen_on,reason&reopen_on=gt.${todayIso()}&order=date_from.asc`);
   // closed lakes are shown (with the reason) but can't be picked
@@ -594,7 +594,7 @@ $('#payBtn').addEventListener('click', e => startPay('booking', e.target.dataset
 $('#again').addEventListener('click', () => {
   const keep = { name: form.name.value, phone: form.phone.value };
   form.reset(); form.name.value = keep.name; form.phone.value = keep.phone;
-  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 0, groups: [], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, coachPicked: false, boat: null, pass: null }); renderDur();
+  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, coachPicked: false, boat: null, pass: null }); renderDur();
   prefill(ui.state.profile); renderGroups(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPassUse(); renderCalendar(); renderSlots(); update();
   $('#done').hidden = true; form.hidden = false;
 });
@@ -688,9 +688,13 @@ function renderMine() {
       if (!b.paid && b.price > 0 && C.onlinePayment && b.payment_status !== 'held' && b.status !== 'cancelled') acts.push(`<button type="button" class="btn-small primary" data-pay="${b.id}">${esc(t('payHold'))}</button>`);
       const cancelAttr = b.group_id ? `data-cancelgroup="${b.group_id}"` : `data-cancel="${b.id}"`;
       const hoursLeft = (tbMs(b.date, b.time) - Date.now()) / 3.6e6;
-      acts.push(hoursLeft >= (C.cancelHours || 0) ? `<button type="button" class="btn-small ghost" ${cancelAttr}>${esc(t('cancel'))}</button>` : `<small class="muted late">${esc(t('lateCancel'))}</small>`);
+      // free until `cancel_hours` before the start; after that (until the start) with a fee of late_cancel_fee_pct %
+      const late = hoursLeft < (C.cancelHours ?? 1), pct = state.settings.late_cancel_fee_pct ?? 10;
+      const fee = late && b.price > 0 ? Math.round(b.price * pct) / 100 : 0;
+      if (hoursLeft > 0) acts.push(`<button type="button" class="btn-small ghost" ${cancelAttr} data-fee="${fee}" data-late="${late ? 1 : ''}">${esc(t('cancel'))}</button>`
+        + (late ? `<small class="muted late">${esc(t('lateFeeNote')(pct, fee ? money(fee) : ''))}</small>` : ''));
     }
-    if (b.date <= today && b.status === 'confirmed') acts.push(b.ids.some(i => state.myReviews.has(i)) ? `<span class="pay-tag ok">★ ${esc(t('reviewed'))}</span>` : `<button type="button" class="btn-small star" data-review="${b.id}">★ ${esc(t('writeReview'))}</button>`);
+    if (b.status === 'confirmed' && tbMs(b.date, b.time) < Date.now()) acts.push(b.ids.some(i => state.myReviews.has(i)) ? `<span class="pay-tag ok">★ ${esc(t('reviewed'))}</span>` : `<button type="button" class="btn-small star" data-review="${b.id}">★ ${esc(t('writeReview'))}</button>`);
     return `<li class="mb">
       <div><b>${esc(rideName(b.ride))}</b><span>${esc(whenText(b.date, b.time, b.dur))} · ${esc(t('rider')(b.riders))}${coach ? ' · ' + esc(coach.name) : ''}${equipText(b) ? ' · 🏄 ' + esc(equipText(b)) : ''}</span>
         ${pay}${b.owner_note ? `<span class="reply">${esc(t('ownerSays'))} ${esc(b.owner_note)}</span>` : ''}</div>
@@ -706,7 +710,7 @@ $('#mineList').addEventListener('click', async e => {
   const pp = e.target.closest('[data-paypass]'); if (pp) return startPay('pass', pp.dataset.paypass, pp);
   const rv = e.target.closest('[data-review]'); if (rv) return openReview(rv.dataset.review);
   const b = e.target.closest('[data-cancel],[data-cancelgroup]'); if (!b) return;
-  if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('cancelQ'); b.classList.add('danger'); return; }
+  if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = b.dataset.late ? t('cancelQFee')(+b.dataset.fee ? money(+b.dataset.fee) : '') : t('cancelQ'); b.classList.add('danger'); return; }
   b.disabled = true;
   const one = state.mine.find(x => b.dataset.cancelgroup ? x.group_id === b.dataset.cancelgroup : x.id === b.dataset.cancel);
   try {
@@ -714,6 +718,7 @@ $('#mineList').addEventListener('click', async e => {
     // money held on the card for this booking is released at once
     if (one && one.payment_status === 'held') fn('bog-capture', { id: one.id, action: 'cancel' }).catch(() => {});
   } catch (x) { toast(t(x.code === 'PW014' ? 'lateCancel' : 'errNet'), 'bad'); }
+  if (b.dataset.late && +b.dataset.fee) toast(t('lateFeeDone')(money(+b.dataset.fee)), 'ok');
   await loadMine(); loadMonth();
 });
 

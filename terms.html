@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Display:wght@400;600;700;800&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
   <meta name="color-scheme" content="light dark">
-  <script src="theme.js?v=20261124o"></script>
-  <link rel="stylesheet" href="styles.css?v=20261124o">
+  <script src="theme.js?v=20261124p"></script>
+  <link rel="stylesheet" href="styles.css?v=20261124p">
   <style>
     .legal{max-width:820px;margin:0 auto;padding:clamp(24px,5vw,56px) clamp(16px,4vw,32px)}
     .legal h1{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:.4rem}
@@ -38,13 +38,13 @@
 <main class="legal" id="legal"></main>
 <footer class="foot"><p>© <span id="yr"></span> Poti Lake Club · Golden Lake, Maltakva, Poti</p></footer>
 
-<script src="config.js?v=20261124o"></script>
-<script src="demo.js?v=20261124o" defer></script>
+<script src="config.js?v=20261124p"></script>
+<script src="demo.js?v=20261124p" defer></script>
 <script>
 (() => {
   const C = window.CONFIG, v = x => x ? esc(x) : '—';
   function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
-  const h = C.cancelHours || 24;
+  const h = C.cancelHours ?? 1, fee = C.lateCancelFeePct ?? 10;
   const T = {
     ka: `<a class="back" href="index.html">← ჯავშნის გვერდი</a>
       <h1>წესები და პირობები</h1><p class="upd">ბოლო განახლება: 2026</p>
@@ -66,6 +66,7 @@
       <h2>3. გაუქმება და თანხის დაბრუნება</h2>
       <ul>
         <li>ჯავშნის უფასო გაუქმება შეგიძლიათ სრიალამდე ${h} საათით ადრე — „ჩემი ჯავშნებიდან“ ან კლუბთან დაკავშირებით.</li>
+        <li>სრიალამდე ${h} საათზე ნაკლები თუ დარჩა, გაუქმება ისევ შესაძლებელია სესიის დაწყებამდე, მაგრამ იკავება ჯავშნის ფასის ${fee}% (ჯარიმა); დანარჩენი ${100 - fee}% ბრუნდება. დაწყებული სესიის გაუქმება შეუძლებელია.</li>
         <li>თუ კლუბი ჯავშანს ვერ დაადასტურებს, ან გააუქმებს ამინდის, უსაფრთხოების ან ტექნიკური მიზეზით, შემოგთავაზებთ სხვა დროს ან დაგიბრუნებთ გადახდილ თანხას სრულად.</li>
         <li>ონლაინ გადახდილი თანხა ბრუნდება იმავე ბარათზე, ბანკის წესებისა და ვადების მიხედვით.</li>
         <li>გამოუყენებელი აბონემენტის თანხის დაბრუნება განიხილება ინდივიდუალურად.</li>
@@ -112,7 +113,8 @@
       </ul>
       <h2>3. Cancellation & refunds</h2>
       <ul>
-        <li>You can cancel free of charge up to ${h} hours before your ride — in "My bookings" or by contacting the club.</li>
+        <li>You can cancel free of charge up to ${h} hour${h === 1 ? '' : 's'} before your ride — in "My bookings" or by contacting the club.</li>
+        <li>With less than ${h} hour${h === 1 ? '' : 's'} left you can still cancel until the session starts, but ${fee}% of the price is kept as a late-cancellation fee and the other ${100 - fee}% is refunded. A session that has started can't be cancelled.</li>
         <li>If the club can't confirm a booking, or cancels it for weather, safety or technical reasons, we'll offer another time or refund you in full.</li>
         <li>Online payments are refunded to the same card according to the bank's rules and timelines.</li>
         <li>Refunds for unused passes are handled case by case.</li>

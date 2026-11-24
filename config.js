@@ -13,7 +13,8 @@ window.CONFIG = {
   legalName: '',      // e.g. 'შპს ფოთის წყლის თხილამურების კლუბი'
   legalId: '',        // company ID (საიდენტიფიკაციო კოდი)
   email: '',          // contact email for customers
-  cancelHours: 24,    // free cancellation up to this many hours before the ride
+  cancelHours: 1,     // free cancellation up to this many hours before the ride
+  lateCancelFeePct: 10, // cancelling later (until the start) costs this % of the price
   demo: true,           // shows the "demo version" notice bar; set to false when the club goes live
   onlinePayment: false, // set to true after the BOG keys are added in Supabase (Edge Functions → Secrets)
 };

@@ -360,3 +360,13 @@ Object.assign(window.DICT.ru, { phoneNeed: 'Ваш телефон / WhatsApp (о
 Object.assign(window.DICT.ka, { bkGear: 'აღჭურვილობის ქირა (რაოდენობა)', gearPerH: 'სთ' });
 Object.assign(window.DICT.en, { bkGear: 'Equipment rental (how many)', gearPerH: 'h' });
 Object.assign(window.DICT.ru, { bkGear: 'Прокат снаряжения (кол-во)', gearPerH: 'ч' });
+// cancellation: free until 1 h before, later 10 % fee
+Object.assign(window.DICT.ka, { lateCancel: 'სესია უკვე დაიწყო — დაგვიკავშირდი',
+  lateFeeNote: (p, f) => `1 საათზე ნაკლები დარჩა: გაუქმებისას ${p}% ჯარიმა${f ? ` (₾${f})` : ''}`, cancelQFee: f => `გავაუქმო? ჯარიმა ${f ? '₾' + f : '10%'}`, lateFeeDone: f => `ჯავშანი გაუქმდა. ჯარიმა: ₾${f}, დანარჩენი დაგიბრუნდება.` });
+Object.assign(window.DICT.en, { lateCancel: 'The session has started — please contact us',
+  lateFeeNote: (p, f) => `Less than 1 hour left: cancelling now costs ${p}%${f ? ` (₾${f})` : ''}`, cancelQFee: f => `Cancel? Fee ${f ? '₾' + f : '10%'}`, lateFeeDone: f => `Booking cancelled. Fee: ₾${f}; the rest will be refunded.` });
+Object.assign(window.DICT.ru, { lateCancel: 'Сессия уже началась — свяжись с нами',
+  lateFeeNote: (p, f) => `Осталось меньше часа: отмена стоит ${p}%${f ? ` (₾${f})` : ''}`, cancelQFee: f => `Отменить? Штраф ${f ? '₾' + f : '10%'}`, lateFeeDone: f => `Бронь отменена. Штраф: ₾${f}, остальное вернём.` });
+Object.assign(window.DICT.ka, { stgLateFee: 'გვიანი გაუქმების ჯარიმა (%)', oLateFee: (f, r) => `გვიანი გაუქმება: ჯარიმა ${f}${r ? ` · დასაბრუნებელი ${r}` : ''}` });
+Object.assign(window.DICT.en, { stgLateFee: 'Late cancellation fee (%)', oLateFee: (f, r) => `Late cancel: fee ${f}${r ? ` · refund ${r}` : ''}` });
+Object.assign(window.DICT.ru, { stgLateFee: 'Штраф за позднюю отмену (%)', oLateFee: (f, r) => `Поздняя отмена: штраф ${f}${r ? ` · вернуть ${r}` : ''}` });
