@@ -1754,3 +1754,22 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 #boatList>li.fold.open>.fold-head{flex:1 0 100%}
 .lk-card.fold:not(.open),.coach-card.fold:not(.open){padding-top:.7rem!important;padding-bottom:.7rem!important}
 #coachList,#lakeAdmin{align-items:start!important}
+
+/* coaches, boats & lakes: Lakes and Coaches always open; boats + cancellation fold */
+.fixed-open{margin:0 0 .9rem!important}
+.fo-title{display:flex;align-items:center;gap:.75rem;margin:0 0 .6rem;font-size:1.15rem}
+.fo-title .acc-ico{position:relative;width:34px;height:34px;flex:none;border-radius:10px;background:color-mix(in srgb,var(--lake) 14%,transparent)}
+.fo-title .acc-ico::after{content:'';position:absolute;inset:7px;background:var(--lake);-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+#lakesPanel{--ic:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Cpath%20d%3D%27M2%2015c2%201.5%204%201.5%206%200s4-1.5%206%200%204%201.5%206%200%27/%3E%3Cpath%20d%3D%27M2%2019c2%201.5%204%201.5%206%200s4-1.5%206%200%204%201.5%206%200%27/%3E%3Cpath%20d%3D%27M12%203c2.5%203%204%205.2%204%207a4%204%200%200%201-8%200c0-1.8%201.5-4%204-7Z%27/%3E%3C/svg%3E")}
+#coachesPanel{--ic:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%20fill%3D%27none%27%20stroke%3D%27black%27%20stroke-width%3D%272%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%3E%3Ccircle%20cx%3D%2712%27%20cy%3D%277%27%20r%3D%273.5%27/%3E%3Cpath%20d%3D%27M5%2021c.8-4%203.5-6%207-6s6.2%202%207%206%27/%3E%3Cpath%20d%3D%27M17%204l2%202-2%202%27%20/%3E%3C/svg%3E")}
+#coachesPanel .panel-head{display:flex;align-items:center;justify-content:space-between;gap:.8rem;flex-wrap:wrap;margin-bottom:.6rem}
+#coachesPanel .panel-head .fo-title{margin:0}
+#coachNewBtn.on{background:var(--lake);color:#fff}
+.coach-drop{margin:.2rem 0 1.2rem;padding:1rem;border:1px solid var(--lake);border-radius:14px;background:var(--bg);animation:svcDrop .18s ease-out}
+.coach-drop[hidden]{display:none!important}
+.coach-drop #coachFormTitle{font-size:1rem;margin:0 0 .6rem}
+.coach-tariff{margin-top:1.2rem;padding-top:1rem;border-top:1px dashed var(--line)}
+.dayoff{margin-top:1.2rem;padding-top:1rem;border-top:1px dashed var(--line)}
+.dayoff .dayoff-form{padding:0;border:0;background:none;box-shadow:none}
+.dayoff .sub-h{font-size:1rem;margin:.2rem 0 .5rem}
+.dayoff #closeList{margin-top:.3rem}.dayoff .dayoff-form+.sub-h{margin-top:1.2rem}

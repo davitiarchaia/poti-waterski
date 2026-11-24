@@ -389,3 +389,6 @@ Object.assign(window.DICT.ru, { kRevenue: 'Доход', kRevenueSub: 'получ
   cBySvc: 'По услугам · выбранный месяц', stValue: 'Сумма', noDataMonth: 'В этом месяце броней нет.' });
 Object.assign(window.DICT.ka, { accCoaches: 'მწვრთნელები' }); Object.assign(window.DICT.en, { accCoaches: 'Coaches' }); Object.assign(window.DICT.ru, { accCoaches: 'Тренеры' });
 if (!window.DICT.ru.flBoats) window.DICT.ru.flBoats = 'Катера';
+Object.assign(window.DICT.ka, { coNewBtn: '+ ახალი მწვრთნელი', coTariffTitle: 'მწვრთნელის ტარიფები', cnTitle: 'გაუქმების წესი' });
+Object.assign(window.DICT.en, { coNewBtn: '+ New coach', coTariffTitle: 'Coach tariffs', cnTitle: 'Cancellation rule' });
+Object.assign(window.DICT.ru, { coNewBtn: '+ Новый тренер', coTariffTitle: 'Тарифы тренеров', cnTitle: 'Правило отмены' });

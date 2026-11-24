@@ -5,13 +5,8 @@
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const t = k => (window.PW && window.PW.i18n ? window.PW.i18n.t(k) : k);
   const KINDS = [
-    { box: '#lakeAdmin', item: '[data-lkcard]', key: el => 'lk' + el.dataset.lkcard, ic: '🌊',
-      name: el => el.querySelector('.lk-title')?.textContent, off: el => el.classList.contains('off') },
     { box: '#boatList', item: 'li:not(.muted)', key: el => 'bt' + (el.querySelector('[data-bdel]')?.dataset.bdel || ''), ic: '🚤',
       name: el => el.querySelector('[data-bname]')?.value, off: el => el.classList.contains('off') },
-    { box: '#coachList', item: '.coach-card', key: el => 'co' + (el.querySelector('[data-cact]')?.dataset.id || ''), ic: '👤',
-      name: el => el.querySelector('h3')?.textContent, off: el => el.classList.contains('oHidden'),
-      photo: el => el.querySelector('.cc-top .ph img')?.getAttribute('src') },
   ];
   function decorate(k) {
     const box = document.querySelector(k.box); if (!box) return;

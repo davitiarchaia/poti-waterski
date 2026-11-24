@@ -577,6 +577,9 @@ $('#boatList').addEventListener('click', async e => {
 const svcToggle = open => { const f = $('#svcForm'), b = $('#goNewSvc'); if (!f || !b) return; f.hidden = !open; b.setAttribute('aria-expanded', String(open)); b.classList.toggle('on', open); if (open) f.name_ka.focus({ preventScroll: true }); };
 $('#goNewSvc') && $('#goNewSvc').addEventListener('click', () => svcToggle($('#svcForm').hidden));
 const cform = $('#coachForm');
+// "+ New coach" opens the form right inside the Coaches block (also used for editing)
+const coachFormOpen = on => { cform.hidden = !on; const b = $('#coachNewBtn'); if (b) { b.setAttribute('aria-expanded', String(on)); b.classList.toggle('on', on); } };
+$('#coachNewBtn') && $('#coachNewBtn').addEventListener('click', () => { const on = cform.hidden || !!state.editCoach; state.editCoach = null; fillCoach(null); renderFleet(); coachFormOpen(on); if (on) cform.name.focus({ preventScroll: true }); });
 function fillCoach(c) {
   cform.name.value = c ? c.name : ''; cform.bio.value = c ? c.bio || '' : ''; cform.photo_url.value = c ? c.photo_url || '' : ''; cform.price.value = c && +c.price ? c.price : ''; cform.active.checked = c ? c.active : true;
   cform.lake_id.value = c ? c.lake_id || '' : ''; coachPhoto = null; $('#coachPhotoFile').value = ''; showCoachPhoto(c ? c.photo_url : ''); $('#coachError').textContent = '';
@@ -604,15 +607,15 @@ cform.addEventListener('submit', async e => {
   try {
     if (state.editCoach) await db(`coaches?id=eq.${state.editCoach}`, { method: 'PATCH', body, prefer: 'return=minimal' });
     else await db('coaches', { method: 'POST', body: { ...body, sort: state.coaches.length }, prefer: 'return=minimal' });
-    state.editCoach = null; fillCoach(null);
+    state.editCoach = null; fillCoach(null); coachFormOpen(false);
   } catch { $('#coachError').textContent = t('errNet'); }
   load();
 });
-$('#coachCancel').addEventListener('click', () => { state.editCoach = null; fillCoach(null); renderFleet(); });
+$('#coachCancel').addEventListener('click', () => { state.editCoach = null; fillCoach(null); renderFleet(); coachFormOpen(false); });
 $('#coachList').addEventListener('click', async e => {
   const b = e.target.closest('[data-cact]'); if (!b) return;
   const c = coachById(b.dataset.id); if (!c) return;
-  if (b.dataset.cact === 'edit') { state.editCoach = c.id; fillCoach(c); renderFleet(); cform.classList.add('open'); cform.scrollIntoView({ behavior: 'smooth' }); return; }
+  if (b.dataset.cact === 'edit') { state.editCoach = c.id; fillCoach(c); renderFleet(); coachFormOpen(true); cform.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
   if (b.dataset.cact === 'del' && !b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('delQ'); b.classList.add('danger'); return; }
   b.disabled = true;
   try { if (b.dataset.cact === 'toggle') await db(`coaches?id=eq.${c.id}`, { method: 'PATCH', body: { active: !c.active }, prefer: 'return=minimal' });
@@ -917,13 +920,14 @@ i18n.set(i18n.lang); i18n.apply(); document.title = `${t('oTitle')} — Poti Lak
 start();
 // club-wide settings: beginners' coach fee, free-cancellation window
 function fillSettings() {
-  const f = $('#settingsForm'); if (!f || !state.settings) return;
-  if (document.activeElement && f.contains(document.activeElement)) return;
-  f.beginner_coach_fee.value = +state.settings.beginner_coach_fee || 0; f.cancel_hours.value = state.settings.cancel_hours ?? 1; f.late_cancel_fee_pct.value = state.settings.late_cancel_fee_pct ?? 10;
+  const f = $('#settingsForm'), g = $('#cancelForm'); if (!f || !g || !state.settings) return;
+  if (document.activeElement && (f.contains(document.activeElement) || g.contains(document.activeElement))) return;
+  f.beginner_coach_fee.value = +state.settings.beginner_coach_fee || 0; g.cancel_hours.value = state.settings.cancel_hours ?? 1; g.late_cancel_fee_pct.value = state.settings.late_cancel_fee_pct ?? 10;
 }
 document.addEventListener('change', async e => {
-  const f = e.target.closest('#settingsForm'); if (!f || !e.target.name) return;
-  const body = { beginner_coach_fee: Math.max(0, +f.beginner_coach_fee.value || 0), cancel_hours: Math.min(168, Math.max(0, Math.round(+f.cancel_hours.value || 0))), late_cancel_fee_pct: Math.min(100, Math.max(0, Math.round(+f.late_cancel_fee_pct.value || 0))), updated_at: new Date().toISOString() };
+  if (!e.target.closest('#settingsForm, #cancelForm') || !e.target.name) return;
+  const f = $('#settingsForm'), g = $('#cancelForm');
+  const body = { beginner_coach_fee: Math.max(0, +f.beginner_coach_fee.value || 0), cancel_hours: Math.min(168, Math.max(0, Math.round(+g.cancel_hours.value || 0))), late_cancel_fee_pct: Math.min(100, Math.max(0, Math.round(+g.late_cancel_fee_pct.value || 0))), updated_at: new Date().toISOString() };
   try { await db('club_settings?id=eq.1', { method: 'PATCH', body, prefer: 'return=minimal' }); state.settings = { ...state.settings, ...body }; ui.toast(t('saved'), 'ok'); } catch { ui.toast(t('errNet'), 'bad'); }
 });
 // inline change of a coach's pay rate (₾ per hour, private — the payroll table reads it from here)
