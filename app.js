@@ -602,7 +602,7 @@ $('#again').addEventListener('click', () => {
 /* ---------- online payment (Bank of Georgia) ---------- */
 async function startPay(kind, id, btn, method) {
   if (!id) return;
-  if (!C.onlinePayment) return toast(t('payNotReady'));
+  if (!(kind === 'pass' ? C.onlinePassPayment || C.onlinePayment : C.onlinePayment)) return toast(t('payNotReady'));
   if (btn) { btn.disabled = true; btn.dataset.label = btn.textContent; btn.textContent = t('paying'); }
   const r = await fn('bog-pay', { kind, id, method: method || 'card', return_url: location.href.split(/[?#]/)[0] }).catch(() => ({}));
   if (r.url) { location.href = r.url; return; }
@@ -669,7 +669,7 @@ function renderMine() {
     return `<div class="my-pass ${s}"><div><b>${esc(p.name)}</b><span class="badge pass-${s}">${esc(t('pass_' + s))}</span></div>
       <div class="mp-bar" aria-hidden="true"><i style="width:${Math.max(0, left) / p.hours_total * 100}%"></i></div>
       <small>${esc(t('hoursLeft')(Math.max(0, left), p.hours_total))}${p.expires_at ? ' · ' + esc(t('validTill')(fmt(p.expires_at, 'dm'))) : ''}</small>
-      ${s === 'pending' && !p.paid ? `<small class="muted">₾${money(p.price)} · ${esc(t('passPayHint'))}</small>${C.onlinePayment ? `<button type="button" class="btn-small primary" data-paypass="${p.id}">${esc(t('payNow'))}</button>` : ''}` : ''}
+      ${s === 'pending' && !p.paid ? `<small class="muted">₾${money(p.price)} · ${esc(t('passPayHint'))}</small>${C.onlinePassPayment || C.onlinePayment ? `<button type="button" class="btn-small primary" data-paypass="${p.id}">${esc(t('payNow'))}</button>` : ''}` : ''}
     </div>`; }).join('')}</div>`;
   if (!state.mine.length) { list.innerHTML = html + `<p class="muted">${esc(t('mbEmpty'))}</p>`; return; }
   // merge the hours of a multi-hour booking into one line
@@ -747,7 +747,7 @@ $('#plans').addEventListener('click', e => {
       const p = r && r[0];
       if (p) fn('notify', { event: 'pass_requested', id: p.id }).catch(() => {});
       await loadMine();
-      if (p && C.onlinePayment && p.price > 0) return startPay('pass', p.id, b);
+      if (p && (C.onlinePassPayment || C.onlinePayment) && p.price > 0) return startPay('pass', p.id, b);   // straight to the bank's payment page
       toast(t('passReqDone'), 'ok');
       $('#mine').scrollIntoView({ behavior: 'smooth' });
     } catch { toast(t('errNet'), 'bad'); }

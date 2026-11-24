@@ -17,6 +17,7 @@ window.CONFIG = {
   lateCancelFeePct: 10, // cancelling later (until the start) costs this % of the price
   demo: true,           // shows the "demo version" notice bar; set to false when the club goes live
   onlinePayment: false, // set to true after the BOG keys are added in Supabase (Edge Functions → Secrets)
+  onlinePassPayment: false, // passes are paid online (BOG) right when bought — set to true once the BOG keys are in Supabase
 };
 // activities — prices are set by the owner on the owner page (Tariffs)
 window.RIDES = [
