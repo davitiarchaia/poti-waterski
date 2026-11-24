@@ -1665,3 +1665,4 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 .svc-save{display:flex;align-items:center;justify-content:flex-end;gap:.8rem;margin-top:.8rem;padding-top:.8rem;border-top:1px dashed var(--line)}
 .svc-save .form-error{margin:0;flex:1}
 .svc-save .btn-small{min-width:120px}
+.ib-chose{font-size:.85rem;color:var(--muted);margin:.2rem 0 .4rem}

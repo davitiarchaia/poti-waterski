@@ -370,3 +370,10 @@ Object.assign(window.DICT.ru, { lateCancel: 'Сессия уже началас�
 Object.assign(window.DICT.ka, { stgLateFee: 'გვიანი გაუქმების ჯარიმა (%)', oLateFee: (f, r) => `გვიანი გაუქმება: ჯარიმა ${f}${r ? ` · დასაბრუნებელი ${r}` : ''}` });
 Object.assign(window.DICT.en, { stgLateFee: 'Late cancellation fee (%)', oLateFee: (f, r) => `Late cancel: fee ${f}${r ? ` · refund ${r}` : ''}` });
 Object.assign(window.DICT.ru, { stgLateFee: 'Штраф за позднюю отмену (%)', oLateFee: (f, r) => `Поздняя отмена: штраф ${f}${r ? ` · вернуть ${r}` : ''}` });
+// bookings are confirmed by the site automatically
+Object.assign(window.DICT.ka, { fine: 'ჯავშანი მაშინვე დადასტურდება.', doneTitle: 'ჯავშანი დადასტურებულია! ✅', doneText: (r, w, n) => `${r}, ${w}, ${n}. გელოდებით ოქროს ტბაზე — ჯავშანი „ჩემს ჯავშნებში“ ჩანს.`,
+  custChose: 'კლიენტმა აირჩია', lakeAnyCust: 'ნებისმიერი ტბა', coachClub: 'კლუბი დანიშნავს (დამწყები)', cancelBk: 'ჯავშნის გაუქმება', kNew: 'ახალი ჯავშნები · 48 სთ', inboxEmpty: 'ბოლო 48 საათში ახალი ჯავშანი არ შემოსულა.' });
+Object.assign(window.DICT.en, { fine: 'Your booking is confirmed right away.', doneTitle: 'Booking confirmed! ✅', doneText: (r, w, n) => `${r}, ${w}, ${n}. See you at Golden Lake — the booking is in "My bookings".`,
+  custChose: 'Customer chose', lakeAnyCust: 'Any lake', coachClub: 'Club assigns (beginner)', cancelBk: 'Cancel booking', kNew: 'New bookings · 48 h', inboxEmpty: 'No new bookings in the last 48 hours.' });
+Object.assign(window.DICT.ru, { fine: 'Бронь подтверждается сразу.', doneTitle: 'Бронь подтверждена! ✅', doneText: (r, w, n) => `${r}, ${w}, ${n}. Ждём на Золотом озере — бронь в «Мои брони».`,
+  custChose: 'Клиент выбрал', lakeAnyCust: 'Любое озеро', coachClub: 'Назначит клуб (новичок)', cancelBk: 'Отменить бронь', kNew: 'Новые брони · 48 ч', inboxEmpty: 'За последние 48 часов новых броней нет.' });

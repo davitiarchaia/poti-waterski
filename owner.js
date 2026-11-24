@@ -141,6 +141,11 @@ const boatSelect = b => state.boats.length > 1 && !b.group_id ? `<select class="
 const lakeSelect = b => state.lakes.length && b.status !== 'cancelled' ? `<select class="mini lake-sel${b.lake_id ? '' : ' unset'}" data-lakesel="${b.id}" aria-label="${esc(t('lakeLabel'))}"><option value="">🌊 ${esc(t('lakeUnset'))}</option>${state.lakes.filter(l => l.active || l.id === b.lake_id).map(l => `<option value="${l.id}" ${l.id === b.lake_id ? 'selected' : ''}>🌊 ${esc(lakeName(l))}</option>`).join('')}</select>` : '';
 const coachSelect = b => state.coaches.length ? `<select class="mini" data-coachsel="${b.id}" aria-label="${esc(t('coachTitle'))}"><option value="">${esc(t('noCoach'))}</option>${state.coaches.filter(c => c.active || c.id === b.coach_id).map(c => `<option value="${c.id}" ${c.id === b.coach_id ? 'selected' : ''}>${esc(c.name)}</option>`).join('')}</select>` : '';
 
+// what the customer picked when booking (kept even if the owner changes the lake / coach later)
+const chosenLake = b => { const l = state.lakes.find(x => x.id === ('chosen_lake_id' in b ? b.chosen_lake_id : b.lake_id)); return l ? lakeName(l) : t('lakeAnyCust'); };
+const chosenCoach = b => { const c = coachById('chosen_coach_id' in b ? b.chosen_coach_id : b.coach_id); if (c) return c.name;
+  const beg = Array.isArray(b.rider_groups) && b.rider_groups.length && b.rider_groups.every(g => (g.l || 0) <= 1); return t(beg ? 'coachClub' : 'noCoach'); };
+
 /* ---------- INCOMING ---------- */
 function wxFor(b) {
   const h = state.wx && state.wx.hourly[`${b.date}T${b.time}`];
@@ -150,7 +155,9 @@ function wxFor(b) {
 }
 function renderInbox() {
   const today = todayIso();
-  const fresh = merge(state.bookings.filter(b => b.status === 'new' && b.date >= today));
+  const since = Date.now() - 48 * 3600e3;
+  const fresh = merge(state.bookings.filter(b => b.status !== 'cancelled' && b.date >= today && b.user_id && b.created_at && new Date(b.created_at).getTime() >= since))
+    .sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)));
   $('#cntInbox').textContent = fresh.length || '';
   const box = $('#inbox');
   if (!fresh.length) box.innerHTML = `<p class="inbox-empty">${esc(t('inboxEmpty'))}</p>`;
@@ -167,6 +174,7 @@ function renderInbox() {
           <span><a href="tel:${esc(b.phone.replace(/\s/g, ''))}">${esc(b.phone)}</a>${wa ? ` · <a href="${esc(wa)}" target="_blank" rel="noopener">WhatsApp</a>` : ''}${b.email ? ` · <a href="mailto:${esc(b.email)}">${esc(b.email)}</a>` : ''}</span></div>
         <div class="ib-meta"><span>${esc(t('rider')(b.riders))}</span><span>${esc(b.rider_groups ? groupsText(b.rider_groups) : levelName(b.level))}</span>${equipText(b) ? `<span>🏄 ${esc(equipText(b))}</span>` : ''}${driverById(b.driver_id) ? `<span>🚤 ${esc(driverById(b.driver_id).name)}</span>` : ''}
           ${created ? `<span class="muted">${esc(t('received'))}: ${esc(fmt(iso(created), 'short'))} ${pad(created.getHours())}:${pad(created.getMinutes())}</span>` : ''}</div>
+        <div class="ib-chose">${esc(t('custChose'))}: 🌊 ${esc(chosenLake(b))} · 👤 ${esc(chosenCoach(b))}</div>
         <div class="ib-assign">${lakeSelect(b)}${coachSelect(b)}</div>
         ${b.notes ? `<p class="ib-notes">“${esc(b.notes)}”</p>` : ''}
         ${wxFor(b)}
@@ -175,8 +183,7 @@ function renderInbox() {
         <label><span>${esc(t('msgLabel'))}</span><textarea rows="2" maxlength="500" data-note="${b.id}" placeholder="${esc(t('msgPh'))}">${esc(state.notes[b.id] || '')}</textarea></label>
         <div class="quick">${['qBusy', 'qWeather', 'qOther'].map(k => `<button type="button" class="chip" data-quick="${k}" data-id="${b.id}">${esc(t(k))}</button>`).join('')}</div>
         <div class="ib-actions">
-          <button type="button" class="btn-small primary big" data-decide="confirm" data-id="${b.id}">✓ ${esc(t(b.payment_status === 'held' ? 'confirmCharge' : 'confirm'))}</button>
-          <button type="button" class="btn-small big" data-decide="reject" data-id="${b.id}">✕ ${esc(t('reject'))}</button>
+          <button type="button" class="btn-small big" data-decide="reject" data-id="${b.id}">✕ ${esc(t('cancelBk'))}</button>
         </div>
       </div>
     </article>`;
@@ -209,7 +216,7 @@ $('#inbox').addEventListener('click', async e => {
   if (q) { const ta = $(`[data-note="${q.dataset.id}"]`); ta.value = t(q.dataset.quick); state.notes[q.dataset.id] = ta.value; ta.focus(); return; }
   const btn = e.target.closest('[data-decide]'); if (!btn) return;
   const id = btn.dataset.id, note = (state.notes[id] || '').trim() || null;
-  if (btn.dataset.decide === 'reject' && !btn.dataset.sure) { btn.dataset.sure = 1; btn.textContent = '✕ ' + t('rejectQ'); btn.classList.add('danger'); return; }
+  if (btn.dataset.decide === 'reject' && !btn.dataset.sure) { btn.dataset.sure = 1; btn.textContent = '✕ ' + t('cancelQ'); btn.classList.add('danger'); return; }
   btn.closest('.ib').querySelectorAll('button,select').forEach(x => x.disabled = true);
   const now = new Date().toISOString();
   const body = btn.dataset.decide === 'confirm'
@@ -240,7 +247,7 @@ function renderKpis() {
   const [m0, m1] = monthBounds();
   const monthRows = active.filter(b => b.date >= iso(m0) && b.date <= iso(m1)), inMonth = uniq(monthRows);
   let cap = 0; for (let d = new Date(m0); d <= m1; d.setDate(d.getDate() + 1)) if (inSeason(d)) cap += CAP();
-  const fresh = uniq(state.bookings.filter(b => b.status === 'new' && b.date >= today));
+  const fresh = uniq(state.bookings.filter(b => b.status !== 'cancelled' && b.date >= today && b.user_id && b.created_at && Date.now() - new Date(b.created_at).getTime() < 48 * 3600e3));
   const expected = active.filter(b => b.date >= today && !b.paid && b.price > 0).reduce((s, b) => s + +b.price, 0);
   const vis = state.reviews.filter(r => !r.hidden), avg = vis.length ? (vis.reduce((s, r) => s + r.rating, 0) / vis.length).toFixed(1) : '—';
   const livePasses = state.passes.filter(p => p.status === 'active' && p.expires_at >= today).length;
@@ -701,8 +708,7 @@ function renderTable() {
   if (!rows.length) return $('#rows').innerHTML = `<tr><td colspan="9" class="empty">${esc(t('none'))}</td></tr>`;
   $('#rows').innerHTML = rows.map(b => {
     const p = state.profiles[b.user_id], k = statusKey(b), wa = waLink(phoneWa(b.phone)), o = offerById(b.offer_id), c = coachById(b.coach_id), bt = boatById(b.boat_id), acts = [];
-    if (b.status === 'new') acts.push(`<button class="btn-small primary" data-act="confirm" data-id="${b.id}">${esc(t(b.payment_status === 'held' ? 'confirmCharge' : 'confirm'))}</button>`, `<button class="btn-small" data-act="reject" data-id="${b.id}">${esc(t('reject'))}</button>`);
-    else if (b.status === 'confirmed') acts.push(`<button class="btn-small" data-act="cancel" data-id="${b.id}">${esc(t('cancel'))}</button>`);
+    if (b.status === 'new' || b.status === 'confirmed') acts.push(`<button class="btn-small" data-act="cancel" data-id="${b.id}">${esc(t('cancel'))}</button>`);
     else if (b.date >= todayIso()) acts.push(`<button class="btn-small" data-act="reopen" data-id="${b.id}">${esc(t('reopen'))}</button>`);
     if (b.status !== 'cancelled' && b.price > 0 && !b.paid) acts.push(`<button class="btn-small" data-act="paid" data-id="${b.id}">💵 ${esc(t('markPaid'))}</button>`);
     if (['confirmed', 'rejected'].includes(k) && b.phone) acts.push(`<a class="btn-small wa" href="${esc(replyLink(b))}" target="_blank" rel="noopener">WhatsApp</a>`);
