@@ -387,3 +387,5 @@ Object.assign(window.DICT.en, { kRevenue: 'Revenue', kRevenueSub: 'money receive
 Object.assign(window.DICT.ru, { kRevenue: 'Доход', kRevenueSub: 'получено', kHours: 'Забронировано часов', kOccSub: p => `загрузка ${p}%`, kBookings: 'Брони', kAvgSub: v => `в среднем ${v}`, kDue: 'К получению', kDueSub: n => `${n} предстоящих неоплаченных`,
   vsPrev: 'к прошлому месяцу', offSeason: 'не сезон', cRevenue: 'Доход по месяцам', cRevenueSub: 'Последние 6 месяцев · брони + абонементы', cNext14: 'Загрузка · следующие 14 дней', cNext14Sub: 'Часы в день · пунктир — максимум',
   cBySvc: 'По услугам · выбранный месяц', stValue: 'Сумма', noDataMonth: 'В этом месяце броней нет.' });
+Object.assign(window.DICT.ka, { accCoaches: 'მწვრთნელები' }); Object.assign(window.DICT.en, { accCoaches: 'Coaches' }); Object.assign(window.DICT.ru, { accCoaches: 'Тренеры' });
+if (!window.DICT.ru.flBoats) window.DICT.ru.flBoats = 'Катера';

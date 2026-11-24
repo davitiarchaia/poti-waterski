@@ -612,7 +612,7 @@ $('#coachCancel').addEventListener('click', () => { state.editCoach = null; fill
 $('#coachList').addEventListener('click', async e => {
   const b = e.target.closest('[data-cact]'); if (!b) return;
   const c = coachById(b.dataset.id); if (!c) return;
-  if (b.dataset.cact === 'edit') { state.editCoach = c.id; fillCoach(c); renderFleet(); cform.scrollIntoView({ behavior: 'smooth' }); return; }
+  if (b.dataset.cact === 'edit') { state.editCoach = c.id; fillCoach(c); renderFleet(); cform.classList.add('open'); cform.scrollIntoView({ behavior: 'smooth' }); return; }
   if (b.dataset.cact === 'del' && !b.dataset.sure) { b.dataset.sure = 1; b.textContent = t('delQ'); b.classList.add('danger'); return; }
   b.disabled = true;
   try { if (b.dataset.cact === 'toggle') await db(`coaches?id=eq.${c.id}`, { method: 'PATCH', body: { active: !c.active }, prefer: 'return=minimal' });
@@ -940,3 +940,12 @@ document.addEventListener('change', async e => {
 });
 
 })();
+
+/* "Coaches, boats & lakes": every block shows only its name with a small icon; a tap opens the whole block */
+document.querySelectorAll('.acc').forEach(p => {
+  const h = p.querySelector(':scope > h2'); if (!h) return;
+  h.classList.add('acc-head'); h.insertAdjacentHTML('afterbegin', '<i class="acc-ico" aria-hidden="true"></i>'); h.setAttribute('role', 'button'); h.tabIndex = 0; h.setAttribute('aria-expanded', 'false');
+  const toggle = () => { const o = p.classList.toggle('open'); h.setAttribute('aria-expanded', String(o)); };
+  h.addEventListener('click', toggle);
+  h.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } });
+});

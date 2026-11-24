@@ -12,9 +12,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Instrument+Sans:wght@400..700&family=Noto+Sans+Display:wght@400;600;700;800&family=Noto+Sans+Georgian:wght@400;600;700;900&display=swap" rel="stylesheet">
   <meta name="color-scheme" content="light dark">
-  <script src="theme.js?v=20261124v"></script>
-  <link rel="stylesheet" href="styles.css?v=20261124v">
-  <link rel="stylesheet" href="community.css?v=20261124v">
+  <script src="theme.js?v=20261124x"></script>
+  <link rel="stylesheet" href="styles.css?v=20261124x">
+  <link rel="stylesheet" href="community.css?v=20261124x">
 <script>document.documentElement.classList.add("boot");setTimeout(function(){document.documentElement.classList.remove("boot")},3000)</script>
 <style>html.boot body{visibility:hidden}</style>
 </head>
@@ -194,20 +194,23 @@
     <div class="ps-list" id="psDone"></div>
   </section>
   <!-- BOATS & COACHES -->
-  <section class="view" data-view="fleet" data-group="team" role="tabpanel" hidden>
-    <div class="panel" id="lakesPanel">
+  <section class="view acc-view" data-view="fleet" data-group="team" role="tabpanel" hidden>
+    <div class="panel acc" data-acc="lakes" id="lakesPanel">
       <h2 data-i18n="tabLakes"></h2>
       <p class="muted view-hint" data-i18n="lkHint"></p>
       <div class="lake-admin" id="lakeAdmin"></div>
     </div>
-    <div class="panels even mt">
-      <div class="panel">
-        <h2 data-i18n="flBoats"></h2>
+    <div class="panel acc" data-acc="boats">
+      <h2 data-i18n="flBoats"></h2>
         <p class="muted view-hint" data-i18n="flBoatsHint"></p>
         <ul class="boat-list" id="boatList"></ul>
         <form class="inline-add" id="boatForm"><input name="name" maxlength="60" data-i18n-ph="flBoatPh" required><button class="btn-small primary" type="submit" data-i18n="add"></button></form>
-      </div>
-      <form class="panel offer-form static" id="coachForm" novalidate>
+    </div>
+    <div class="panel acc" data-acc="coaches">
+      <h2 data-i18n="accCoaches"></h2>
+      <div class="offer-list" id="coachList"></div>
+    </div>
+    <form class="panel offer-form static acc" data-acc="coachnew" id="coachForm" novalidate>
         <h2 id="coachFormTitle" data-i18n="coNew"></h2>
         <label><span data-i18n="coName"></span><input name="name" maxlength="60" required></label>
         <label><span data-i18n="coBio"></span><input name="bio" maxlength="300" data-i18n-ph="coBioPh"></label>
@@ -219,8 +222,7 @@
         <p class="form-error" id="coachError" role="alert"></p>
         <div class="form-actions"><button class="btn" type="submit" data-i18n="save"></button><button class="btn-link" type="button" id="coachCancel" data-i18n="cancelEdit" hidden></button></div>
       </form>
-    </div>
-    <form class="panel mt stg-form" id="settingsForm" novalidate>
+    <form class="panel stg-form acc" data-acc="settings" id="settingsForm" novalidate>
       <h2 data-i18n="stgTitle"></h2>
       <div class="stg-row">
         <label><span data-i18n="stgBegFee"></span><input name="beginner_coach_fee" type="number" min="0" step="0.5" inputmode="decimal" placeholder="0"></label>
@@ -229,7 +231,6 @@
       </div>
       <p class="muted view-hint" data-i18n="stgHint"></p>
     </form>
-    <div class="offer-list mt" id="coachList"></div>
   </section>
   <section class="view" data-view="staff" data-group="staff" role="tabpanel" hidden>
     <div class="panel">
@@ -272,9 +273,9 @@
     </div>
   </section>
   <!-- SCHEDULE: closed days / hours -->
-  <section class="view" data-view="schedule" data-group="team" role="tabpanel" hidden>
+  <section class="view acc-view" data-view="schedule" data-group="team" role="tabpanel" hidden>
     <div class="offers-layout">
-      <form class="panel offer-form" id="closeForm" novalidate>
+      <form class="panel offer-form acc" data-acc="close" id="closeForm" novalidate>
         <h2 data-i18n="scTitle"></h2>
         <p class="muted view-hint" data-i18n="scHint"></p>
         <div class="row">
@@ -287,8 +288,8 @@
         <p class="form-error" id="closeError" role="alert"></p>
         <button class="btn" type="submit" data-i18n="scClose"></button>
       </form>
-      <div>
-        <h2 class="sub-h first" data-i18n="scList"></h2>
+      <div class="panel acc" data-acc="closed">
+        <h2 data-i18n="scList"></h2>
         <div class="ps-list" id="closeList"></div>
       </div>
     </div>
@@ -399,18 +400,19 @@
   </form>
 </dialog>
 
-<script src="config.js?v=20261124v"></script>
-<script src="demo.js?v=20261124v" defer></script>
-<script src="i18n.js?v=20261124v"></script>
-<script src="community-i18n.js?v=20261124v"></script>
-<script src="lib.js?v=20261124v"></script>
-<script src="auth-ui.js?v=20261124v"></script>
-<script src="owner.js?v=20261124v"></script>
-<script src="community.js?v=20261124v"></script>
-<script src="owner-community.js?v=20261124v"></script>
-<script src="owner-staff.js?v=20261124v"></script>
-<script src="owner-gear.js?v=20261124v"></script>
-<script src="owner-employees.js?v=20261124v"></script>
+<script src="config.js?v=20261124x"></script>
+<script src="demo.js?v=20261124x" defer></script>
+<script src="i18n.js?v=20261124x"></script>
+<script src="community-i18n.js?v=20261124x"></script>
+<script src="lib.js?v=20261124x"></script>
+<script src="auth-ui.js?v=20261124x"></script>
+<script src="owner.js?v=20261124x"></script>
+<script src="community.js?v=20261124x"></script>
+<script src="owner-community.js?v=20261124x"></script>
+<script src="owner-staff.js?v=20261124x"></script>
+<script src="owner-fold.js?v=20261124x"></script>
+<script src="owner-gear.js?v=20261124x"></script>
+<script src="owner-employees.js?v=20261124x"></script>
 <script>document.addEventListener("DOMContentLoaded",function(){requestAnimationFrame(function(){document.documentElement.classList.remove("boot")})})</script>
 </body>
 </html>
