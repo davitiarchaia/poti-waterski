@@ -73,7 +73,9 @@ function show(v) {
   $$('.view').forEach(s => s.hidden = s.dataset.group !== v);
   history.replaceState(null, '', '#' + v);
 }
-$('.o-tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (b) show(b.dataset.view); });
+$('.o-tabs').addEventListener('click', e => { const b = e.target.closest('[data-view]'); if (!b) return; show(b.dataset.view);
+  // phones: the cards take room — jump to the chosen section
+  if (matchMedia('(max-width:700px)').matches) { const v = document.querySelector(`.view[data-group="${b.dataset.view}"]:not([hidden])`); if (v) setTimeout(() => v.scrollIntoView({ behavior: 'smooth', block: 'start' }), 30); } });
 
 /* ---------- data ---------- */
 async function load(auto) {
