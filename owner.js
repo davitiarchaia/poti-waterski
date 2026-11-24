@@ -759,6 +759,8 @@ $('#refresh').addEventListener('click', load);
 
 /* ---------- SCHEDULE: close days / hours ---------- */
 const cform2 = $('#closeForm');
+// "Mark a day off" stays folded under the lakes; a tap opens it
+$('#dayoffBtn') && $('#dayoffBtn').addEventListener('click', e => { const b = e.currentTarget, box = $('#dayoffBox'), on = box.hidden; box.hidden = !on; b.setAttribute('aria-expanded', String(on)); b.classList.toggle('open', on); });
 function renderSchedule() {
   const sel = $('#closeTime'), v = sel.value;
   sel.innerHTML = `<option value="">${esc(t('scWholeDay'))}</option>` + hours().map(h => `<option value="${h}">${h}–${addQ(h, 4)}</option>`).join(''); sel.value = v;

@@ -1773,3 +1773,17 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 .dayoff .dayoff-form{padding:0;border:0;background:none;box-shadow:none}
 .dayoff .sub-h{font-size:1rem;margin:.2rem 0 .5rem}
 .dayoff #closeList{margin-top:.3rem}.dayoff .dayoff-form+.sub-h{margin-top:1.2rem}
+/* forms inside the owner's blocks never stick while scrolling (they were sliding over the text) */
+.acc-view .offer-form,.fixed-open .offer-form,.coach-drop,.dayoff-form{position:static!important;top:auto!important}
+/* "Mark a day off" — folded row under the lakes */
+.dayoff-toggle{display:flex;align-items:center;gap:.7rem;width:100%;margin-top:1rem;padding:.8rem 1rem;border:1px dashed var(--line);border-radius:14px;background:var(--bg);color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.dayoff-toggle:hover{border-color:var(--lake)}
+.dayoff-toggle b{flex:1;font-size:1rem}
+.dt-ic{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:10px;background:color-mix(in srgb,var(--lake) 12%,transparent)}
+.dayoff-toggle.open{border-style:solid;border-color:var(--lake)}
+.dayoff-toggle.open .fh-chev{transform:rotate(180deg)}
+#dayoffBox{margin-top:.8rem;padding-top:0;border-top:0}
+#dayoffBox[hidden]{display:none!important}
+/* sticky side forms only where they sit beside a list (wide screens); elsewhere they scrolled over other text */
+.offer-form{position:static}
+@media (min-width:1000px){ .offers-layout>.offer-form:not(.dayoff-form){position:sticky;top:72px} }
