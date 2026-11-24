@@ -392,13 +392,15 @@ function renderPrices() {
         <p class="muted small">${esc(t('svUsed')(used(r.ride)))}</p>
         <button type="button" class="btn-small" data-svdel="${r.ride}">${esc(t('del'))}</button>
       </details>
+      <div class="svc-save"><span class="form-error" data-sverr="${esc(r.ride)}" role="alert"></span><button type="button" class="btn-small primary" data-svsave="${esc(r.ride)}">${esc(t('save'))}</button></div>
     </div>`).join('');
 }
 const NUM_KEYS = ['price'];
 const svVal = (id, k) => { const el = $(`[data-sv="${id}"][data-k="${k}"]`); if (!el) return undefined; if (k === 'active') return el.checked; if (NUM_KEYS.includes(k)) return el.value === '' ? null : Math.max(0, +el.value); return el.value.trim() || null; };
 const SV_KEYS = ['name_ka', 'name_en', 'name_ru', 'info_ka', 'info_en', 'info_ru', 'tag_ka', 'tag_en', 'tag_ru', 'price', 'active'];
-$('#savePrices').addEventListener('click', async e => {
-  const btn = e.target; btn.disabled = true; $('#priceError').textContent = '';
+// every service card has its own "Save" button at its end; it saves all changed fields (so nothing typed elsewhere is lost on reload)
+async function savePrices(btn, errBox) {
+  btn.disabled = true; errBox.textContent = ''; $('#priceError').textContent = '';
   try {
     if (window.ownerGearSave) await window.ownerGearSave();
     for (const r of state.prices.filter(r => !r.archived)) {
@@ -409,11 +411,14 @@ $('#savePrices').addEventListener('click', async e => {
       body.updated_at = new Date().toISOString();
       await db(`ride_prices?ride=eq.${encodeURIComponent(r.ride)}`, { method: 'PATCH', body, prefer: 'return=minimal' });
     }
-    btn.textContent = t('saved'); setTimeout(() => btn.textContent = t('save'), 1500);
-  } catch (x) { $('#priceError').textContent = x.code === 'name' ? t('svErrName') : t('errNet'); }
+    state.dirty = false; toastOk(t('saved'));
+  } catch (x) { errBox.textContent = x.code === 'name' ? t('svErrName') : t('errNet'); btn.disabled = false; return; }
   btn.disabled = false; load();
-});
+}
+$('#savePrices') && $('#savePrices').addEventListener('click', e => savePrices(e.target, $('#priceError')));
 $('#priceRows').addEventListener('click', async e => {
+  const sv = e.target.closest('[data-svsave]');
+  if (sv) return savePrices(sv, sv.parentElement.querySelector('[data-sverr]'));
   const m = e.target.closest('[data-svmove]'), d = e.target.closest('[data-svdel]');
   if (m) {
     const rows = state.prices.filter(r => !r.archived).sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100) || String(a.created_at || '').localeCompare(String(b.created_at || '')));

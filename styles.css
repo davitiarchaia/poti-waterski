@@ -1661,3 +1661,7 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 .bk-gear legend{font-size:.85rem;font-weight:700;padding:0 .3rem}
 .bk-gear-row{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin:.35rem 0 0}
 .bk-gear-row input{width:74px;flex:none}
+/* services: a Save button at the end of every service card */
+.svc-save{display:flex;align-items:center;justify-content:flex-end;gap:.8rem;margin-top:.8rem;padding-top:.8rem;border-top:1px dashed var(--line)}
+.svc-save .form-error{margin:0;flex:1}
+.svc-save .btn-small{min-width:120px}
