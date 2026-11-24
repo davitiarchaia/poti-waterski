@@ -1,2 +1,6 @@
 User-agent: *
-Disallow: /
+Allow: /
+Disallow: /owner.html
+Disallow: /staff.html
+
+Sitemap: https://davitiarchaia.github.io/poti-waterski/sitemap.xml
