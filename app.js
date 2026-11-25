@@ -105,7 +105,8 @@ function renderRides() {
 /* the equipment dropdown opens directly under the chosen service card */
 function placeEquip() {
   const box = $('#equipBox'), sel = $('#rides input[name=ride]:checked');
-  if (sel && state.picked) sel.closest('.ride').after(box); else if (box.parentNode === $('#rides')) $('#rides').after(box);
+  if (sel && state.picked) { const card = sel.closest('.ride'); if (card.nextElementSibling !== box) card.after(box); }  // move only when needed — moving restarts the drop-in animation (blink)
+  else if (box.parentNode === $('#rides')) $('#rides').after(box);
 }
 $('#rides').addEventListener('change', e => {
   if (e.target.name !== 'ride') return;
@@ -148,7 +149,14 @@ $('#equipBox').addEventListener('change', e => {
 $('#equipBox').addEventListener('click', e => {
   const b = e.target.closest('[data-eqid]'); if (!b) return;
   const id = b.dataset.eqid; state.eqSel[id] = Math.min(12, Math.max(0, (state.eqSel[id] || 0) + +b.dataset.d));
-  renderEquip(); update();
+  // update the counts in place — no re-render, so nothing flickers and focus stays on the button
+  const n = state.eqSel[id], li = b.closest('.eq-item');
+  li.classList.toggle('on', n > 0); li.querySelector('output').textContent = n;
+  li.querySelector('[data-d="-1"]').disabled = !n; li.querySelector('[data-d="1"]').disabled = n >= 12;
+  const box = $('#equipBox'), tot = box.querySelector('.eq-total,.eq-hint');
+  const html = equipSets() ? `<p class="eq-total">${esc(t('eqTotal'))}: <b>${esc(equipHourly() > 0 ? `₾${money(equipHourly())} / ${t('perH')}` : t('eqFree'))}</b></p>` : `<p class="eq-hint">${esc(t('eqPickHint'))}</p>`;
+  if (tot) tot.outerHTML = html; else box.insertAdjacentHTML('beforeend', html);
+  update();
 });
 
 /* ---------- offers ---------- */
