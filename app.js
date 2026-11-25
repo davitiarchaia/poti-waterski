@@ -7,7 +7,7 @@ const t = k => i18n.t(k);
 i18n.init(window.DICT, ['ka', 'en', 'ru']);
 
 const state = {
-  ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 1, riders: 1, load: {}, lakeLoad: {}, boatLoad: {}, boat: null, wx: null, mine: [], myPasses: [], myReviews: new Set(),
+  ride: RIDES[0], picked: false, month: null, day: null, time: null, dur: 0, riders: 1, load: {}, lakeLoad: {}, boatLoad: {}, boat: null, wx: null, mine: [], myPasses: [], myReviews: new Set(),
   busyMonth: false, offers: [], offer: null, prices: {}, boats: 1, allBoats: [], coaches: [], coach: null, plans: [], pass: null, reviews: [],
   lakes: [], photos: [], lake: null, settings: { beginner_coach_fee: 0, cancel_hours: C.cancelHours ?? 1, late_cancel_fee_pct: 10, min_lead_minutes: 60 }, payMethod: 'card', groups: [{ l: 1, n: 1 }], equip: 'own', gear: [], eqSel: {},
 };
@@ -282,6 +282,7 @@ function renderSlots() {
       <span>${esc(t('wxWind'))} ${Math.round(dwx.wind)} ${esc(t('kmh'))}</span><span>${esc(t('wxRain'))} ${dwx.rain ?? 0}%</span><span class="score ${sc}">${esc(t('ride_' + sc))}</span>`;
   }
   const open = quarters(state.day);
+  if (!state.dur) { state.time = null; box.innerHTML = `<p class="hint">${esc(t('pickDurFirst'))}</p>`; return; }   // no length chosen yet: no start times
   if (state.time && !startOk(state.day, state.time, state.dur, open)) state.time = null;
   if (!open.length || open.every(q => slotFull(state.day, q))) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>`; return; }
   const sel = state.time ? rangeOf(state.time) : [];
@@ -348,14 +349,19 @@ $('#lakeOpts').addEventListener('click', e => {
 });
 // duration: 15 minutes … 10 hours
 const DUR_QUICK = [1, 2, 4, 6, 8, 12];
+// each rider needs at least 15 minutes: 2 riders → 30 min minimum, 3 → 45 min …
+const minQ = () => Math.max(1, state.riders || 1);
+function fitDur() { if (state.dur && state.dur < minQ()) { state.dur = Math.min(MAX_Q, minQ()); return true; } return false; }
 function renderDur() {
-  $('#dur').innerHTML = `<div class="stepper dur-step"><button type="button" data-dd="-1" aria-label="−15" ${state.dur <= 1 ? 'disabled' : ''}>−</button>
-      <output aria-live="polite">${esc(durText(state.dur))}</output><button type="button" data-dd="1" aria-label="+15" ${state.dur >= MAX_Q ? 'disabled' : ''}>+</button></div>
+  fitDur(); const m = minQ();
+  $('#dur').innerHTML = `<div class="stepper dur-step"><button type="button" data-dd="-1" aria-label="−15" ${state.dur <= m ? 'disabled' : ''}>−</button>
+      <output aria-live="polite"${state.dur ? '' : ' class="dur-none"'}>${state.dur ? esc(durText(state.dur)) : '–'}</output><button type="button" data-dd="1" aria-label="+15" ${state.dur >= MAX_Q ? 'disabled' : ''}>+</button></div>
 `;
 }
 $('#dur').addEventListener('click', e => {
   const b = e.target.closest('[data-dd],[data-dq]'); if (!b) return;
-  state.dur = b.dataset.dq ? +b.dataset.dq : Math.min(MAX_Q, Math.max(1, state.dur + +b.dataset.dd));
+  const m = minQ();
+  state.dur = b.dataset.dq ? Math.max(m, +b.dataset.dq) : !state.dur ? (+b.dataset.dd > 0 ? Math.min(MAX_Q, m) : 0) : Math.min(MAX_Q, Math.max(m, state.dur + +b.dataset.dd));
   if (state.coach && coachBusy(state.coach)) { state.coach = null; state.coachPicked = false; }
   renderDur(); renderCalendar(); renderSlots(); renderCoaches(); renderPassUse(); update();
 });
@@ -430,13 +436,14 @@ $('#rgroups').addEventListener('click', e => {
   if (n) { const g = state.groups[+n.dataset.i]; g.n = Math.max(1, Math.min(MAX_R - (ridersTotal() - g.n), g.n + +n.dataset.gn)); }
   else if (x) state.groups.splice(+x.dataset.gx, 1);
   else return;
-  renderGroups(); renderEquip(); update();
+  renderGroups(); renderEquip(); ridersChanged(); update();
 });
 $('#addRider').addEventListener('click', () => {
   if (ridersTotal() >= MAX_R) return;
   const used = state.groups.map(g => g.l), l = [0, 1, 2, 3].find(k => !used.includes(k)) ?? 0;
-  state.groups.push({ l, n: 1 }); renderGroups(); renderEquip(); update();
+  state.groups.push({ l, n: 1 }); renderGroups(); renderEquip(); ridersChanged(); update();
 });
+function ridersChanged() { fitDur(); renderDur(); renderCalendar(); renderSlots(); renderCoaches(); renderPassUse(); }
 const groupsText = (gr, sep = ', ') => (gr || []).map(g => `${g.n} × ${t('levels')[g.l] || ''}`).join(sep);
 
 /* ---------- passes the customer owns ---------- */
@@ -508,6 +515,7 @@ function askConfirm() {
   if (!state.picked) return submit();
   if (!state.groups.length) return err.textContent = t('errRiders');
   if (!state.day) return err.textContent = t('errDay');
+  if (!state.dur) return err.textContent = t('errDur');
   if (!state.time) return err.textContent = t('errTime');
   if (!$('#agree').checked) { $('#agree').focus(); return err.textContent = t('errAgree'); }
   if (auth.session) {
@@ -524,6 +532,7 @@ async function submit() {
   const err = $('#formError');
   if (!state.picked) { document.querySelector('#rides').scrollIntoView({ block: 'center', behavior: 'smooth' }); return err.textContent = t('errRide'); }
   if (!state.day) return err.textContent = t('errDay');
+  if (!state.dur) return err.textContent = t('errDur');
   if (!state.time) return err.textContent = t('errTime');
   if (state.offer && !offerOk(state.offer, state.day)) return err.textContent = t('errOfferDate');
   if (!$('#agree').checked) { $('#agree').focus(); return err.textContent = t('errAgree'); }
@@ -602,7 +611,7 @@ $('#payBtn').addEventListener('click', e => startPay('booking', e.target.dataset
 $('#again').addEventListener('click', () => {
   const keep = { name: form.name.value, phone: form.phone.value };
   form.reset(); form.name.value = keep.name; form.phone.value = keep.phone;
-  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 1, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, coachPicked: false, boat: null, pass: null }); renderDur();
+  Object.assign(state, { ride: RIDES[0], day: null, time: null, dur: 0, lake: null, riders: 1, groups: [{ l: 1, n: 1 }], equip: 'own', eqSel: {}, last: null, offer: null, coach: null, coachPicked: false, boat: null, pass: null }); renderDur();
   prefill(ui.state.profile); renderGroups(); renderRides(); renderEquip(); renderOffers(); renderCoaches(); renderPassUse(); renderCalendar(); renderSlots(); update();
   $('#done').hidden = true; form.hidden = false;
 });
@@ -894,7 +903,7 @@ try {
   if (s) {
     const r = RIDES.find(x => x.id === s.ride); if (r) { state.ride = r; state.picked = !!s.picked; }
     if (Array.isArray(s.groups)) { state.groups = s.groups; state.riders = s.groups.reduce((n, g) => n + g.n, 0); }
-    state.dur = Math.min(MAX_Q, Math.max(1, +s.dur || 1)); state.lake = s.lake || null; state.equip = s.equip === 'rent' ? 'rent' : 'own'; state.eqSel = s.eqSel || {}; state.coach = s.coach || null; state.coachPicked = !!s.coachPicked;
+    state.dur = Math.min(MAX_Q, Math.max(0, +s.dur || 0)); state.lake = s.lake || null; state.equip = s.equip === 'rent' ? 'rent' : 'own'; state.eqSel = s.eqSel || {}; state.coach = s.coach || null; state.coachPicked = !!s.coachPicked;
     state.payMethod = s.payMethod || 'card';
     const pm = document.querySelector(`input[name=paym][value="${state.payMethod}"]`); if (pm) pm.checked = true;
     if (s.day && s.day >= todayIso()) { state.day = s.day; state.time = s.time || null; }

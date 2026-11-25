@@ -1787,3 +1787,6 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 /* sticky side forms only where they sit beside a list (wide screens); elsewhere they scrolled over other text */
 .offer-form{position:static}
 @media (min-width:1000px){ .offers-layout>.offer-form:not(.dayoff-form){position:sticky;top:72px} }
+/* the month calendar fits the screen together with the step bar — day cells get shorter on wide screens instead of square */
+@media (min-width:700px){.cal .cd{aspect-ratio:auto;height:clamp(40px,calc((100svh - 440px)/6),64px);min-height:0}.cal{padding-block:.7rem}.cal-head{margin-bottom:.3rem}}
+.dur-step output.dur-none{color:var(--muted);font-weight:700;min-width:4ch;text-align:center}
