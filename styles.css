@@ -1803,3 +1803,9 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 .leg-x{flex:none;width:34px;border:0;background:none;color:var(--muted);font-size:1.2rem;cursor:pointer;border-radius:0 14px 14px 0}
 .leg-x:hover{color:var(--full)}
 .leg-riders{display:flex;align-items:center;justify-content:space-between;gap:.75rem;font-weight:600;flex-wrap:wrap}
+.sel-bar.multi .sel-leg{flex-basis:100%;display:flex;flex-wrap:wrap;align-items:center;gap:.3rem 1.1rem;padding:.55rem .7rem;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+.sel-bar.multi .sel-leg.on{border-color:var(--sun)}
+.sel-leg>span{display:flex;flex-direction:column;font-weight:600;line-height:1.2}
+.sel-leg>span:first-child{min-width:4.5rem;font-weight:800}
+.sel-leg>span b{font-weight:800}
+.sel-leg .sel-miss{color:var(--few);font-weight:600}

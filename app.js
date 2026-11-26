@@ -282,7 +282,7 @@ function renderSlots() {
       <span>${esc(t('wxWind'))} ${Math.round(dwx.wind)} ${esc(t('kmh'))}</span><span>${esc(t('wxRain'))} ${dwx.rain ?? 0}%</span><span class="score ${sc}">${esc(t('ride_' + sc))}</span>`;
   }
   const open = quarters(state.day);
-  if (!state.dur) { state.time = null; box.innerHTML = `<p class="hint">${esc(t('pickDurFirst'))}</p>`; return; }   // no length chosen yet: no start times
+  if (!state.dur) { state.time = null; box.innerHTML = `<p class="hint">${esc(t('pickDurFirst'))}</p>` + (multi() ? selBar() : ''); return; }   // no length chosen yet: no start times
   if (state.time && !startOk(state.day, state.time, state.dur, open)) state.time = null;
   if (!open.length || open.every(q => slotFull(state.day, q))) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>`; return; }
   const sel = state.time ? rangeOf(state.time) : [];
@@ -302,9 +302,20 @@ function renderSlots() {
     const side = allFull ? `<small class="sb is-full">${ic.ban} ${esc(t('fullLbl'))}</small>` : '';
     return `<div class="hrow${allFull ? ' is-full' : ''}"><span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>
       <span class="qs">${chips}</span>${side}</div>`;
-  }).join('') + (state.time ? `<div class="sel-bar"><b>${esc(t('yourSel'))}</b>
-      <span>${esc(fmt(state.day, 'dm'))}</span><span>${esc(state.lake ? lakeName(state.lakes.find(l => l.id === state.lake)) : t('lakeAny'))}</span>
-      <span><b>${esc(state.time)} – ${esc(addQ(state.time, state.dur))}</b><small>${esc(durText(state.dur))}</small></span><span>${esc(t('rider')(state.riders))}</span></div>` : '');
+  }).join('') + selBar();
+}
+// "Your selection": one line per lake when both lakes are booked
+function selBar() {
+  const line = (lake, time, dur, riders) => `<span>${esc(lake)}</span>${time
+      ? `<span><b>${esc(time)} – ${esc(addQ(time, dur))}</b><small>${esc(durText(dur))}</small></span>`
+      : `<span class="sel-miss">${esc(dur ? t('pickTime') : t('errDur'))}</span>`}<span>${esc(t('rider')(riders))}</span>`;
+  if (multi()) {
+    saveLeg();
+    return `<div class="sel-bar multi"><b>${esc(t('yourSel'))}</b><span>${esc(fmt(state.day, 'dm'))}</span>
+      ${state.legs.map((L, i) => `<div class="sel-leg${i === state.leg ? ' on' : ''}">${line(legLake(L), L.time, L.dur, L.riders)}</div>`).join('')}</div>`;
+  }
+  return state.time ? `<div class="sel-bar"><b>${esc(t('yourSel'))}</b><span>${esc(fmt(state.day, 'dm'))}</span>
+      ${line(state.lake ? lakeName(state.lakes.find(l => l.id === state.lake)) : t('lakeAny'), state.time, state.dur, state.riders)}</div>` : '';
 }
 $('#slots').addEventListener('click', e => {
   const b = e.target.closest('.q'); if (!b || b.disabled) return;
