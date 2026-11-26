@@ -1561,7 +1561,7 @@ header.top .top-right{display:flex;align-items:center;gap:.6rem;position:relativ
 .visual .visual-text{z-index:1}
 /* desktop before "Book now": text left, big logo right */
 @media (min-width:901px){
-  html.gate .visual img.hero-bg{inset:17% 11.875% 18% auto!important;width:26.25%!important;margin-top:3.94%!important;height:auto!important;padding:0!important;transform:none!important;object-fit:contain;object-position:center}
+  html.gate .visual img.hero-bg{inset:var(--logo-top,22%) 11.875% auto auto!important;width:26.25%!important;margin-top:0!important;height:auto!important;padding:0!important;transform:none!important;object-fit:contain;object-position:center}
   html.gate .visual .visual-text h1{font-size:clamp(3.4rem,5.4vw,6.2rem)!important;line-height:1.02}
   html.gate .visual .eyebrow{font-size:1rem!important;padding:.55rem 1.15rem!important}
   html.gate .visual .visual-text{justify-content:center;max-width:56%;padding-left:clamp(32px,6vw,110px);padding-top:0}

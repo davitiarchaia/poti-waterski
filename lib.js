@@ -236,7 +236,10 @@ window.PW = { applyServices, equipName, equipInfo, equipText, token, auth, db, r
 // home screen on phones: the hero is exactly the visible height under the header (address bars, banners and notches differ per phone)
 (function () {
   const fit = () => { const v = document.querySelector('.visual'); if (!v) return; const top = v.getBoundingClientRect().top + window.scrollY;
-    document.documentElement.style.setProperty('--hero-h', Math.max(240, window.innerHeight - top) + 'px'); };
+    document.documentElement.style.setProperty('--hero-h', Math.max(240, window.innerHeight - top) + 'px');
+    // desktop home: the logo's top lines up with the top of the headline ("Stand on the water"), never higher
+    const img = v.querySelector('img.hero-bg'), h1 = v.querySelector('h1'), box = img && img.offsetParent;
+    if (img && h1 && box) document.documentElement.style.setProperty('--logo-top', Math.round(h1.getBoundingClientRect().top - box.getBoundingClientRect().top + 6) + 'px'); };
   addEventListener('DOMContentLoaded', fit); addEventListener('load', fit); addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 300));
   setTimeout(fit, 600);
 })();
