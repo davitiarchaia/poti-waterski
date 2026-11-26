@@ -1561,7 +1561,7 @@ header.top .top-right{display:flex;align-items:center;gap:.6rem;position:relativ
 .visual .visual-text{z-index:1}
 /* desktop before "Book now": text left, big logo right */
 @media (min-width:901px){
-  html.gate .visual img.hero-bg{inset:17% 7.5% 18% auto!important;width:35%!important;height:auto!important;padding:0!important;transform:none!important;object-fit:contain;object-position:center}
+  html.gate .visual img.hero-bg{inset:17% 11.875% 18% auto!important;width:26.25%!important;margin-top:3.94%!important;height:auto!important;padding:0!important;transform:none!important;object-fit:contain;object-position:center}
   html.gate .visual .visual-text h1{font-size:clamp(3.4rem,5.4vw,6.2rem)!important;line-height:1.02}
   html.gate .visual .eyebrow{font-size:1rem!important;padding:.55rem 1.15rem!important}
   html.gate .visual .visual-text{justify-content:center;max-width:56%;padding-left:clamp(32px,6vw,110px);padding-top:0}
@@ -1607,7 +1607,7 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 /* ===== phones/tablets (home screen): everything fits one screen on every phone; the logo takes what is left, nothing overlaps ===== */
 @media (max-width:900px){
   html.gate .visual{display:flex!important;flex-direction:column;height:var(--hero-h,calc(100svh - 110px))!important;min-height:0!important;max-height:none}
-  html.gate .visual img.hero-bg{position:relative!important;inset:auto!important;transform:none!important;flex:1 1 0;min-height:0;width:100%!important;height:auto!important;max-height:none;padding:min(3svh,22px) 12% min(1.5svh,10px)!important;box-sizing:border-box;object-fit:contain!important;object-position:50% 50%!important}
+  html.gate .visual img.hero-bg{position:relative!important;inset:auto!important;transform:none!important;flex:1 1 0;min-height:0;width:100%!important;height:auto!important;max-height:none;padding:min(3svh,22px) 21.5% min(1.5svh,10px)!important;box-sizing:border-box;object-fit:contain!important;object-position:50% 50%!important}
   html.gate .visual .visual-text{position:relative!important;inset:auto!important;flex:0 0 auto;min-height:0!important;height:auto;padding:0 20px min(3svh,24px)!important;justify-content:flex-start!important;transform:none!important;overflow:visible}
   html.gate .visual .eyebrow{font-size:min(.9rem,1.9svh)!important;padding:min(.5rem,.9svh) .9rem!important;margin:0 0 min(1.6rem,2.6svh)!important}
   html.gate .visual .visual-text h1{font-size:min(11.5vw,6.4svh)!important;line-height:1.05;margin:0 0 min(.8rem,1.4svh)!important}
