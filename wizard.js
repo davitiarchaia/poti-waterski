@@ -31,12 +31,12 @@ function paint(scroll) {
 }
 const sum = () => { const el = document.querySelector('#sumTotal'); $('#wizSum').textContent = el ? el.textContent : ''; };
 // what must be chosen before leaving a step
-function blocker() {
+function blocker(jump) {   // jump: open the lake that still needs a choice (only when Next is pressed)
   const f = steps()[i]; if (!f) return '';
   if (f.querySelector('#rides') && !S().picked) return t('errRide');
   if (f.querySelector('#rgroups') && !(S().groups || []).length) return t('errRiders');
   if (f.querySelector('#calGrid') && !S().day) return t('errDay');
-  if (f.querySelector('#slots') && S().legsMissing) { const m = S().legsMissing(); if (m) { S().showLeg(m.i); return m.msg; } }
+  if (f.querySelector('#slots') && S().legsMissing) { const m = S().legsMissing(); if (m) { if (jump) S().showLeg(m.i); return m.msg; } }
   if (f.querySelector('#dur') && !S().dur) return t('errDur');
   if (f.querySelector('#slots') && !S().time) return t('errTime');
   return '';
@@ -58,7 +58,7 @@ function warn(id) {
   const dlg = $(id); if (dlg && dlg.showModal) setTimeout(() => dlg.showModal(), 350); else go(1, true);
 }
 function go(d, force) {
-  if (d > 0) { const b = blocker(); if (b) return $('#wizErr').textContent = b; }
+  if (d > 0) { const b = blocker(true); if (b) return $('#wizErr').textContent = b; }
   if (d > 0 && !force && noGear()) return warnNoGear();
   if (d > 0 && !force && noCoach()) return warn('#coachDlg');
   i += d; paint(true);
