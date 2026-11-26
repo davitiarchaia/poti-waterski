@@ -1835,3 +1835,6 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
   .tl-lake{font-size:.68rem;letter-spacing:.02em}
   .tl-lake svg{display:none}
 }
+button.tl-lake{border:0;width:100%;font-family:inherit;cursor:pointer;transition:filter .15s,transform .1s}
+button.tl-lake:hover{filter:brightness(1.12)}button.tl-lake:active{transform:scale(.98)}
+#durLake{color:var(--head)}

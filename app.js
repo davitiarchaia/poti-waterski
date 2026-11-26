@@ -322,7 +322,7 @@ function renderTwoLakes(box, open) {
   const hoursCol = `<div class="tl-col tl-hours"><span class="tl-top"></span>${hours.map(h => { const hw = state.wx && state.wx.hourly[`${state.day}T${h}`];
     return `<span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>`; }).join('')}</div>`;
   const lakeCol = (i, k) => { const L = state.legs[i];
-    return `<div class="tl-col tl-lake-col lk${k}${i === state.leg ? ' on' : ''}"><span class="tl-top tl-lake"><svg viewBox="0 0 32 12" aria-hidden="true"><path d="M2 8c4.5-4 8.5 4 13 0s8.5-4 13 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>${esc(legLake(L))}</span>
+    return `<div class="tl-col tl-lake-col lk${k}${i === state.leg ? ' on' : ''}"><button type="button" class="tl-top tl-lake" data-legopen="${i}" aria-pressed="${i === state.leg}"><svg viewBox="0 0 32 12" aria-hidden="true"><path d="M2 8c4.5-4 8.5 4 13 0s8.5-4 13 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>${esc(legLake(L))}</button>
       ${hours.map(h => `<span class="qs">${open.filter(q => hourOf(q) === h).map(q => { const c = grid[k][q];
         return `<button type="button" class="q${c.rng ? ' in-range' : ''}${c.full ? ' full' : !c.ok ? ' no-fit' : ''}" role="radio" aria-checked="${c.on}" data-leg="${i}" data-h="${q}" ${c.ok ? '' : 'disabled'}
           aria-label="${esc(legLake(L))} ${q}${c.full ? ' — ' + esc(t('taken')) : ''}"><span class="qh">${q.slice(0, 2)}</span>${q.slice(2)}</button>`; }).join('')}</span>`).join('')}</div>`; };
@@ -343,6 +343,8 @@ function selBar() {
       ${line(state.lake ? lakeName(state.lakes.find(l => l.id === state.lake)) : t('lakeAny'), state.time, state.dur, state.riders)}</div>` : '';
 }
 $('#slots').addEventListener('click', e => {
+  const o = e.target.closest('[data-legopen]');
+  if (o && multi()) { const i = +o.dataset.legopen; if (i !== state.leg) { loadLeg(i); legChanged(); } return; }   // lake title above the hours: open that lake (duration / coach)
   const b = e.target.closest('.q'); if (!b || b.disabled) return;
   if (b.dataset.leg != null && multi()) {   // two-lake table: the tapped lake opens and gets this start time
     const i = +b.dataset.leg; if (i !== state.leg) loadLeg(i);
@@ -393,8 +395,9 @@ $('#lakeOpts').addEventListener('click', e => {
   const id = b.dataset.lk || null;
   if (multi()) {
     if (!id) { endMulti(state.leg); state.lake = null; }                         // "any lake" → back to one booking
-    else { const i = state.legs.findIndex(L => L.lake === id); if (i >= 0) loadLeg(i); }   // tap a chosen lake → open its own times
-  } else if (id && state.lake && id !== state.lake && state.riders >= 2) {
+    else { const i = state.legs.findIndex(L => L.lake === id); if (i >= 0) endMulti(1 - i); }   // tap a chosen lake again → it is cancelled, the other stays
+  } else if (id && state.lake === id) state.lake = null;                         // single lake tapped again → cancelled
+  else if (id && state.lake && id !== state.lake && state.riders >= 2) {
     // 2+ riders: the second lake is added — each lake gets its own riders, duration, time and coach
     state.legs = [{ lake: state.lake, dur: state.dur, time: state.time, coach: state.coach, coachPicked: state.coachPicked, riders: 0 },
                   { lake: id, dur: 0, time: null, coach: null, coachPicked: false, riders: 0 }];
@@ -442,13 +445,11 @@ state.legsMissing = legsMissing;
 state.showLeg = i => { if (multi() && i !== state.leg) { loadLeg(i); legChanged(); } };
 function legChanged() { fitDur(); renderLakePick(); renderLegs(); renderDur(); renderCalendar(); renderSlots(); renderCoaches(); renderPassUse(); update(); }
 function renderLegs() {
-  const box = $('#legs'); box.hidden = !multi(); if (box.hidden) { box.innerHTML = ''; return; }
+  const dl = $('#durLake'); if (dl) dl.textContent = multi() ? `(${legLake(state.legs[state.leg])})` : '';
+  const box = $('#legs'); box.hidden = !multi() || state.riders < 3; if (box.hidden) { box.innerHTML = ''; return; }
   saveLeg();
   const A = state.legs[state.leg];
-  box.innerHTML = `<div class="leg-tabs" role="tablist">${state.legs.map((L, i) => `<div class="leg-tab${i === state.leg ? ' on' : ''}">
-      <button type="button" role="tab" aria-selected="${i === state.leg}" data-leg="${i}"><b>${esc(legLake(L))}</b><small>${esc(legWhen(L))} · ${esc(t('rider')(L.riders))}${L.time ? ' ✓' : ''}</small></button>
-      <button type="button" class="leg-x" data-legx="${i}" aria-label="${esc(t('remove'))} — ${esc(legLake(L))}">×</button></div>`).join('')}</div>
-    <div class="leg-riders"><span>${esc(t('legRiders')(legLake(A)))}</span><div class="stepper sm"><button type="button" data-lr="-1" aria-label="−" ${A.riders <= 1 ? 'disabled' : ''}>−</button><output>${A.riders}</output><button type="button" data-lr="1" aria-label="+" ${A.riders >= state.riders - 1 ? 'disabled' : ''}>+</button></div></div>`;
+  box.innerHTML = `<div class="leg-riders"><span>${esc(t('legRiders')(legLake(A)))}</span><div class="stepper sm"><button type="button" data-lr="-1" aria-label="−" ${A.riders <= 1 ? 'disabled' : ''}>−</button><output>${A.riders}</output><button type="button" data-lr="1" aria-label="+" ${A.riders >= state.riders - 1 ? 'disabled' : ''}>+</button></div></div>`;
 }
 $('#legs').addEventListener('click', e => {
   const tab = e.target.closest('[data-leg]'), x = e.target.closest('[data-legx]'), r = e.target.closest('[data-lr]');
