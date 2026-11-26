@@ -237,9 +237,9 @@ window.PW = { applyServices, equipName, equipInfo, equipText, token, auth, db, r
 (function () {
   const fit = () => { const v = document.querySelector('.visual'); if (!v) return; const top = v.getBoundingClientRect().top + window.scrollY;
     document.documentElement.style.setProperty('--hero-h', Math.max(240, window.innerHeight - top) + 'px');
-    // desktop home: the logo's top lines up with the top of the headline ("Stand on the water"), never higher
+    // desktop home: the logo's top sits just above the top of the headline ("Stand on the water")
     const img = v.querySelector('img.hero-bg'), h1 = v.querySelector('h1'), box = img && img.offsetParent;
-    if (img && h1 && box) document.documentElement.style.setProperty('--logo-top', Math.round(h1.getBoundingClientRect().top - box.getBoundingClientRect().top + 6) + 'px'); };
+    if (img && h1 && box) document.documentElement.style.setProperty('--logo-top', Math.round(h1.getBoundingClientRect().top - box.getBoundingClientRect().top - 22) + 'px'); };   // a touch above the headline
   addEventListener('DOMContentLoaded', fit); addEventListener('load', fit); addEventListener('resize', fit); addEventListener('orientationchange', () => setTimeout(fit, 300));
   setTimeout(fit, 600);
 })();
