@@ -282,6 +282,7 @@ function renderSlots() {
       <span>${esc(t('wxWind'))} ${Math.round(dwx.wind)} ${esc(t('kmh'))}</span><span>${esc(t('wxRain'))} ${dwx.rain ?? 0}%</span><span class="score ${sc}">${esc(t('ride_' + sc))}</span>`;
   }
   const open = quarters(state.day);
+  if (multi()) return renderTwoLakes(box, open);
   if (!state.dur) { state.time = null; box.innerHTML = `<p class="hint">${esc(t('pickDurFirst'))}</p>` + (multi() ? selBar() : ''); return; }   // no length chosen yet: no start times
   if (state.time && !startOk(state.day, state.time, state.dur, open)) state.time = null;
   if (!open.length || open.every(q => slotFull(state.day, q))) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>`; return; }
@@ -304,6 +305,31 @@ function renderSlots() {
       <span class="qs">${chips}</span>${side}</div>`;
   }).join('') + selBar();
 }
+// both lakes booked: one table, the two lakes side by side (same order as the photo: left lake, right lake)
+function renderTwoLakes(box, open) {
+  saveLeg();
+  if (!open.length || dayClosed(state.day)) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>` + selBar(); return; }
+  const all = [...(state.allLakes || state.lakes)].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100)).reverse();   // photo: Lake 2 left, Lake 1 right
+  const cols = all.map(l => state.legs.findIndex(L => L.lake === l.id)).filter(i => i >= 0);
+  // every chip is checked as if that lake were open (its own duration; a lake with no duration yet is shown for 15 minutes)
+  const grid = cols.map(i => withLeg(i, () => {
+    const n = state.dur || minQ(), sel = state.time && state.dur ? rangeOf(state.time) : [];
+    const m = {}; open.forEach(q => { const full = slotFull(state.day, q); m[q] = { full, ok: !full && startOk(state.day, q, n, open), on: state.time === q, rng: sel.includes(q) && q !== state.time }; });
+    return m;
+  }));
+  const hours = [...new Set(open.map(hourOf))];
+  const head = `<div class="tl-row tl-head"><span></span>${cols.map(i => `<span class="tl-lake${i === state.leg ? ' on' : ''}"><svg viewBox="0 0 32 12" aria-hidden="true"><path d="M2 8c4.5-4 8.5 4 13 0s8.5-4 13 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>${esc(legLake(state.legs[i]))}</span>`).join('')}</div>`;
+  const rows = hours.map(h => {
+    const hw = state.wx && state.wx.hourly[`${state.day}T${h}`];
+    return `<div class="tl-row"><span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>${cols.map((i, k) => `<span class="qs">${open.filter(q => hourOf(q) === h).map(q => {
+      const c = grid[k][q], L = state.legs[i];
+      return `<button type="button" class="q${c.rng ? ' in-range' : ''}${c.full ? ' full' : !c.ok ? ' no-fit' : ''}" role="radio" aria-checked="${c.on}" data-leg="${i}" data-h="${q}" ${c.ok ? '' : 'disabled'}
+        aria-label="${esc(legLake(L))} ${q}${c.full ? ' — ' + esc(t('taken')) : ''}"><span class="qh">${q.slice(0, 2)}</span>${q.slice(2)}</button>`;
+    }).join('')}</span>`).join('')}</div>`;
+  }).join('');
+  const legend = `<div class="slot-legend" aria-hidden="true"><span><i class="lg ok"></i>${esc(t('lgAvail'))}</span><span><i class="lg na"></i>${esc(t('lgNA'))}</span></div>`;
+  box.innerHTML = legend + `<div class="two-lakes">${head}${rows}</div>` + selBar();
+}
 // "Your selection": one line per lake when both lakes are booked
 function selBar() {
   const line = (lake, time, dur, riders) => `<span>${esc(lake)}</span>${time
@@ -319,6 +345,14 @@ function selBar() {
 }
 $('#slots').addEventListener('click', e => {
   const b = e.target.closest('.q'); if (!b || b.disabled) return;
+  if (b.dataset.leg != null && multi()) {   // two-lake table: the tapped lake opens and gets this start time
+    const i = +b.dataset.leg; if (i !== state.leg) loadLeg(i);
+    if (!state.dur) state.dur = Math.min(MAX_Q, minQ());   // no duration yet: start with the minimum (15 min per rider) — the stepper above changes it
+    state.time = b.dataset.h;
+    if (!startOk(state.day, state.time)) state.time = null;
+    if (state.coach && coachBusy(state.coach)) { state.coach = null; state.coachPicked = false; }
+    return legChanged();
+  }
   state.time = b.dataset.h;
   if (state.coach && coachBusy(state.coach)) { state.coach = null; state.coachPicked = false; }
   renderSlots(); renderCoaches(); update();
