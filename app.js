@@ -400,7 +400,7 @@ $('#lakeOpts').addEventListener('click', e => {
     // 2+ riders: the second lake is added — each lake gets its own riders, duration, time and coach
     state.legs = [{ lake: state.lake, dur: state.dur, time: state.time, coach: state.coach, coachPicked: state.coachPicked, riders: 0 },
                   { lake: id, dur: 0, time: null, coach: null, coachPicked: false, riders: 0 }];
-    state.leg = 0; splitRiders(); loadLeg(1);
+    state.leg = 0; splitRiders(); loadLeg(1); loadLeg(legOrder()[0]);   // start on the first lake in the photo order (Lake 2)
   } else state.lake = id;
   legChanged();
 });
