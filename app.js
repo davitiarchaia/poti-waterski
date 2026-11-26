@@ -309,8 +309,7 @@ function renderSlots() {
 function renderTwoLakes(box, open) {
   saveLeg();
   if (!open.length || dayClosed(state.day)) { box.innerHTML = `<p class="hint">${esc(dayClosed(state.day) ? t('dayClosed') + (dayReason(state.day) ? ' — ' + dayReason(state.day) : '') : t('noSlots'))}</p>` + selBar(); return; }
-  const all = [...(state.allLakes || state.lakes)].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100)).reverse();   // photo: Lake 2 left, Lake 1 right
-  const cols = all.map(l => state.legs.findIndex(L => L.lake === l.id)).filter(i => i >= 0);
+  const cols = legOrder();   // photo: Lake 2 left, Lake 1 right
   // every chip is checked as if that lake were open (its own duration; a lake with no duration yet is shown for 15 minutes)
   const grid = cols.map(i => withLeg(i, () => {
     const n = state.dur || minQ(), sel = state.time && state.dur ? rangeOf(state.time) : [];
@@ -445,8 +444,8 @@ state.legsMissing = legsMissing;
 state.showLeg = i => { if (multi() && i !== state.leg) { loadLeg(i); legChanged(); } };
 function legChanged() { fitDur(); renderLakePick(); renderLegs(); renderDur(); renderCalendar(); renderSlots(); renderCoaches(); renderPassUse(); update(); }
 function renderLegs() {
-  const dl = $('#durLake'); if (dl) dl.textContent = multi() ? `(${legLake(state.legs[state.leg])})` : '';
-  const box = $('#legs'); box.hidden = !multi() || state.riders < 3; if (box.hidden) { box.innerHTML = ''; return; }
+  const dl = $('#durLake'); if (dl) dl.textContent = '';
+  const box = $('#legs'); box.hidden = true; if (box.hidden) { box.innerHTML = ''; return; }
   saveLeg();
   const A = state.legs[state.leg];
   box.innerHTML = `<div class="leg-riders"><span>${esc(t('legRiders')(legLake(A)))}</span><div class="stepper sm"><button type="button" data-lr="-1" aria-label="−" ${A.riders <= 1 ? 'disabled' : ''}>−</button><output>${A.riders}</output><button type="button" data-lr="1" aria-label="+" ${A.riders >= state.riders - 1 ? 'disabled' : ''}>+</button></div></div>`;
@@ -469,13 +468,39 @@ function fitDur() {
   if (multi()) { saveLeg(); state.legs.forEach((L, i) => { if (L.dur && L.dur < L.riders) { L.dur = Math.min(MAX_Q, L.riders); if (i !== state.leg) L.time = null; } }); LEG_KEYS.forEach(k => state[k] = state.legs[state.leg][k]); return; }
   if (state.dur && state.dur < minQ()) state.dur = Math.min(MAX_Q, minQ());
 }
+// lakes in the order of the photo / table: Lake 2 left, Lake 1 right
+function legOrder() {
+  const all = [...(state.allLakes || state.lakes)].sort((a, b) => (a.sort ?? 100) - (b.sort ?? 100)).reverse();
+  return all.map(l => state.legs.findIndex(L => L.lake === l.id)).filter(i => i >= 0);
+}
 function renderDur() {
   fitDur(); const m = minQ();
+  if (multi()) {   // both lakes: one row per lake — its riders (3+ riders) and its own duration, min 15 min per rider on that lake
+    saveLeg();
+    $('#dur').innerHTML = legOrder().map(i => { const L = state.legs[i];
+      return `<div class="leg-dur${i === state.leg ? ' on' : ''}"><b>${esc(legLake(L))}</b>
+        ${state.riders >= 3 ? `<span class="ld-f"><span class="ld-lab">${esc(t('ridersShort'))}</span><div class="stepper sm"><button type="button" data-li="${i}" data-lr="-1" aria-label="−" ${L.riders <= 1 ? 'disabled' : ''}>−</button><output>${L.riders}</output><button type="button" data-li="${i}" data-lr="1" aria-label="+" ${L.riders >= state.riders - 1 ? 'disabled' : ''}>+</button></div></span>`
+          : `<span class="ld-f"><span class="ld-lab">${esc(t('rider')(L.riders))}</span></span>`}
+        <span class="ld-f"><span class="ld-lab">${esc(t('durShort'))}</span><div class="stepper dur-step"><button type="button" data-li="${i}" data-dd="-1" aria-label="−15" ${L.dur <= L.riders ? 'disabled' : ''}>−</button>
+        <output aria-live="polite"${L.dur ? '' : ' class="dur-none"'}>${L.dur ? esc(durText(L.dur)) : '–'}</output><button type="button" data-li="${i}" data-dd="1" aria-label="+15" ${L.dur >= MAX_Q ? 'disabled' : ''}>+</button></div></span></div>`; }).join('');
+    return;
+  }
   $('#dur').innerHTML = `<div class="stepper dur-step"><button type="button" data-dd="-1" aria-label="−15" ${state.dur <= m ? 'disabled' : ''}>−</button>
       <output aria-live="polite"${state.dur ? '' : ' class="dur-none"'}>${state.dur ? esc(durText(state.dur)) : '–'}</output><button type="button" data-dd="1" aria-label="+15" ${state.dur >= MAX_Q ? 'disabled' : ''}>+</button></div>
 `;
 }
 $('#dur').addEventListener('click', e => {
+  const lb = e.target.closest('[data-li]');
+  if (lb && multi()) {   // a lake's own riders or duration
+    if (lb.disabled) return;
+    saveLeg(); const i = +lb.dataset.li, L = state.legs[i];
+    if (lb.dataset.lr) { L.riders = Math.max(1, Math.min(state.riders - 1, L.riders + +lb.dataset.lr)); state.legs[1 - i].riders = state.riders - L.riders; }
+    else L.dur = !L.dur ? (+lb.dataset.dd > 0 ? Math.min(MAX_Q, L.riders) : 0) : Math.min(MAX_Q, Math.max(L.riders, L.dur + +lb.dataset.dd));
+    state.legs.forEach((X, k) => { if (X.time && (!X.dur || !withLeg(k, () => startOk(state.day, X.time, X.dur)))) X.time = null; });   // an hour that no longer fits is cleared
+    state.leg = i; LEG_KEYS.forEach(k => state[k] = state.legs[i][k]);   // the lake being changed becomes the open one
+    if (state.coach && coachBusy(state.coach)) { state.coach = null; state.coachPicked = false; }
+    return legChanged();
+  }
   const b = e.target.closest('[data-dd],[data-dq]'); if (!b) return;
   const m = minQ();
   state.dur = b.dataset.dq ? Math.max(m, +b.dataset.dq) : !state.dur ? (+b.dataset.dd > 0 ? Math.min(MAX_Q, m) : 0) : Math.min(MAX_Q, Math.max(m, state.dur + +b.dataset.dd));
