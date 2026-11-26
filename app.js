@@ -318,17 +318,16 @@ function renderTwoLakes(box, open) {
     return m;
   }));
   const hours = [...new Set(open.map(hourOf))];
-  const head = `<div class="tl-row tl-head"><span></span>${cols.map(i => `<span class="tl-lake${i === state.leg ? ' on' : ''}"><svg viewBox="0 0 32 12" aria-hidden="true"><path d="M2 8c4.5-4 8.5 4 13 0s8.5-4 13 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>${esc(legLake(state.legs[i]))}</span>`).join('')}</div>`;
-  const rows = hours.map(h => {
-    const hw = state.wx && state.wx.hourly[`${state.day}T${h}`];
-    return `<div class="tl-row"><span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>${cols.map((i, k) => `<span class="qs">${open.filter(q => hourOf(q) === h).map(q => {
-      const c = grid[k][q], L = state.legs[i];
-      return `<button type="button" class="q${c.rng ? ' in-range' : ''}${c.full ? ' full' : !c.ok ? ' no-fit' : ''}" role="radio" aria-checked="${c.on}" data-leg="${i}" data-h="${q}" ${c.ok ? '' : 'disabled'}
-        aria-label="${esc(legLake(L))} ${q}${c.full ? ' — ' + esc(t('taken')) : ''}"><span class="qh">${q.slice(0, 2)}</span>${q.slice(2)}</button>`;
-    }).join('')}</span>`).join('')}</div>`;
-  }).join('');
+  // three columns: hours | Lake 2 | Lake 1 — each lake is its own framed panel so the two are easy to tell apart
+  const hoursCol = `<div class="tl-col tl-hours"><span class="tl-top"></span>${hours.map(h => { const hw = state.wx && state.wx.hourly[`${state.day}T${h}`];
+    return `<span class="hlab"><b>${h.slice(0, 2)}</b><small>${hw ? `${wxInfo(hw.code)[0]} ${Math.round(hw.temp)}° · ${Math.round(hw.wind)} ${esc(t('kmh'))}` : ''}</small></span>`; }).join('')}</div>`;
+  const lakeCol = (i, k) => { const L = state.legs[i];
+    return `<div class="tl-col tl-lake-col lk${k}${i === state.leg ? ' on' : ''}"><span class="tl-top tl-lake"><svg viewBox="0 0 32 12" aria-hidden="true"><path d="M2 8c4.5-4 8.5 4 13 0s8.5-4 13 0" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>${esc(legLake(L))}</span>
+      ${hours.map(h => `<span class="qs">${open.filter(q => hourOf(q) === h).map(q => { const c = grid[k][q];
+        return `<button type="button" class="q${c.rng ? ' in-range' : ''}${c.full ? ' full' : !c.ok ? ' no-fit' : ''}" role="radio" aria-checked="${c.on}" data-leg="${i}" data-h="${q}" ${c.ok ? '' : 'disabled'}
+          aria-label="${esc(legLake(L))} ${q}${c.full ? ' — ' + esc(t('taken')) : ''}"><span class="qh">${q.slice(0, 2)}</span>${q.slice(2)}</button>`; }).join('')}</span>`).join('')}</div>`; };
   const legend = `<div class="slot-legend" aria-hidden="true"><span><i class="lg ok"></i>${esc(t('lgAvail'))}</span><span><i class="lg na"></i>${esc(t('lgNA'))}</span></div>`;
-  box.innerHTML = legend + `<div class="two-lakes">${head}${rows}</div>` + selBar();
+  box.innerHTML = legend + `<div class="two-lakes">${hoursCol}${cols.map(lakeCol).join('')}</div>` + selBar();
 }
 // "Your selection": one line per lake when both lakes are booked
 function selBar() {
