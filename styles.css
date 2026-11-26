@@ -1815,7 +1815,7 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 .tl-col .tl-top{height:3rem}
 .tl-hours .hlab{display:flex;flex-direction:column;justify-content:center;padding-left:.3rem}
 .tl-lake-col{--lk:var(--lake);padding:.45rem;border:3px solid color-mix(in srgb,var(--lk) 55%,transparent);border-radius:16px;background:color-mix(in srgb,var(--lk) 9%,var(--card))}
-.tl-lake-col.lk1{--lk:#7a5cc7}
+.tl-lake-col.lk1{--lk:var(--deep)}
 .tl-hours{padding-block:calc(.45rem + 3px)}
 .tl-lake-col.on{border-color:var(--sun);box-shadow:0 0 0 3px color-mix(in srgb,var(--sun) 28%,transparent),0 10px 24px -14px rgba(0,0,0,.35)}
 .tl-lake{display:flex;align-items:center;justify-content:center;gap:.45rem;border-radius:10px;background:var(--lk);color:#fff;font-weight:800;letter-spacing:.07em;text-transform:uppercase;font-size:.85rem}
