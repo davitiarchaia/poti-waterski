@@ -36,6 +36,7 @@ function blocker() {
   if (f.querySelector('#rides') && !S().picked) return t('errRide');
   if (f.querySelector('#rgroups') && !(S().groups || []).length) return t('errRiders');
   if (f.querySelector('#calGrid') && !S().day) return t('errDay');
+  if (f.querySelector('#slots') && S().legsMissing) { const m = S().legsMissing(); if (m) { S().showLeg(m.i); return m.msg; } }
   if (f.querySelector('#dur') && !S().dur) return t('errDur');
   if (f.querySelector('#slots') && !S().time) return t('errTime');
   return '';

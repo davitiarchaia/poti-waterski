@@ -1790,3 +1790,16 @@ html.gate .visual .eyebrow{margin-bottom:1.6rem!important}
 /* the month calendar fits the screen together with the step bar — day cells get shorter on wide screens instead of square */
 @media (min-width:700px){.cal .cd{aspect-ratio:auto;height:clamp(40px,calc((100svh - 440px)/6),64px);min-height:0}.cal{padding-block:.7rem}.cal-head{margin-bottom:.3rem}}
 .dur-step output.dur-none{color:var(--muted);font-weight:700;min-width:4ch;text-align:center}
+/* two lakes at once */
+.lake-hint{margin:.1rem 0 0;font-size:.86rem;font-weight:500;color:var(--muted)}
+.lake-map .lm-zone.is-open{box-shadow:inset 0 0 0 4px var(--sun),inset 0 0 28px color-mix(in srgb,var(--sun) 40%,transparent)}
+.legs{display:grid;gap:.6rem;margin:.2rem 0 .9rem}
+.leg-tabs{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+.leg-tab{position:relative;display:flex;border:1.5px solid var(--line);border-radius:14px;background:var(--card);min-width:0}
+.leg-tab.on{border-color:var(--sun);box-shadow:0 0 0 2px color-mix(in srgb,var(--sun) 35%,transparent)}
+.leg-tab>[data-leg]{flex:1;min-width:0;display:grid;gap:.1rem;text-align:left;padding:.6rem .7rem;background:none;border:0;color:inherit;font:inherit;cursor:pointer}
+.leg-tab>[data-leg] b{font-size:.95rem}
+.leg-tab>[data-leg] small{color:var(--muted);font-size:.8rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leg-x{flex:none;width:34px;border:0;background:none;color:var(--muted);font-size:1.2rem;cursor:pointer;border-radius:0 14px 14px 0}
+.leg-x:hover{color:var(--full)}
+.leg-riders{display:flex;align-items:center;justify-content:space-between;gap:.75rem;font-weight:600;flex-wrap:wrap}
