@@ -3,4 +3,4 @@ Allow: /
 Disallow: /owner.html
 Disallow: /staff.html
 
-Sitemap: https://davitiarchaia.github.io/poti-waterski/sitemap.xml
+Sitemap: https://ratimelia-blip.github.io/poti-waterski/sitemap.xml
