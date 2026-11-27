@@ -1,7 +1,7 @@
 # Poti Lake Club: booking site
 
 Booking site for Poti Lake Club (waterski and wakeboard at Golden Lake, Maltakva, Poti, Georgia).
-Live: https://ratimelia-blip.github.io/poti-waterski/ (the planned domain is plcbook.ge).
+Live: https://ratimelia-blip.github.io/poti-waterski/ (the planned domain is plcbook.ge). 
 
 ## How it is built
 
